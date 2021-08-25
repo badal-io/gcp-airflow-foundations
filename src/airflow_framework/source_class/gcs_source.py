@@ -30,13 +30,13 @@ class GCStoBQDagBuilder(DagBuilder):
             start_date = table_default_task_args["start_date"]
 
             dag = DAG(
-                dag_id="test_gcs",
+                dag_id=f"gcs_to_bq_{table_config.table_name}",
                 description=f"BigQuery load for {table_config.table_name}",
                 schedule_interval=None,
                 default_args=table_default_task_args
             )
 
-            # Load CSV to BQ
+            #1 Load CSV to BQ
             destination_table = f"{bq_dataset}.{table_config.sink_table_name}"
 
             load_to_bq = GCSToBigQueryOperator(
@@ -44,14 +44,7 @@ class GCStoBQDagBuilder(DagBuilder):
                 bucket=gcs_bucket,
                 source_objects=gcs_objects,
                 destination_project_dataset_table=destination_table,
-                schema_fields=[
-                    {'name': 'timestamp', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'device_id', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'property_measured', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'value', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'units_of_measurement', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'device_version', 'type': 'STRING', 'mode': 'NULLABLE'},
-                ],
+                schema_fields=table_config.schema,
                 write_disposition='WRITE_TRUNCATE',
                 create_disposition='CREATE_IF_NEEDED',
                 skip_leading_rows=1,

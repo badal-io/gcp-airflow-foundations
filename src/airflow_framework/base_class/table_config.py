@@ -28,6 +28,7 @@ class OdsTableConfig:
 
     table_name: str
     sink_table_name: str
+    schema: List[dict]
     #surrogate_keys: List[str]
     #update_columns: List[str]
     #object_prefix: str

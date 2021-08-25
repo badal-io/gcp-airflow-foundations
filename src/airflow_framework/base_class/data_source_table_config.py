@@ -19,9 +19,9 @@ class DataSourceTablesConfig:
         return timedelta(minutes=self.source.acceptable_delay_minutes)
 
     def table_start_date(self, table_config: OdsTableConfig):
-        if table_config.start_date_override:
-            return datetime.strptime(table_config.start_date_override, "%Y-%m-%d")
-        else:
+        #if table_config.start_date_override:
+        #    return datetime.strptime(table_config.start_date_override, "%Y-%m-%d")
+        #else:
             return datetime.strptime(self.source.start_date, "%Y-%m-%d")
 
     def source_start_date(self):
