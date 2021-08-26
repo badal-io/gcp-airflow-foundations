@@ -1,9 +1,9 @@
 from airflow_framework.parse_dags import DagParser
+from airflow.models import Variable
 
-# Provide path for config .yaml file
-conf_path = "/opt/airflow-framework/src/airflow_framework/config"
+parser = DagParser()
 
-config, dags = DagParser(conf_path).parse_dags()
+config, dags = parser.parse_dags()
 
 for dag in dags:
     globals()[f"dags:source:{config.source.name}.{dag.dag_id}"] = dag

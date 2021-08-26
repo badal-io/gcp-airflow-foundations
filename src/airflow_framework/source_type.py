@@ -3,12 +3,11 @@ from enum import Enum, unique
 
 @unique
 class SourceType(Enum):
-    ADW = "ADW"
-    SALESFORCE = "SALESFORCE"
+    #SALESFORCE = "SALESFORCE"
     GCS = "GCS"
-    GSHEET = "GSHEET"
-    JDBC = "JDBC"
-    COMPASS = "COMPASS"
+    #GSHEET = "GSHEET"
+    #JDBC = "JDBC"
+    #COMPASS = "COMPASS"
     BQ = "BQ"
-    QUALTRICS = "QUALTRICS"
-    SFTP = "SFTP"
+    #QUALTRICS = "QUALTRICS"
+    #SFTP = "SFTP"

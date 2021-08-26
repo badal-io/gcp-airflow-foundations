@@ -7,8 +7,7 @@ from typing import List, Optional
 
 @dataclass
 class OdsTableConfig:
-    """A bird with a flight speed exceeding that of an unladen swallow.
-
+    """
    Attributes:
         table_name : Table name. Used for Dag Id
         ods_table_name_override: Optional ods table name. If None, use table_name instead

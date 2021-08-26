@@ -8,27 +8,24 @@ from airflow_framework.source_class import get_dag_builder
 
 import logging
 
-# Global Vars - try to keep them to minimum since they get fetched every time the schedule gets evaluated (i.e every few seconds
+class DagParser:
 
-class DagParser():
+    def __init__(self):
+        self.conf_location = Variable.get("CONFIG_FILE_LOCATION", "config")
+        self.max_task_retries = Variable.get("max_task_retries", 3)
 
-    def __init__(self, conf_path):
-        self.conf_path = conf_path
 
     def parse_dags(self):
-        max_task_retries = Variable.get("max_task_retries", 3)
+        logging.info(f"Loading config from dir: {self.conf_location}")
 
-        conf_location = Variable.get("CONFIG_FILE_LOCATION", self.conf_path)
-        logging.info(f"Loading config from dir: {conf_location}")
-
-        configs = load_tables_config_from_dir(conf_location)
+        configs = load_tables_config_from_dir(self.conf_location)
 
         for config in configs:
             logging.info(f"StartDate for {config.source.name}: {config.source_start_date()}")
 
             default_task_args = {
                 "owner": config.source.owner,
-                "retries": 3,
+                "retries": self.max_task_retries,
                 "retry_exponential_backoff": True,
                 "retry_delay": datetime.timedelta(seconds=300),
                 "project_id": config.source.gcp_project,
