@@ -6,8 +6,6 @@ source:
   start_date: "2021-08-24"
   acceptable_delay_minutes: 5
   extra_options:
-    #uri: ["gs://airflow-datasets-poc/bigquery/raw_measurements.csv"]
-    # Need to provide support for extracting entire directory content: gs:/folder/*
     gcs_bucket: airflow-datasets-poc
     gcs_objects: ["bigquery/raw_measurements.csv"]
   gcp_project: badal-sandbox-309813
@@ -20,7 +18,7 @@ source:
   owner: owner
   version: 1
 tables:
-  - table_name: raw_measurements_1
+  - table_name: raw_measurements
     #write_mode: UPSERT
     #ods_add_cdc_fields: true
     #surrogate_keys: []
@@ -28,16 +26,6 @@ tables:
     #object_prefix: none
     #transformations: []
     sink_table_name: gcs_to_bq_table # Output table name in BQ
-    schema: [
-                    {'name': 'timestamp', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'device_id', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'property_measured', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'value', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'units_of_measurement', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'device_version', 'type': 'STRING', 'mode': 'NULLABLE'},
-                ]
-  - table_name: raw_measurements_2
-    sink_table_name: gcs_to_bq_table_2 # Output table name in BQ
     schema: [
                     {'name': 'timestamp', 'type': 'STRING', 'mode': 'NULLABLE'},
                     {'name': 'device_id', 'type': 'STRING', 'mode': 'NULLABLE'},

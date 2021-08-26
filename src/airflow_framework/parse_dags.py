@@ -20,6 +20,7 @@ class DagParser:
 
         configs = load_tables_config_from_dir(self.conf_location)
 
+        parsed_dags = {}
         for config in configs:
             logging.info(f"StartDate for {config.source.name}: {config.source_start_date()}")
 
@@ -39,4 +40,7 @@ class DagParser:
             builder = get_dag_builder(config.source.source_type, default_task_args)
             dags = builder.build_dags(config)
 
-            return config, dags
+            for dag in dags:
+                parsed_dags[f"dags:source:{config.source.name}.{dag.dag_id}"] = dag
+            
+            return parsed_dags
