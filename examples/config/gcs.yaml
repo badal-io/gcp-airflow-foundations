@@ -3,34 +3,37 @@ source:
   name: "test_csv_file"
   source_type: GCS
   ingest_schedule: "@daily"
-  start_date: "2021-08-24"
+  start_date: "2021-08-30"
   acceptable_delay_minutes: 5
   extra_options:
     gcs_bucket: airflow-datasets-poc
     gcs_objects: ["bigquery/raw_measurements.csv"]
   gcp_project: badal-sandbox-309813
   dataset_data_name: airflow_test
-  dataset_tmp_name: airflow_test
   connection: google_cloud_default
   notification_emails:
     - ''
-    #- daniel.kulikov@cogeco.com
   owner: owner
   version: 1
+  landing_zone_options:
+    dataset_tmp_name: airflow_landing
 tables:
   - table_name: raw_measurements
-    #write_mode: UPSERT
-    #ods_add_cdc_fields: true
-    #surrogate_keys: []
-    #update_columns: []
-    #object_prefix: none
-    #transformations: []
-    sink_table_name: gcs_to_bq_table # Output table name in BQ
-    schema: [
-                    {'name': 'timestamp', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'device_id', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'property_measured', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'value', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'units_of_measurement', 'type': 'STRING', 'mode': 'NULLABLE'},
-                    {'name': 'device_version', 'type': 'STRING', 'mode': 'NULLABLE'},
-                ]
+    ods_table_name_override: ods
+    ods_schema_object_uri: gs://airflow-datasets-poc/schema_ods.json
+    temp_table_name: raw_measurements
+    temp_schema_object: schema.json
+    ingestion_type: full
+    surrogate_keys: ['timestamp','device_id','property_measured']
+    update_columns: ['value']
+    column_mapping: 
+      timestamp: datetime
+      device_id: sensorID
+      property_measured: property
+      value: value
+      units_of_measurement: UOM
+      device_version: device_version
+    ods_metadata:
+      hash_column_name: cdc_hash
+      ingestion_time_column_name: bq_inserted_at
+      update_time_column_name: bq_updated_at

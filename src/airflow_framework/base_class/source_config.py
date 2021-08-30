@@ -15,9 +15,9 @@ class SourceConfig:
     ingest_schedule: str
     gcp_project: str
     dataset_data_name: str
-    dataset_tmp_name: str
     connection: str
     extra_options: dict
+    landing_zone_options: dict
     acceptable_delay_minutes: int
     notification_emails: List[str]
     owner: str

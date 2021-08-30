@@ -4,7 +4,7 @@ pyyaml==5.3.1
 wheel==0.36.2
 black==19.10b0
 pytest>=5.2.1
-apache-airflow[gcp_api]==2.1.0
+apache-airflow[gcp_api]==2.1.2
 pytest-testconfig>=0.2.0
 configparser>=3.5.0
 pytest-mock>=3.3.1
