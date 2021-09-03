@@ -31,7 +31,7 @@ class OdsTableConfig:
     ingestion_type: str
     surrogate_keys: List[str]
     update_columns: List[str]
-    column_mapping: dict
+    column_mapping: Optional[dict]
     #object_prefix: str
     #write_mode: LoadWriteMode
     #transformations: List[Transformation]
@@ -39,7 +39,7 @@ class OdsTableConfig:
     #extra_options: dict = field(default_factory=dict)
     #ods_add_cdc_fields: bool = False
     ods_table_name_override: Optional[str]
-    ods_schema_object_uri: str
+    ods_schema_object_uri: Optional[str]
     ods_metadata: dict
     version: int = 1
     catchup: bool = True

@@ -1,0 +1,29 @@
+---
+source:
+  name: "twilio_text_messages"
+  source_type: TWILIO
+  ingest_schedule: "@daily"
+  start_date: "2021-08-30"
+  acceptable_delay_minutes: 5
+  extra_options:
+    gcs_bucket: airflow-datasets-poc
+  gcp_project: badal-sandbox-309813
+  dataset_data_name: airflow_test
+  connection: google_cloud_default
+  notification_emails:
+    - ''
+  owner: owner
+  version: 1
+  landing_zone_options:
+    dataset_tmp_name: airflow_landing
+tables:
+  - table_name: text_messages
+    temp_table_name: twilio_text_messages
+    temp_schema_object: schema.json
+    ingestion_type: full
+    surrogate_keys: ['sid']
+    update_columns: []
+    ods_metadata:
+      hash_column_name: cdc_hash
+      ingestion_time_column_name: bq_inserted_at
+      update_time_column_name: bq_updated_at
