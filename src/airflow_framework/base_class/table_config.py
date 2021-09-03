@@ -1,8 +1,14 @@
+
+from airflow.exceptions import AirflowException
+
 from dacite import Config
 from dataclasses import dataclass, field
 
 from datetime import datetime
 from typing import List, Optional
+
+from airflow_framework.base_class.ods_metadata_config import OdsTableMetadataConfig
+from airflow_framework.enums.ingestion_type import IngestionType
 
 
 @dataclass
@@ -16,7 +22,6 @@ class OdsTableConfig:
         update_columns : Columns to update for existing records when merging
         ods_partition : BigQuery partitioning schema for ODS data table (should not be changed after first run )
         object_prefix : The prefix of the GCS files with the extracted data/schema
-        write_mode : Reserved for future use. Only 'UPSERT' is supported now
         transformations : Optional list of transformations to perform after to load
         validations : Optional list of data validations to perform on the ODS data
         ods_add_cdc_fields : Whether to add cdc (hash, inserted_ts, etc.) to recrods inserted into ODS
@@ -26,21 +31,23 @@ class OdsTableConfig:
     """
 
     table_name: str
-    temp_table_name: str
-    temp_schema_object: str
-    ingestion_type: str
+    landing_zone_table_name_override: Optional[str]
+    source_table_schema_object: Optional[str]
+    ingestion_type: IngestionType # FULL or INCREMENTAL
+    merge_type: Optional[str]
     surrogate_keys: List[str]
     update_columns: List[str]
-    column_mapping: Optional[dict]
-    #object_prefix: str
-    #write_mode: LoadWriteMode
-    #transformations: List[Transformation]
-    #sla_mins: Optional[int]
-    #extra_options: dict = field(default_factory=dict)
-    #ods_add_cdc_fields: bool = False
-    ods_table_name_override: Optional[str]
-    ods_schema_object_uri: Optional[str]
-    ods_metadata: dict
+    column_mapping: dict
+    dest_table_override: Optional[str]
+    ods_metadata: OdsTableMetadataConfig
     version: int = 1
     catchup: bool = True
-    #start_date_override: Optional[str] = None
+
+
+    # Override values for optional fields
+    def __post_init__(self):
+        if self.landing_zone_table_name_override is None:
+            self.landing_zone_table_name_override = self.table_name
+
+        if self.merge_type is None:
+            self.merge_type = "SG_KEY_WITH_HASH"
