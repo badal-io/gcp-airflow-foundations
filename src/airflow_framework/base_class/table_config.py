@@ -26,21 +26,26 @@ class OdsTableConfig:
     """
 
     table_name: str
-    temp_table_name: str
+    temp_table_name: Optional[str]
     temp_schema_object: str
     ingestion_type: str
     surrogate_keys: List[str]
     update_columns: List[str]
     column_mapping: dict
-    #object_prefix: str
     #write_mode: LoadWriteMode
-    #transformations: List[Transformation]
-    #sla_mins: Optional[int]
-    #extra_options: dict = field(default_factory=dict)
-    #ods_add_cdc_fields: bool = False
-    ods_table_name_override: Optional[str]
-    ods_schema_object_uri: str
-    ods_metadata: dict
+    dest_table_override: Optional[str]
+    ods_metadata: Optional[dict]
     version: int = 1
     catchup: bool = True
-    #start_date_override: Optional[str] = None
+
+    # Override values for optional fields
+    def __post_init__(self):
+        if self.temp_table_name is None:
+            self.temp_table_name = self.table_name
+
+        if self.ods_metadata is None:
+            self.ods_metadata = {
+                'hash_column_name': 'af_metadata_row_hash',
+                'ingestion_time_column_name': 'af_metadata_inserted_at',
+                'update_time_column_name': 'af_metadata_updated_at',
+            }

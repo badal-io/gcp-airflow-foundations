@@ -15,21 +15,17 @@ import logging
 
 from airflow_framework.plugins.gcp_custom.sql_upsert_helpers import create_upsert_sql, create_upsert_sql_with_hash
 
-
 @unique
 class MergeType(Enum):
     """ Method for matching records  """
 
     SG_KEY = "SG_KEY"  # 'use surrogate keys to match records'
     SG_KEY_WITH_HASH = "SG_KEY_WITH_HASH" # 'add row hash and inserted_at but still use surrogate keys to match records'
-    # HASH_KEY = "HASH_KEY"              # 'add row hash and inserted_at but and use hash to match records'
 
 
-class BigQueryMergeTableOperator(BigQueryOperator):
+class MergeBigQueryODS(BigQueryOperator):
     """
-    Merge data into a table BigQuery table
-    Should be used mostly for CDC or Type2 SCDs
-    Assumes the target table schema is right - i.e if any schema changes (specifically adding columns) needed to be done, they have been done upstream
+    Merge data into a BigQuery ODS table.
     """
 
     template_fields = (
@@ -54,9 +50,10 @@ class BigQueryMergeTableOperator(BigQueryOperator):
         gcp_conn_id: str = "google_cloud_default",
         merge_type=MergeType.SG_KEY,
         column_mapping: dict,
+        ods_metadata: dict,
         **kwargs,
     ) -> None:
-        super(BigQueryMergeTableOperator, self).__init__(
+        super(MergeBigQueryODS, self).__init__(
             delegate_to=delegate_to,
             gcp_conn_id=gcp_conn_id,
             use_legacy_sql=False,
@@ -76,6 +73,7 @@ class BigQueryMergeTableOperator(BigQueryOperator):
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
+        self.ods_metadata = ods_metadata
 
     def pre_execute(self, context) -> None:
         self.log.info(
@@ -85,7 +83,6 @@ class BigQueryMergeTableOperator(BigQueryOperator):
         hook = BigQueryHook(
             bigquery_conn_id=self.gcp_conn_id,
             delegate_to=self.delegate_to,
-            # impersonation_chain=self.impersonation_chain,
         )
         conn = hook.get_conn()
         bq_cursor = conn.cursor()
@@ -118,7 +115,8 @@ class BigQueryMergeTableOperator(BigQueryOperator):
                 self.surrogate_keys,
                 self.update_columns,
                 columns,
-                self.column_mapping
+                self.column_mapping,
+                self.ods_metadata
             )
         else:
             raise AirflowException("Invalid merge type", self.merge_type)

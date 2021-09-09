@@ -18,10 +18,8 @@ source:
   landing_zone_options:
     dataset_tmp_name: airflow_landing
 tables:
-  - table_name: raw_measurements
-    ods_table_name_override: ods
-    ods_schema_object_uri: gs://airflow-datasets-poc/schema_ods.json
-    temp_table_name: raw_measurements
+  - table_name: raw_measurements_staging
+    dest_table_override: ods
     temp_schema_object: schema.json
     ingestion_type: full
     surrogate_keys: ['timestamp','device_id','property_measured']
@@ -33,7 +31,3 @@ tables:
       value: value
       units_of_measurement: UOM
       device_version: device_version
-    ods_metadata:
-      hash_column_name: cdc_hash
-      ingestion_time_column_name: bq_inserted_at
-      update_time_column_name: bq_updated_at

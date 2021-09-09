@@ -16,6 +16,9 @@ class BigQueryCreateTableOperator(BaseOperator):
     """
     If this is a first-time ingestion, the operator will create
     a table in BQ with the provided schema. 
+
+    The provided schema can be either in the form of schema_fields or as a gcs_schema_object.
+
     """
     template_fields = ('dataset_id', 'table_id', 'project_id',
                        'gcs_schema_object', 'labels')
@@ -25,10 +28,12 @@ class BigQueryCreateTableOperator(BaseOperator):
     def __init__(self,
                  dataset_id,
                  table_id,
-                 project_id=None,
+                 ods_metadata,
+                 project_id=None, 
                  schema_fields=None,
                  gcs_schema_object=None,
                  time_partitioning=None,
+                 column_mapping=None,
                  bigquery_conn_id='bigquery_default',
                  google_cloud_storage_conn_id='google_cloud_default',
                  delegate_to=None,
@@ -48,8 +53,10 @@ class BigQueryCreateTableOperator(BaseOperator):
         self.delegate_to = delegate_to
         self.time_partitioning = {} \
             if time_partitioning is None else time_partitioning
+        self.column_mapping = column_mapping
         self.labels = labels
         self.encryption_configuration = encryption_configuration
+        self.ods_metadata = ods_metadata
 
     def execute(self, context):
         bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
@@ -63,6 +70,7 @@ class BigQueryCreateTableOperator(BaseOperator):
             logging.info("The table already exists in BQ")
             return
         logging.info("Creating table in BQ.")
+
         # Create empty table
         if not self.schema_fields and self.gcs_schema_object:
 
@@ -81,6 +89,27 @@ class BigQueryCreateTableOperator(BaseOperator):
 
         conn = bq_hook.get_conn()
         cursor = conn.cursor()
+
+        if self.column_mapping:
+            for field in schema_fields:
+                field["name"] = self.column_mapping[field["name"]]
+
+        extra_fields = [
+            {
+                "name": self.ods_metadata["ingestion_time_column_name"],
+                "type": "TIMESTAMP"
+            },
+            {
+                "name": self.ods_metadata["update_time_column_name"],
+                "type": "TIMESTAMP"
+            },
+            {
+                "name": self.ods_metadata["hash_column_name"],
+                "type": "STRING"
+            }
+        ]
+
+        schema_fields.extend(extra_fields)
 
         cursor.create_empty_table(
             project_id=self.project_id,

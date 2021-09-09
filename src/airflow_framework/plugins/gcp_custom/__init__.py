@@ -1,10 +1,10 @@
 from airflow.plugins_manager import AirflowPlugin
-from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import BigQueryMergeTableOperator
+from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeBigQueryODS
 from airflow_framework.plugins.gcp_custom.bq_create_table_operator import BigQueryCreateTableOperator
 
 class AirflowBadalPlugin(AirflowPlugin):
     name = "badal_plugin"
-    operators = [BigQueryMergeTableOperator, BigQueryCreateTableOperator]
+    operators = [MergeBigQueryODS, BigQueryCreateTableOperator]
     sensors = []
     hooks = []
     executors = []
