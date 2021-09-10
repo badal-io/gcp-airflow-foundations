@@ -18,7 +18,7 @@ source:
   landing_zone_options:
     dataset_tmp_name: airflow_landing
 tables:
-  - table_name: raw_measurements_staging
+  - table_name: raw_measurements_staging_test
     dest_table_override: ods
     temp_schema_object: schema.json
     ingestion_type: full
