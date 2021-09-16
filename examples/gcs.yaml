@@ -21,7 +21,7 @@ tables:
   - table_name: raw_measurements_staging
     dest_table_override: ods
     temp_schema_object: schema.json
-    ingestion_type: full
+    ingestion_type: FULL
     surrogate_keys: ['timestamp','device_id','property_measured']
     update_columns: ['value']
     column_mapping: 

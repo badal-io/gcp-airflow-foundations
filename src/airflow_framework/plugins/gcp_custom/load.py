@@ -4,7 +4,10 @@ from airflow.exceptions import AirflowException
 from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeBigQueryODS
 from airflow_framework.plugins.gcp_custom.bq_truncate_table_operator import TruncateBigQueryODS
 from airflow_framework.plugins.gcp_custom.bq_create_table_operator import BigQueryCreateTableOperator
+from airflow_framework.enums.ingestion_type import IngestionType
+
 from airflow.utils.task_group import TaskGroup
+
 
 def build_create_load_taskgroup(
     data_source,
@@ -31,7 +34,7 @@ def build_create_load_taskgroup(
     )
 
     #2 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
-    if ingestion_type == "incremental":
+    if IngestionType(ingestion_type) == IngestionType.INCREMENTAL:
         # Append staging table to ODS table
         insert_into_ods = MergeBigQueryODS(
             task_id="insert_delta_into_ods",
@@ -49,7 +52,7 @@ def build_create_load_taskgroup(
             dag=dag
         )
 
-    elif ingestion_type == "full":
+    elif IngestionType(ingestion_type) == IngestionType.FULL:
         # Overwrite ODS table with the staging table data
         insert_into_ods = TruncateBigQueryODS(
             task_id="insert_delta_into_ods",

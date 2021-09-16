@@ -30,8 +30,8 @@ class OdsTableConfig:
     table_name: str
     temp_table_name: Optional[str]
     temp_schema_object: Optional[str]
-    ingestion_type: str 
-    merge_type: str
+    ingestion_type: str # FULL or INCREMENTAL
+    merge_type: Optional[str]
     surrogate_keys: List[str]
     update_columns: List[str]
     column_mapping: dict
@@ -39,7 +39,7 @@ class OdsTableConfig:
     dest_table_override: Optional[str]
     ods_metadata: Optional[dict]
     version: int = 1
-    catchup: bool = True "SG_KEY" "SG_KEY_WITH_HASH"
+    catchup: bool = True
 
 
 
@@ -56,5 +56,5 @@ class OdsTableConfig:
                 'update_time_column_name': 'af_metadata_updated_at',
             }
 
-        if self.merge_type not in ["SG_KEY", "SG_KEY_WITH_HASH"]:
-            raise AirflowException("Invalid merge type", self.merge_type)
+        if self.merge_type is None:
+            self.merge_type = "SG_KEY_WITH_HASH"
