@@ -8,11 +8,13 @@ from airflow_framework.base_class.data_source_table_config import DataSourceTabl
 
 from airflow_framework.source_class.source import DagBuilder
 
-from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeType
 from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeBigQueryODS
 from airflow_framework.plugins.gcp_custom.bq_create_table_operator import BigQueryCreateTableOperator
 
 from airflow_framework.plugins.gcp_custom.load import build_create_load_taskgroup
+
+from urllib.parse import urlparse
+
 
 class GCStoBQDagBuilder(DagBuilder):
     """
@@ -48,12 +50,16 @@ class GCStoBQDagBuilder(DagBuilder):
                 #1 Load CSV to BQ Landing Zone 
                 destination_table = f"{landing_dataset}.{table_config.temp_table_name}"
 
+                parsed_url = urlparse(table_config.temp_schema_object)
+                gcs_bucket = parsed_url.netloc
+                gcs_object = parsed_url.path.lstrip('/')
+
                 load_to_bq_landing = GCSToBigQueryOperator(
                     task_id='import_csv_to_bq_landing',
                     bucket=gcs_bucket,
                     source_objects=gcs_objects,
                     destination_project_dataset_table=destination_table,
-                    schema_object=table_config.temp_schema_object,
+                    schema_object=gcs_object,
                     write_disposition='WRITE_TRUNCATE',
                     create_disposition='CREATE_IF_NEEDED',
                     skip_leading_rows=1,

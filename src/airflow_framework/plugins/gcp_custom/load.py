@@ -27,7 +27,7 @@ def build_create_load_taskgroup(
         table_id=table_config.dest_table_override,
         dataset_id=data_source.dataset_data_name,
         column_mapping=table_config.column_mapping,
-        gcs_schema_object='gs://airflow-datasets-poc/schema.json',
+        gcs_schema_object=table_config.temp_schema_object,
         ods_metadata=ods_metadata,
         task_group=taskgroup,
         dag=dag
@@ -72,6 +72,6 @@ def build_create_load_taskgroup(
     else:
         raise AirflowException("Invalid ingestion type", ingestion_type)
 
-    check_table >> insert__into_ods
+    check_table >> insert_into_ods
 
     return taskgroup

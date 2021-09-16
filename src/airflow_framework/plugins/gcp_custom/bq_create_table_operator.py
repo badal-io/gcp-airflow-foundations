@@ -34,7 +34,7 @@ class BigQueryCreateTableOperator(BaseOperator):
                  gcs_schema_object=None,
                  time_partitioning=None,
                  column_mapping=None,
-                 bigquery_conn_id='bigquery_default',
+                 bigquery_conn_id='google_cloud_default',
                  google_cloud_storage_conn_id='google_cloud_default',
                  delegate_to=None,
                  labels=None,
