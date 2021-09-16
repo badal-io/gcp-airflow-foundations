@@ -8,10 +8,15 @@ class DagBuilder(ABC):
     """
     A base DAG buider
     """
+    sources = []
 
     def __init__(self, default_task_args: dict):
         self.default_task_args = default_task_args
         super().__init__()
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.sources.append(cls())
 
     @abstractmethod
     def build_dags(self, config: DataSourceTablesConfig):
