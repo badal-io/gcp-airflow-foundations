@@ -100,6 +100,10 @@ class BigQueryCreateTableOperator(BaseOperator):
                 "type": "TIMESTAMP"
             },
             {
+                "name": self.ods_metadata["primary_key_hash_column_name"],
+                "type": "STRING"
+            },
+            {
                 "name": self.ods_metadata["update_time_column_name"],
                 "type": "TIMESTAMP"
             },

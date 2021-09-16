@@ -1,3 +1,5 @@
+from airflow.exceptions import AirflowException
+
 from dacite import Config
 from dataclasses import dataclass, field
 
@@ -27,8 +29,9 @@ class OdsTableConfig:
 
     table_name: str
     temp_table_name: Optional[str]
-    temp_schema_object: str
-    ingestion_type: str
+    temp_schema_object: Optional[str]
+    ingestion_type: str 
+    merge_type: str
     surrogate_keys: List[str]
     update_columns: List[str]
     column_mapping: dict
@@ -36,7 +39,9 @@ class OdsTableConfig:
     dest_table_override: Optional[str]
     ods_metadata: Optional[dict]
     version: int = 1
-    catchup: bool = True
+    catchup: bool = True "SG_KEY" "SG_KEY_WITH_HASH"
+
+
 
     # Override values for optional fields
     def __post_init__(self):
@@ -46,6 +51,10 @@ class OdsTableConfig:
         if self.ods_metadata is None:
             self.ods_metadata = {
                 'hash_column_name': 'af_metadata_row_hash',
+                'primary_key_hash_column_name': 'af_metadata_primary_key_hash',
                 'ingestion_time_column_name': 'af_metadata_inserted_at',
                 'update_time_column_name': 'af_metadata_updated_at',
             }
+
+        if self.merge_type not in ["SG_KEY", "SG_KEY_WITH_HASH"]:
+            raise AirflowException("Invalid merge type", self.merge_type)

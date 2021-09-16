@@ -12,7 +12,7 @@ from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeTy
 from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeBigQueryODS
 from airflow_framework.plugins.gcp_custom.bq_create_table_operator import BigQueryCreateTableOperator
 
-from airflow_framework.plugins.gcp_custom.merge import build_create_merge_taskgroup
+from airflow_framework.plugins.gcp_custom.load import build_create_load_taskgroup
 
 class GCStoBQDagBuilder(DagBuilder):
     """
@@ -59,8 +59,8 @@ class GCStoBQDagBuilder(DagBuilder):
                     skip_leading_rows=1,
                     dag=dag)
 
-                #2 Create ODS table (if it doesn't exist) and merge it with the staging table
-                taskgroup = build_create_merge_taskgroup(data_source, table_config, dag)
+                #2 Create ODS table (if it doesn't exist) and merge or replace it with the staging table
+                taskgroup = build_create_load_taskgroup(data_source, table_config, dag)
 
                 load_to_bq_landing >> taskgroup
 

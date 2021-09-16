@@ -13,11 +13,11 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from airflow_framework.plugins.gcp_custom.sql_upsert_helpers import create_upsert_sql, create_upsert_sql_with_hash
+from airflow_framework.plugins.gcp_custom.sql_upsert_helpers import create_truncate_sql
 
-class MergeBigQueryODS(BigQueryOperator):
+class TruncateBigQueryODS(BigQueryOperator):
     """
-    Merge data into a BigQuery ODS table.
+    Truncate data into a BigQuery ODS table.
     """
 
     template_fields = (
@@ -45,11 +45,11 @@ class MergeBigQueryODS(BigQueryOperator):
         ods_metadata: dict,
         **kwargs,
     ) -> None:
-        super(MergeBigQueryODS, self).__init__(
+        super(TruncateBigQueryODS, self).__init__(
             delegate_to=delegate_to,
             gcp_conn_id=gcp_conn_id,
             use_legacy_sql=False,
-            write_disposition="WRITE_APPEND",
+            write_disposition="WRITE_TRUNCATE",
             create_disposition="CREATE_NEVER",
             sql="sql",
             **kwargs,
@@ -69,7 +69,7 @@ class MergeBigQueryODS(BigQueryOperator):
 
     def pre_execute(self, context) -> None:
         self.log.info(
-            f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}, {self.merge_type}"
+            f"Execute BigQueryTruncateTableOperator {self.stg_table_name}, {self.data_table_name}, {self.merge_type}"
         )
 
         hook = BigQueryHook(
@@ -88,30 +88,17 @@ class MergeBigQueryODS(BigQueryOperator):
 
         sql = ""
 
-        if self.merge_type == "SG_KEY":
-            sql = create_upsert_sql(
-                self.stg_dataset_name,
-                self.data_dataset_name,
-                self.stg_table_name,
-                self.data_table_name,
-                self.surrogate_keys,
-                self.update_columns,
-                self.column_mapping
-            )
-        elif self.merge_type == "SG_KEY_WITH_HASH":
-            sql = create_upsert_sql_with_hash(
-                self.stg_dataset_name,
-                self.data_dataset_name,
-                self.stg_table_name,
-                self.data_table_name,
-                self.surrogate_keys,
-                self.update_columns,
-                columns,
-                self.column_mapping,
-                self.ods_metadata
-            )
-        else:
-            raise AirflowException("Invalid merge type", self.merge_type)
+        sql = create_truncate_sql(
+            self.stg_dataset_name,
+            self.data_dataset_name,
+            self.stg_table_name,
+            self.data_table_name,
+            self.surrogate_keys,
+            self.update_columns,
+            columns,
+            self.column_mapping,
+            self.ods_metadata
+        )
 
         logging.info(f"Executing sql: {sql}")
 

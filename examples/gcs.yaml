@@ -1,0 +1,33 @@
+---
+source:
+  name: "test_csv_file"
+  source_type: GCS
+  ingest_schedule: "@daily"
+  start_date: "2021-08-30"
+  acceptable_delay_minutes: 5
+  extra_options:
+    gcs_bucket: airflow-datasets-poc
+    gcs_objects: ["bigquery/raw_measurements.csv"]
+  gcp_project: badal-sandbox-309813
+  dataset_data_name: airflow_test
+  connection: google_cloud_default
+  notification_emails:
+    - ''
+  owner: owner
+  version: 1
+  landing_zone_options:
+    dataset_tmp_name: airflow_landing
+tables:
+  - table_name: raw_measurements_staging
+    dest_table_override: ods
+    temp_schema_object: schema.json
+    ingestion_type: full
+    surrogate_keys: ['timestamp','device_id','property_measured']
+    update_columns: ['value']
+    column_mapping: 
+      timestamp: datetime
+      device_id: sensorID
+      property_measured: property
+      value: value
+      units_of_measurement: UOM
+      device_version: device_version
