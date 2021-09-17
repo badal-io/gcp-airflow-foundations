@@ -27,21 +27,21 @@ def build_create_load_taskgroup(
         table_id=table_config.dest_table_override,
         dataset_id=data_source.dataset_data_name,
         column_mapping=table_config.column_mapping,
-        gcs_schema_object=table_config.temp_schema_object,
+        gcs_schema_object=table_config.source_table_schema_object,
         ods_metadata=ods_metadata,
         task_group=taskgroup,
         dag=dag
     )
 
     #2 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
-    if IngestionType(ingestion_type) == IngestionType.INCREMENTAL:
+    if ingestion_type == IngestionType.INCREMENTAL:
         # Append staging table to ODS table
         insert_into_ods = MergeBigQueryODS(
             task_id="insert_delta_into_ods",
             project_id=data_source.gcp_project,
-            stg_dataset_name=data_source.landing_zone_options["dataset_tmp_name"],
+            stg_dataset_name=data_source.landing_zone_options.landing_zone_dataset,
             data_dataset_name=data_source.dataset_data_name,
-            stg_table_name=table_config.temp_table_name,
+            stg_table_name=table_config.landing_zone_table_name_override,
             data_table_name=table_config.dest_table_override,
             surrogate_keys=table_config.surrogate_keys,
             update_columns=table_config.update_columns,
@@ -52,14 +52,14 @@ def build_create_load_taskgroup(
             dag=dag
         )
 
-    elif IngestionType(ingestion_type) == IngestionType.FULL:
+    elif ingestion_type == IngestionType.FULL:
         # Overwrite ODS table with the staging table data
         insert_into_ods = TruncateBigQueryODS(
             task_id="insert_delta_into_ods",
             project_id=data_source.gcp_project,
-            stg_dataset_name=data_source.landing_zone_options["dataset_tmp_name"],
+            stg_dataset_name=data_source.landing_zone_options.landing_zone_dataset,
             data_dataset_name=data_source.dataset_data_name,
-            stg_table_name=table_config.temp_table_name,
+            stg_table_name=table_config.landing_zone_table_name_override,
             data_table_name=table_config.dest_table_override,
             surrogate_keys=table_config.surrogate_keys,
             update_columns=table_config.update_columns,

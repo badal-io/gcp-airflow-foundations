@@ -14,7 +14,7 @@ def test_create_table(test_dag, test_configs):
     new_table = BigQueryCreateEmptyTableOperator(
         task_id="create_mock_table",
         project_id=test_configs.source.gcp_project,
-        dataset_id=test_configs.source.landing_zone_options["dataset_tmp_name"],
+        dataset_id=test_configs.source.landing_zone_options.landing_zone_dataset,
         table_id='airflow_framework_test_table',
         dag=test_dag
     )
@@ -24,7 +24,7 @@ def test_create_table(test_dag, test_configs):
 def test_delete_table(test_dag, test_configs):
     delete_table = BigQueryDeleteTableOperator(
         task_id="delete_mock_table",
-        deletion_dataset_table=f"{test_configs.source.gcp_project}.{test_configs.source.landing_zone_options['dataset_tmp_name']}.airflow_framework_test_table",
+        deletion_dataset_table=f"{test_configs.source.gcp_project}.{test_configs.source.landing_zone_options.landing_zone_dataset}.airflow_framework_test_table",
         ignore_if_missing=False,
         dag=test_dag
     )

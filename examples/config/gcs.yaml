@@ -16,14 +16,19 @@ source:
   owner: owner
   version: 1
   landing_zone_options:
-    dataset_tmp_name: airflow_landing
+    landing_zone_dataset: airflow_landing
 tables:
   - table_name: raw_measurements_staging
     dest_table_override: ods
-    temp_schema_object: gs://airflow-datasets-poc-v2/schema.json
-    ingestion_type: FULL
+    source_table_schema_object: gs://airflow-datasets-poc-v2/schema.json
+    ingestion_type: INCREMENTAL
     surrogate_keys: ['timestamp','device_id','property_measured']
     update_columns: ['value']
+    ods_metadata:
+      hash_column_name: af_metadata_row_hash
+      primary_key_hash_column_name: af_metadata_primary_key_hash
+      ingestion_time_column_name: af_metadata_inserted_at
+      update_time_column_name: af_metadata_updated_at
     column_mapping: 
       timestamp: datetime
       device_id: sensorID

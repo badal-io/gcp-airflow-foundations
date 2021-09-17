@@ -29,7 +29,7 @@ class GCStoBQDagBuilder(DagBuilder):
         gcs_bucket = data_source.extra_options["gcs_bucket"]
         gcs_objects = data_source.extra_options["gcs_objects"]
         # bq args
-        landing_dataset = data_source.landing_zone_options["dataset_tmp_name"]
+        landing_dataset = data_source.landing_zone_options.landing_zone_dataset
 
         dags = []
         for table_config in config.tables:
@@ -48,9 +48,9 @@ class GCStoBQDagBuilder(DagBuilder):
             ) as dag:
 
                 #1 Load CSV to BQ Landing Zone 
-                destination_table = f"{landing_dataset}.{table_config.temp_table_name}"
+                destination_table = f"{landing_dataset}.{table_config.landing_zone_table_name_override}"
 
-                parsed_url = urlparse(table_config.temp_schema_object)
+                parsed_url = urlparse(table_config.source_table_schema_object)
                 gcs_bucket = parsed_url.netloc
                 gcs_object = parsed_url.path.lstrip('/')
 

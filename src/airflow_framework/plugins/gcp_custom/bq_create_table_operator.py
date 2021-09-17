@@ -96,19 +96,19 @@ class BigQueryCreateTableOperator(BaseOperator):
 
         extra_fields = [
             {
-                "name": self.ods_metadata["ingestion_time_column_name"],
+                "name": self.ods_metadata.ingestion_time_column_name,
                 "type": "TIMESTAMP"
             },
             {
-                "name": self.ods_metadata["primary_key_hash_column_name"],
+                "name": self.ods_metadata.primary_key_hash_column_name,
                 "type": "STRING"
             },
             {
-                "name": self.ods_metadata["update_time_column_name"],
+                "name": self.ods_metadata.update_time_column_name,
                 "type": "TIMESTAMP"
             },
             {
-                "name": self.ods_metadata["hash_column_name"],
+                "name": self.ods_metadata.hash_column_name,
                 "type": "STRING"
             }
         ]

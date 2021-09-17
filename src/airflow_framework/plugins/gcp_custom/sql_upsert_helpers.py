@@ -1,3 +1,5 @@
+from airflow_framework.base_class.ods_metadata_config import OdsTableMetadataConfig
+
 def create_truncate_sql(
     source_dataset: str,
     target_dataset: str,
@@ -7,12 +9,12 @@ def create_truncate_sql(
     update_columns: list,
     columns: list,
     column_mapping: dict,
-    ods_metadata: dict
+    ods_metadata: OdsTableMetadataConfig
 ):
-    hash_column_name = ods_metadata["hash_column_name"]
-    primary_key_hash_column_name = ods_metadata["primary_key_hash_column_name"]
-    ingestion_time_column_name = ods_metadata["ingestion_time_column_name"]
-    update_time_column_name = ods_metadata["update_time_column_name"]
+    hash_column_name = ods_metadata.hash_column_name
+    primary_key_hash_column_name = ods_metadata.primary_key_hash_column_name
+    ingestion_time_column_name = ods_metadata.ingestion_time_column_name
+    update_time_column_name = ods_metadata.update_time_column_name
 
     columns_str_source: str = ",".join(columns)
     columns_str_target: str = ",".join([column_mapping[i] for i in columns])
@@ -60,13 +62,13 @@ def create_upsert_sql_with_hash(
     update_columns: list,
     columns: list,
     column_mapping: dict,
-    ods_metadata: dict
+    ods_metadata: OdsTableMetadataConfig
 ):
 
-    hash_column_name = ods_metadata["hash_column_name"]
-    primary_key_hash_column_name = ods_metadata["primary_key_hash_column_name"]
-    ingestion_time_column_name = ods_metadata["ingestion_time_column_name"]
-    update_time_column_name = ods_metadata["update_time_column_name"]
+    hash_column_name = ods_metadata.hash_column_name
+    primary_key_hash_column_name = ods_metadata.primary_key_hash_column_name
+    ingestion_time_column_name = ods_metadata.ingestion_time_column_name
+    update_time_column_name = ods_metadata.update_time_column_name
 
     columns_str_source: str = ",".join(columns)
     columns_str_target: str = ",".join([column_mapping[i] for i in columns])

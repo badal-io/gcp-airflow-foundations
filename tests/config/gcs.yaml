@@ -6,9 +6,9 @@ source:
   start_date: "2021-08-30"
   acceptable_delay_minutes: 5
   extra_options:
-    gcs_bucket: airflow-datasets-poc
+    gcs_bucket: airflow-datasets-poc-v2
     gcs_objects: ["bigquery/raw_measurements.csv"]
-  gcp_project: badal-sandbox-309813
+  gcp_project: sandbox-keyera-poc
   dataset_data_name: airflow_test
   connection: google_cloud_default
   notification_emails:
@@ -16,14 +16,19 @@ source:
   owner: owner
   version: 1
   landing_zone_options:
-    dataset_tmp_name: airflow_landing
+    landing_zone_dataset: airflow_landing
 tables:
-  - table_name: raw_measurements_staging_test
+  - table_name: raw_measurements_staging
     dest_table_override: ods
-    temp_schema_object: schema.json
-    ingestion_type: full
+    temp_schema_object: gs://airflow-datasets-poc-v2/schema.json
+    ingestion_type: FULL
     surrogate_keys: ['timestamp','device_id','property_measured']
     update_columns: ['value']
+    ods_metadata:
+      hash_column_name: af_metadata_row_hash
+      primary_key_hash_column_name: af_metadata_primary_key_hash
+      ingestion_time_column_name: af_metadata_inserted_at
+      update_time_column_name: af_metadata_updated_at
     column_mapping: 
       timestamp: datetime
       device_id: sensorID
