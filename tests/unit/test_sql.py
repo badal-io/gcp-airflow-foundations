@@ -34,12 +34,12 @@ def test_sql_with_hash(test_configs):
     for config in test_configs:
         data_source = config.source
         for table_config in config.tables:
-            columns = get_columns(data_source.landing_zone_options.landing_zone_dataset, table_config.temp_table_name)
+            columns = get_columns(data_source.landing_zone_options.landing_zone_dataset, table_config.table_name)
 
             sql_with_hash = create_upsert_sql_with_hash(
                 data_source.landing_zone_options.landing_zone_dataset,
                 data_source.dataset_data_name,
-                table_config.temp_table_name,
+                table_config.table_name,
                 table_config.dest_table_override,
                 table_config.surrogate_keys,
                 table_config.update_columns,
@@ -54,12 +54,12 @@ def test_sql_truncate(test_configs):
     for config in test_configs:
         data_source = config.source
         for table_config in config.tables:
-            columns = get_columns(data_source.landing_zone_options.landing_zone_dataset, table_config.temp_table_name)
+            columns = get_columns(data_source.landing_zone_options.landing_zone_dataset, table_config.table_name)
 
             sql_truncate = create_truncate_sql(
                 data_source.landing_zone_options.landing_zone_dataset,
                 data_source.dataset_data_name,
-                table_config.temp_table_name,
+                table_config.table_name,
                 table_config.dest_table_override,
                 table_config.surrogate_keys,
                 table_config.update_columns,

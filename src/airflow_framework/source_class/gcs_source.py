@@ -66,7 +66,21 @@ class GCStoBQDagBuilder(DagBuilder):
                     dag=dag)
 
                 #2 Create ODS table (if it doesn't exist) and merge or replace it with the staging table
-                taskgroup = build_create_load_taskgroup(data_source, table_config, dag)
+                taskgroup = build_create_load_taskgroup(
+                    project_id=data_source.gcp_project,
+                    table_id=table_config.table_name,
+                    dataset_id=data_source.dataset_data_name,
+                    landing_zone_dataset=landing_dataset,
+                    landing_zone_table_name_override=table_config.landing_zone_table_name_override,
+                    column_mapping=table_config.column_mapping,
+                    gcs_schema_object=table_config.source_table_schema_object,
+                    schema_fields=None,
+                    ods_metadata=table_config.ods_metadata,
+                    surrogate_keys=table_config.surrogate_keys,
+                    update_columns=table_config.update_columns,
+                    merge_type=table_config.merge_type,
+                    ingestion_type=table_config.ingestion_type,
+                    dag=dag)
 
                 load_to_bq_landing >> taskgroup
 

@@ -16,7 +16,7 @@ class DagBuilder(ABC):
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.sources.append(cls())
+        cls.sources.append(cls)
 
     @abstractmethod
     def build_dags(self, config: DataSourceTablesConfig):

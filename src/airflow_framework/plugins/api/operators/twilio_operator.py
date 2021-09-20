@@ -19,6 +19,7 @@ class TwilioToBigQueryOperator(BaseOperator):
     # pylint: disable=too-many-arguments
     @apply_defaults
     def __init__(self,
+                 twilio_account_sid,
                  dataset_id,
                  table_id,
                  project_id=None,
@@ -34,6 +35,7 @@ class TwilioToBigQueryOperator(BaseOperator):
 
         super(TwilioToBigQueryOperator, self).__init__(*args, **kwargs)
 
+        self.twilio_account_sid = twilio_account_sid
         self.project_id = project_id
         self.dataset_id = dataset_id
         self.table_id = table_id
@@ -52,11 +54,43 @@ class TwilioToBigQueryOperator(BaseOperator):
         twilio_hook = TwilioHook(twilio_conn_id=self.twilio_conn_id)
         
         bq_hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id)
+        conn = bq_hook.get_conn()
+        cursor = conn.cursor()
+
+        if not bq_hook.table_exists(project_id=self.project_id,
+                                dataset_id=self.dataset_id,
+                                table_id=self.table_id
+                                ):
+
+            if not self.schema_fields and self.gcs_schema_object:
+
+                parsed_url = urlparse(self.gcs_schema_object)
+                gcs_bucket = parsed_url.netloc
+                gcs_object = parsed_url.path.lstrip('/')
+
+                gcs_hook = GoogleCloudStorageHook(
+                    google_cloud_storage_conn_id=self.google_cloud_storage_conn_id,
+                    delegate_to=self.delegate_to)
+                schema_fields = json.loads(gcs_hook.download(
+                    gcs_bucket,
+                    gcs_object).decode("utf-8"))
+            else:
+                schema_fields = self.schema_fields
+            
+            cursor.create_empty_table(
+                project_id=self.project_id,
+                dataset_id=self.dataset_id,
+                table_id=self.table_id,
+                schema_fields=schema_fields,
+                time_partitioning=self.time_partitioning,
+                labels=self.labels,
+                encryption_configuration=self.encryption_configuration
+            )
 
         service = bq_hook.get_service()
 
         body = {
-            'rows' : twilio_hook.get_text_messages(account_sid='AC6e889487026563887777c14fdd2c4276')
+            'rows' : twilio_hook.get_text_messages(account_sid=self.twilio_account_sid)
         }
 
         service_exec = service.tabledata().insertAll(

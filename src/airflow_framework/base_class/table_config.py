@@ -36,7 +36,7 @@ class OdsTableConfig:
     merge_type: Optional[str]
     surrogate_keys: List[str]
     update_columns: List[str]
-    column_mapping: dict
+    column_mapping: Optional[dict]
     dest_table_override: Optional[str]
     ods_metadata: OdsTableMetadataConfig
     version: int = 1
