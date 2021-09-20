@@ -5,4 +5,5 @@ parser = DagParser()
 
 parsed_dags = parser.parse_dags()
 
-globals().update(parsed_dags)
+if parsed_dags:
+    globals().update(parsed_dags)

@@ -5,7 +5,7 @@ from pydantic import validator
 from pydantic.dataclasses import dataclass
 
 from airflow_framework.source_type import SourceType
-import pytz
+from airflow_framework.base_class.landing_zone_config import LandingZoneConfig
 
 
 @dataclass
@@ -15,9 +15,9 @@ class SourceConfig:
     ingest_schedule: str
     gcp_project: str
     dataset_data_name: str
-    dataset_tmp_name: str
     connection: str
     extra_options: dict
+    landing_zone_options: LandingZoneConfig
     acceptable_delay_minutes: int
     notification_emails: List[str]
     owner: str
