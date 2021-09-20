@@ -1,7 +1,10 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> AF-14-API-plugin-Twilio-POC
+=======
+>>>>>>> Merge conflict resolved
 from airflow.exceptions import AirflowException
 
 from dacite import Config
