@@ -43,4 +43,4 @@ class DagParser:
             for dag in dags:
                 parsed_dags[f"dags:source:{config.source.name}.{dag.dag_id}"] = dag
             
-            return parsed_dags
+        return parsed_dags
