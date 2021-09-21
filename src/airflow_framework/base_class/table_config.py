@@ -7,8 +7,9 @@ from datetime import datetime
 from typing import List, Optional
 
 from airflow_framework.base_class.ods_metadata_config import OdsTableMetadataConfig
+from airflow_framework.base_class.hds_metadata_config import HdsTableMetadataConfig
 from airflow_framework.enums.ingestion_type import IngestionType
-
+from airflow_framework.enums.hds_table_type import HdsTableType
 
 @dataclass
 class OdsTableConfig:
@@ -20,10 +21,6 @@ class OdsTableConfig:
         surrogate_keys : Keys used to identify unique records when merging into ODS
         update_columns : Columns to update for existing records when merging
         ods_partition : BigQuery partitioning schema for ODS data table (should not be changed after first run )
-        object_prefix : The prefix of the GCS files with the extracted data/schema
-        transformations : Optional list of transformations to perform after to load
-        validations : Optional list of data validations to perform on the ODS data
-        ods_add_cdc_fields : Whether to add cdc (hash, inserted_ts, etc.) to recrods inserted into ODS
         version : The Dag version for the table. Can be incremented if logic changes
         catchup : Passed to a dag [see doc](https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#catchup).
             Defaults to True. May want to change it to False if Dag version is changed, and we don't want to rerun past dags.
@@ -32,13 +29,15 @@ class OdsTableConfig:
     table_name: str
     landing_zone_table_name_override: Optional[str]
     source_table_schema_object: Optional[str]
-    ingestion_type: IngestionType # FULL or INCREMENTAL
+    ingestion_type: Optional[IngestionType] # FULL or INCREMENTAL
+    hds_table_type: Optional[HdsTableType]
     merge_type: Optional[str]
     surrogate_keys: List[str]
     update_columns: List[str]
     column_mapping: Optional[dict]
     dest_table_override: Optional[str]
-    ods_metadata: OdsTableMetadataConfig
+    ods_metadata: Optional[OdsTableMetadataConfig]
+    hds_metadata: Optional[HdsTableMetadataConfig]
     version: int = 1
     catchup: bool = True
 

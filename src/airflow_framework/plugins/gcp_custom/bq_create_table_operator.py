@@ -28,7 +28,8 @@ class BigQueryCreateTableOperator(BaseOperator):
     def __init__(self,
                  dataset_id,
                  table_id,
-                 ods_metadata,
+                 ods_metadata=None,
+                 hds_metadata=None,
                  project_id=None, 
                  schema_fields=None,
                  gcs_schema_object=None,
@@ -57,6 +58,7 @@ class BigQueryCreateTableOperator(BaseOperator):
         self.labels = labels
         self.encryption_configuration = encryption_configuration
         self.ods_metadata = ods_metadata
+        self.hds_metadata = hds_metadata
 
     def execute(self, context):
         bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
@@ -94,24 +96,44 @@ class BigQueryCreateTableOperator(BaseOperator):
             for field in schema_fields:
                 field["name"] = self.column_mapping[field["name"]]
 
-        extra_fields = [
-            {
-                "name": self.ods_metadata.ingestion_time_column_name,
-                "type": "TIMESTAMP"
-            },
-            {
-                "name": self.ods_metadata.primary_key_hash_column_name,
-                "type": "STRING"
-            },
-            {
-                "name": self.ods_metadata.update_time_column_name,
-                "type": "TIMESTAMP"
-            },
-            {
-                "name": self.ods_metadata.hash_column_name,
-                "type": "STRING"
-            }
-        ]
+        if self.ods_metadata is not None:
+            extra_fields = [
+                {
+                    "name": self.ods_metadata.ingestion_time_column_name,
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": self.ods_metadata.primary_key_hash_column_name,
+                    "type": "STRING"
+                },
+                {
+                    "name": self.ods_metadata.update_time_column_name,
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": self.ods_metadata.hash_column_name,
+                    "type": "STRING"
+                }
+            ]
+        
+        elif self.hds_metadata is not None:
+            extra_fields = [
+                {
+                    "name": self.hds_metadata.eff_start_time_column_name,
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": self.hds_metadata.eff_end_time_column_name,
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": self.hds_metadata.status_column_name,
+                    "type": "BOOL"
+                }
+            ]
+
+        else: 
+            extra_fields = []   
 
         schema_fields.extend(extra_fields)
 

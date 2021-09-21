@@ -11,7 +11,10 @@ from airflow_framework.source_class.source import DagBuilder
 from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeBigQueryODS
 from airflow_framework.plugins.gcp_custom.bq_create_table_operator import BigQueryCreateTableOperator
 
-from airflow_framework.plugins.gcp_custom.load import build_create_load_taskgroup
+from airflow_framework.plugins.gcp_custom.ods_load import build_create_ods_load_taskgroup
+from airflow_framework.plugins.gcp_custom.hds_load import build_create_hds_load_taskgroup
+
+from airflow_framework.enums.hds_table_type import HdsTableType
 
 from urllib.parse import urlparse
 
@@ -65,23 +68,42 @@ class GCStoBQDagBuilder(DagBuilder):
                     skip_leading_rows=1,
                     dag=dag)
 
-                #2 Create ODS table (if it doesn't exist) and merge or replace it with the staging table
-                taskgroup = build_create_load_taskgroup(
-                    project_id=data_source.gcp_project,
-                    table_id=table_config.table_name,
-                    dataset_id=data_source.dataset_data_name,
-                    landing_zone_dataset=landing_dataset,
-                    landing_zone_table_name_override=table_config.landing_zone_table_name_override,
-                    column_mapping=table_config.column_mapping,
-                    gcs_schema_object=table_config.source_table_schema_object,
-                    schema_fields=None,
-                    ods_metadata=table_config.ods_metadata,
-                    surrogate_keys=table_config.surrogate_keys,
-                    update_columns=table_config.update_columns,
-                    merge_type=table_config.merge_type,
-                    ingestion_type=table_config.ingestion_type,
-                    dag=dag)
+                hds_table_type = table_config.hds_table_type
 
+                if hds_table_type is None:
+                    #2 Create ODS table (if it doesn't exist) and merge or replace it with the staging table
+                    taskgroup = build_create_ods_load_taskgroup(
+                        project_id=data_source.gcp_project,
+                        table_id=table_config.table_name,
+                        dataset_id=data_source.dataset_data_name,
+                        landing_zone_dataset=landing_dataset,
+                        landing_zone_table_name_override=table_config.landing_zone_table_name_override,
+                        column_mapping=table_config.column_mapping,
+                        gcs_schema_object=table_config.source_table_schema_object,
+                        schema_fields=None,
+                        ods_metadata=table_config.ods_metadata,
+                        surrogate_keys=table_config.surrogate_keys,
+                        update_columns=table_config.update_columns,
+                        merge_type=table_config.merge_type,
+                        ingestion_type=table_config.ingestion_type,
+                        dag=dag)
+                
+                else:
+                    taskgroup = build_create_hds_load_taskgroup(
+                        project_id=data_source.gcp_project,
+                        table_id=table_config.table_name,
+                        dataset_id=data_source.dataset_data_name,
+                        landing_zone_dataset=landing_dataset,
+                        landing_zone_table_name_override=table_config.landing_zone_table_name_override,
+                        column_mapping=table_config.column_mapping,
+                        gcs_schema_object=table_config.source_table_schema_object,
+                        schema_fields=None,
+                        hds_metadata=table_config.hds_metadata,
+                        surrogate_keys=table_config.surrogate_keys,
+                        update_columns=table_config.update_columns,
+                        hds_table_type=table_config.hds_table_type,
+                        dag=dag)
+                    
                 load_to_bq_landing >> taskgroup
 
                 logging.info(f"Created dag for {table_config}, {dag}")

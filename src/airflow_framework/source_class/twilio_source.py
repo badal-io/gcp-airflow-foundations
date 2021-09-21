@@ -13,7 +13,7 @@ from airflow_framework.plugins.api.schemas.twilio import get_twilio_schema
 from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeBigQueryODS
 from airflow_framework.plugins.gcp_custom.bq_create_table_operator import BigQueryCreateTableOperator
 
-from airflow_framework.plugins.gcp_custom.load import build_create_load_taskgroup
+from airflow_framework.plugins.gcp_custom.ods_load import build_create_ods_load_taskgroup
 
 from urllib.parse import urlparse
 
@@ -60,7 +60,7 @@ class TwilioToBQDagBuilder(DagBuilder):
                     dag=dag)
 
                 #2 Create ODS table (if it doesn't exist) and merge or replace it with the staging table
-                taskgroup = build_create_load_taskgroup(
+                taskgroup = build_create_ods_load_taskgroup(
                     project_id=data_source.gcp_project,
                     table_id=table_config.table_name,
                     dataset_id=data_source.dataset_data_name,

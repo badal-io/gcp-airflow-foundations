@@ -1,0 +1,34 @@
+---
+source:
+  name: "test_hds"
+  source_type: GCS
+  ingest_schedule: "@daily"
+  start_date: "2021-08-30"
+  acceptable_delay_minutes: 5
+  extra_options:
+    gcs_bucket: airflow-datasets-poc-v2
+    gcs_objects: ["bigquery/hds_test_data.csv"]
+  gcp_project: sandbox-keyera-poc
+  dataset_data_name: airflow_test
+  connection: google_cloud_default
+  notification_emails:
+    - ''
+  owner: owner
+  version: 1
+  landing_zone_options:
+    landing_zone_dataset: airflow_landing
+tables:
+  - table_name: hds_test
+    hds_table_type: SCD2
+    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_hds.json
+    ingestion_type: INCREMENTAL
+    surrogate_keys: ['customer_id','key']
+    update_columns: []
+    hds_metadata:
+      eff_start_time_column_name: eff_start_time
+      eff_end_time_column_name: eff_end_time
+      status_column_name: is_current
+    column_mapping: 
+      customer_id: customerID
+      key: key_id
+      city: city_name

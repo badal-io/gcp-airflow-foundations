@@ -19,7 +19,6 @@ source:
     landing_zone_dataset: airflow_landing
 tables:
   - table_name: raw_measurements_staging
-    dest_table_override: ods
     source_table_schema_object: gs://airflow-datasets-poc-v2/schema.json
     ingestion_type: INCREMENTAL
     surrogate_keys: ['timestamp','device_id','property_measured']
