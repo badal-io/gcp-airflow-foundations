@@ -8,12 +8,12 @@ from airflow_framework.source_class import get_dag_builder
 
 import logging
 
+
 class DagParser:
 
     def __init__(self):
         self.conf_location = Variable.get("CONFIG_FILE_LOCATION", "config")
         self.max_task_retries = Variable.get("max_task_retries", 3)
-
 
     def parse_dags(self):
         logging.info(f"Loading config from dir: {self.conf_location}")
@@ -37,10 +37,26 @@ class DagParser:
                 "depends_on_past": False
             }
 
-            builder = get_dag_builder(config.source.source_type, default_task_args)
+            # Old way of adding DAGs
+            builder = get_dag_builder(config.source.source_type, default_task_args, config)
             dags = builder.build_dags(config)
 
             for dag in dags:
                 parsed_dags[f"dags:source:{config.source.name}.{dag.dag_id}"] = dag
+
+            """
+            # new way
+            builder = None
+            for sub_builder in DagBuilder.sources:
+                # if matching subclass of DagBuilder exists, then use it
+                if config.source.type == dag_builder.type:
+                    source_name = dag_builder.__class__.__name__
+                    # pick out the right source
+                    builder = globals()[source_name](default_task_args, config)
+                    dags = builder.build_dags()
+            
+            if dags:
+                parsed_dags[f"dags:source:{config.source.name}.{dag.dag_id}"] = dag
+            """
             
         return parsed_dags
