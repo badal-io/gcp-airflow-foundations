@@ -39,7 +39,7 @@ class DagParser:
 
             # Old way of adding DAGs
             builder = get_dag_builder(config.source.source_type, default_task_args, config)
-            dags = builder.build_dags(config)
+            dags = builder.build_dags()
 
             for dag in dags:
                 parsed_dags[f"dags:source:{config.source.name}.{dag.dag_id}"] = dag
