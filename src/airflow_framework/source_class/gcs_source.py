@@ -20,7 +20,7 @@ class GCStoBQDagBuilder(DagBuilder):
     """
     Builds DAGs to load a CSV file from GCS to a BigQuery Table.
     """
-    type = "GCS"
+    source_type = "GCS"
 
     def build_dags(self):
         data_source = self.config.source

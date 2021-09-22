@@ -47,9 +47,9 @@ class DagParser:
             """
             # new way
             builder = None
-            for sub_builder in DagBuilder.sources:
+            for dag_builder in DagBuilder.sources:
                 # if matching subclass of DagBuilder exists, then use it
-                if config.source.type == dag_builder.type:
+                if config.source.source_type == dag_builder.source_type:
                     source_name = dag_builder.__class__.__name__
                     # pick out the right source
                     builder = globals()[source_name](default_task_args, config)

@@ -18,7 +18,7 @@ class DagBuilder(ABC):
     sources = []
     config: DataSourceTablesConfig
     type_mappings: dict
-    type: str
+    source_type: str
 
     def __init__(self, default_task_args: dict, config: DataSourceTablesConfig):
         self.default_task_args = default_task_args

@@ -22,7 +22,7 @@ class TwilioToBQDagBuilder(DagBuilder):
     """
     Builds DAGs to load data from Twilio's API to a BigQuery Table.
     """
-    type = "TWILIO"
+    source_type = "TWILIO"
 
     def build_dags(self):
         data_source = self.config.source
