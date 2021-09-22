@@ -13,7 +13,8 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from airflow_framework.plugins.gcp_custom.sql_upsert_helpers import create_scd2_sql_with_hash
+from airflow_framework.plugins.gcp_custom.sql_upsert_helpers import create_scd2_sql_with_hash, create_snapshot_sql_with_hash
+from airflow_framework.enums.hds_table_type import HdsTableType
 
 class MergeBigQueryHDS(BigQueryOperator):
     """
@@ -36,11 +37,12 @@ class MergeBigQueryHDS(BigQueryOperator):
         stg_dataset_name: str,
         data_dataset_name: str,
         surrogate_keys: [str],
-        update_columns: [str],
+        hds_table_type: HdsTableType,
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
         hds_metadata: dict,
+
         **kwargs,
     ) -> None:
         super(MergeBigQueryHDS, self).__init__(
@@ -58,8 +60,8 @@ class MergeBigQueryHDS(BigQueryOperator):
         self.stg_dataset_name = stg_dataset_name
         self.data_dataset_name = data_dataset_name
         self.surrogate_keys = surrogate_keys
-        self.update_columns = update_columns
         self.gcp_conn_id = gcp_conn_id
+        self.hds_table_type = hds_table_type
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
         self.hds_metadata = hds_metadata
@@ -85,17 +87,29 @@ class MergeBigQueryHDS(BigQueryOperator):
 
         sql = ""
 
-        sql = create_scd2_sql_with_hash(
-            self.stg_dataset_name,
-            self.data_dataset_name,
-            self.stg_table_name,
-            self.data_table_name,
-            self.surrogate_keys,
-            self.update_columns,
-            columns,
-            self.column_mapping,
-            self.hds_metadata
-        )
+        if self.hds_table_type == HdsTableType.SCD2:
+            sql = create_scd2_sql_with_hash(
+                self.stg_dataset_name,
+                self.data_dataset_name,
+                self.stg_table_name,
+                self.data_table_name,
+                self.surrogate_keys,
+                columns,
+                self.column_mapping,
+                self.hds_metadata
+            )
+            
+        elif self.hds_table_type == HdsTableType.SNAPSHOT:
+            sql = create_snapshot_sql_with_hash(
+                self.stg_dataset_name,
+                self.data_dataset_name,
+                self.stg_table_name,
+                self.data_table_name,
+                self.surrogate_keys,
+                columns,
+                self.column_mapping,
+                self.hds_metadata
+            )
 
         logging.info(f"Executing sql: {sql}")
 

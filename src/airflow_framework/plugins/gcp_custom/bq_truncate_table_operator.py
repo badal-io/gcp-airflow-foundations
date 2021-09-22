@@ -37,7 +37,6 @@ class TruncateBigQueryODS(BigQueryOperator):
         stg_dataset_name: str,
         data_dataset_name: str,
         surrogate_keys: [str],
-        update_columns: [str],
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         merge_type="SG_KEY",
@@ -61,7 +60,6 @@ class TruncateBigQueryODS(BigQueryOperator):
         self.stg_dataset_name = stg_dataset_name
         self.data_dataset_name = data_dataset_name
         self.surrogate_keys = surrogate_keys
-        self.update_columns = update_columns
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
@@ -94,7 +92,6 @@ class TruncateBigQueryODS(BigQueryOperator):
             self.stg_table_name,
             self.data_table_name,
             self.surrogate_keys,
-            self.update_columns,
             columns,
             self.column_mapping,
             self.ods_metadata

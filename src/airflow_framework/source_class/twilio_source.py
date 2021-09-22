@@ -10,10 +10,7 @@ from airflow_framework.source_class.source import DagBuilder
 from airflow_framework.plugins.api.operators.twilio_operator import TwilioToBigQueryOperator
 from airflow_framework.plugins.api.schemas.twilio import get_twilio_schema
 
-from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeBigQueryODS
-from airflow_framework.plugins.gcp_custom.bq_create_table_operator import BigQueryCreateTableOperator
-
-from airflow_framework.plugins.gcp_custom.ods_load import build_create_ods_load_taskgroup
+from airflow_framework.plugins.gcp_custom.load_taskgroup import TaskGroupBuilder
 
 from urllib.parse import urlparse
 
@@ -59,22 +56,26 @@ class TwilioToBQDagBuilder(DagBuilder):
                     table_id=destination_table,
                     dag=dag)
 
-                #2 Create ODS table (if it doesn't exist) and merge or replace it with the staging table
-                taskgroup = build_create_ods_load_taskgroup(
+                #2 Create TaskGroup for loading data to ODS/HDS tables
+                task_group_builder = TaskGroupBuilder(
                     project_id=data_source.gcp_project,
                     table_id=table_config.table_name,
                     dataset_id=data_source.dataset_data_name,
                     landing_zone_dataset=landing_dataset,
                     landing_zone_table_name_override=table_config.landing_zone_table_name_override,
+                    surrogate_keys=table_config.surrogate_keys,
+                    dag=dag,
                     column_mapping=table_config.column_mapping,
                     gcs_schema_object=None,
                     schema_fields=get_twilio_schema(tableId=destination_table),
+                    hds_metadata=table_config.hds_metadata,
                     ods_metadata=table_config.ods_metadata,
-                    surrogate_keys=table_config.surrogate_keys,
-                    update_columns=table_config.update_columns,
                     merge_type=table_config.merge_type,
                     ingestion_type=table_config.ingestion_type,
-                    dag=dag)
+                    hds_table_type=table_config.hds_table_type,
+                )
+
+                taskgroup = task_group_builder.build_task_group()
 
                 load_to_bq_landing >> taskgroup
 

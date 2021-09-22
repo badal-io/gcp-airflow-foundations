@@ -22,7 +22,6 @@ tables:
     source_table_schema_object: gs://airflow-datasets-poc-v2/schema.json
     ingestion_type: INCREMENTAL
     surrogate_keys: ['timestamp','device_id','property_measured']
-    update_columns: ['value']
     ods_metadata:
       hash_column_name: af_metadata_row_hash
       primary_key_hash_column_name: af_metadata_primary_key_hash

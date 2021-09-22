@@ -22,7 +22,6 @@ tables:
     landing_zone_table_name_override: twilio_text_messages
     ingestion_type: INCREMENTAL
     surrogate_keys: ['sid']
-    update_columns: []
     ods_metadata:
       hash_column_name: af_metadata_row_hash
       primary_key_hash_column_name: af_metadata_primary_key_hash

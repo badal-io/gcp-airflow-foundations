@@ -19,7 +19,6 @@ class OdsTableConfig:
         ods_table_name_override: Optional ods table name. If None, use table_name instead
         table_type : Reserved for future use. For now only valid value is SCD_TYPE2
         surrogate_keys : Keys used to identify unique records when merging into ODS
-        update_columns : Columns to update for existing records when merging
         ods_partition : BigQuery partitioning schema for ODS data table (should not be changed after first run )
         version : The Dag version for the table. Can be incremented if logic changes
         catchup : Passed to a dag [see doc](https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#catchup).
@@ -33,7 +32,6 @@ class OdsTableConfig:
     hds_table_type: Optional[HdsTableType]
     merge_type: Optional[str]
     surrogate_keys: List[str]
-    update_columns: List[str]
     column_mapping: Optional[dict]
     dest_table_override: Optional[str]
     ods_metadata: Optional[OdsTableMetadataConfig]

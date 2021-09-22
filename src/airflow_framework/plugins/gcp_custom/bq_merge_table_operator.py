@@ -13,7 +13,7 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from airflow_framework.plugins.gcp_custom.sql_upsert_helpers import create_upsert_sql, create_upsert_sql_with_hash
+from airflow_framework.plugins.gcp_custom.sql_upsert_helpers import create_upsert_sql_with_hash
 
 class MergeBigQueryODS(BigQueryOperator):
     """
@@ -36,7 +36,6 @@ class MergeBigQueryODS(BigQueryOperator):
         stg_dataset_name: str,
         data_dataset_name: str,
         surrogate_keys: [str],
-        update_columns: [str],
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         merge_type="SG_KEY",
@@ -60,7 +59,6 @@ class MergeBigQueryODS(BigQueryOperator):
         self.stg_dataset_name = stg_dataset_name
         self.data_dataset_name = data_dataset_name
         self.surrogate_keys = surrogate_keys
-        self.update_columns = update_columns
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
@@ -87,24 +85,13 @@ class MergeBigQueryODS(BigQueryOperator):
 
         sql = ""
 
-        if self.merge_type == "SG_KEY":
-            sql = create_upsert_sql(
-                self.stg_dataset_name,
-                self.data_dataset_name,
-                self.stg_table_name,
-                self.data_table_name,
-                self.surrogate_keys,
-                self.update_columns,
-                self.column_mapping
-            )
-        elif self.merge_type == "SG_KEY_WITH_HASH":
+        if self.merge_type == "SG_KEY_WITH_HASH":
             sql = create_upsert_sql_with_hash(
                 self.stg_dataset_name,
                 self.data_dataset_name,
                 self.stg_table_name,
                 self.data_table_name,
                 self.surrogate_keys,
-                self.update_columns,
                 columns,
                 self.column_mapping,
                 self.ods_metadata

@@ -11,6 +11,7 @@ from airflow.utils.decorators import apply_defaults
 
 from urllib.parse import urlparse
 
+from airflow_framework.enums.hds_table_type import HdsTableType
 
 class BigQueryCreateTableOperator(BaseOperator):
     """
@@ -30,6 +31,7 @@ class BigQueryCreateTableOperator(BaseOperator):
                  table_id,
                  ods_metadata=None,
                  hds_metadata=None,
+                 hds_table_type=None,
                  project_id=None, 
                  schema_fields=None,
                  gcs_schema_object=None,
@@ -59,6 +61,7 @@ class BigQueryCreateTableOperator(BaseOperator):
         self.encryption_configuration = encryption_configuration
         self.ods_metadata = ods_metadata
         self.hds_metadata = hds_metadata
+        self.hds_table_type = hds_table_type
 
     def execute(self, context):
         bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id,
@@ -116,7 +119,7 @@ class BigQueryCreateTableOperator(BaseOperator):
                 }
             ]
         
-        elif self.hds_metadata is not None:
+        elif self.hds_metadata is not None and self.hds_table_type == HdsTableType.SCD2:
             extra_fields = [
                 {
                     "name": self.hds_metadata.eff_start_time_column_name,
@@ -129,6 +132,22 @@ class BigQueryCreateTableOperator(BaseOperator):
                 {
                     "name": self.hds_metadata.status_column_name,
                     "type": "BOOL"
+                },
+                {
+                    "name": self.hds_metadata.hash_column_name,
+                    "type": "STRING"
+                }
+            ]
+
+        elif self.hds_metadata is not None and self.hds_table_type == HdsTableType.SNAPSHOT:
+            extra_fields = [
+                {
+                    "name": self.hds_metadata.eff_start_time_column_name,
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": self.hds_metadata.hash_column_name,
+                    "type": "STRING"
                 }
             ]
 
