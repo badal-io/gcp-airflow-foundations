@@ -30,7 +30,7 @@ def create_truncate_sql(
             TRUNCATE TABLE `{target_dataset}.{target}`;
             INSERT INTO `{target_dataset}.{target}`
             ({columns_str_target}, {ingestion_time_column_name}, {update_time_column_name}, {hash_column_name}, {primary_key_hash_column_name})
-            SELECT {columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(TO_JSON_STRING(STRUCT({columns_str_keys}))))
+            SELECT {columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in surrogate_keys])}], "")))
             FROM `{source_dataset}.{source}` S
         """
 
@@ -67,7 +67,7 @@ def create_upsert_sql_with_hash(
                     SET {(','.join(f'`{column_mapping[col]}`=S.`{col}`' for col in columns )) + f'{comma}' + f'{update_time_column_name}=CURRENT_TIMESTAMP()' + f'{comma}' +  f'{hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }
                 WHEN NOT MATCHED THEN
                 INSERT ({columns_str_target}, {ingestion_time_column_name}, {update_time_column_name}, {hash_column_name}, {primary_key_hash_column_name})
-                VALUES ({columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(TO_JSON_STRING(STRUCT({columns_str_keys})))))
+                VALUES ({columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in surrogate_keys])}], ""))))
             """
     else:
         columns_str_target = columns_str_source
@@ -80,7 +80,7 @@ def create_upsert_sql_with_hash(
                     SET {(','.join(f'`{col}`=S.`{col}`' for col in columns )) + f'{comma}' + f'{update_time_column_name}=CURRENT_TIMESTAMP()' + f'{comma}' +  f'{hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }
                 WHEN NOT MATCHED THEN
                 INSERT ({columns_str_target}, {ingestion_time_column_name}, {update_time_column_name}, {hash_column_name}, {primary_key_hash_column_name})
-                VALUES ({columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(TO_JSON_STRING(STRUCT({columns_str_keys})))))
+                VALUES ({columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in surrogate_keys])}], ""))))
             """
 
 def create_scd2_sql_with_hash(

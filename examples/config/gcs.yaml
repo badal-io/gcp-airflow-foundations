@@ -20,7 +20,7 @@ source:
 tables:
   - table_name: raw_measurements_staging
     source_table_schema_object: gs://airflow-datasets-poc-v2/schema.json
-    ingestion_type: INCREMENTAL
+    ingestion_type: FULL
     surrogate_keys: ['timestamp','device_id','property_measured']
     ods_metadata:
       hash_column_name: af_metadata_row_hash
