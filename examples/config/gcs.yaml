@@ -7,7 +7,7 @@ source:
   acceptable_delay_minutes: 5
   extra_options:
     gcs_bucket: airflow-datasets-poc-v2
-    gcs_objects: ["bigquery/raw_measurements.csv"]
+    gcs_objects: ["bigquery/bigquery_raw_measurements_migrate_add.csv"] #bigquery_raw_measurements_migrate_add
   gcp_project: sandbox-keyera-poc
   dataset_data_name: airflow_test
   connection: google_cloud_default
@@ -19,7 +19,7 @@ source:
     landing_zone_dataset: airflow_landing
 tables:
   - table_name: raw_measurements_staging
-    source_table_schema_object: gs://airflow-datasets-poc-v2/schema.json
+    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_migrate_add.json #schema_migrate_add
     ingestion_type: FULL
     surrogate_keys: ['timestamp','device_id','property_measured']
     ods_metadata:
@@ -34,3 +34,4 @@ tables:
       value: value
       units_of_measurement: UOM
       device_version: device_version
+      test_column: test_column
