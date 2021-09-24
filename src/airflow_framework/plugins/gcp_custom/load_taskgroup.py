@@ -65,35 +65,22 @@ class TaskGroupBuilder:
         else:
             time_partitioning = None
 
-        if self.gcs_schema_object and not self.schema_fields:
-            check_table = BigQueryCreateTableOperator(
-                task_id='check_table',
-                project_id=self.project_id,
-                table_id=self.table_id,
-                dataset_id=self.dataset_id,
-                hds_table_type=self.hds_table_type,
-                column_mapping=self.column_mapping,
-                gcs_schema_object=self.gcs_schema_object,
-                hds_metadata=self.hds_metadata,
-                time_partitioning=time_partitioning,
-                task_group=taskgroup,
-                dag=self.dag
-            )
 
-        else:
-            check_table = BigQueryCreateTableOperator(
-                task_id='check_table',
-                project_id=self.project_id,
-                table_id=self.table_id,
-                dataset_id=self.dataset_id,
-                hds_table_type=self.hds_table_type,
-                column_mapping=self.column_mapping,
-                schema_fields=self.schema_fields,
-                hds_metadata=self.hds_metadata,
-                time_partitioning=time_partitioning,
-                task_group=taskgroup,
-                dag=self.dag
-            )      
+        check_table = BigQueryCreateTableOperator(
+            task_id='check_table',
+            project_id=self.project_id,
+            table_id=self.table_id,
+            dataset_id=self.dataset_id,
+            hds_table_type=self.hds_table_type,
+            column_mapping=self.column_mapping,
+            schema_fields=self.schema_fields,
+            gcs_schema_object=self.gcs_schema_object,
+            hds_metadata=self.hds_metadata,
+            time_partitioning=time_partitioning,
+            task_group=taskgroup,
+            dag=self.dag
+        )
+
 
         # Insert staging table to HDS table
         insert_into_hds = MergeBigQueryHDS(

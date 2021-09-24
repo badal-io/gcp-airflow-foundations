@@ -14,21 +14,21 @@ from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 
 def get_columns(stg_dataset_name, stg_table_name):
-        hook = BigQueryHook(
-            bigquery_conn_id="google_cloud_default",
-            delegate_to=None,
-        )
+    hook = BigQueryHook(
+        bigquery_conn_id="google_cloud_default",
+        delegate_to=None,
+    )
 
-        conn = hook.get_conn()
-        bq_cursor = conn.cursor()
+    conn = hook.get_conn()
+    bq_cursor = conn.cursor()
 
-        schema = bq_cursor.get_schema(
-            dataset_id=stg_dataset_name, table_id=stg_table_name
-        )
+    schema = bq_cursor.get_schema(
+        dataset_id=stg_dataset_name, table_id=stg_table_name
+    )
 
-        columns: list[str] = list(map(lambda x: x["name"], schema["fields"]))
+    columns: list[str] = list(map(lambda x: x["name"], schema["fields"]))
 
-        return columns
+    return columns
 
 def test_sql_with_hash(test_configs):
     for config in test_configs:
@@ -42,7 +42,6 @@ def test_sql_with_hash(test_configs):
                 table_config.table_name,
                 table_config.dest_table_override,
                 table_config.surrogate_keys,
-                table_config.update_columns,
                 columns,
                 table_config.column_mapping,
                 table_config.ods_metadata
@@ -62,7 +61,6 @@ def test_sql_truncate(test_configs):
                 table_config.table_name,
                 table_config.dest_table_override,
                 table_config.surrogate_keys,
-                table_config.update_columns,
                 columns,
                 table_config.column_mapping,
                 table_config.ods_metadata

@@ -12,7 +12,7 @@ import logging
 def test_dag_parsing_errors(test_dags):
     assert isinstance(test_dags, dict)
 
-    assert len(test_dags) == 1
+    assert len(test_dags) == 2
 
     assert all(isinstance(dag, DAG) for dag in test_dags.values())
 
