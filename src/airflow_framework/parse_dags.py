@@ -12,7 +12,7 @@ import logging
 class DagParser:
 
     def __init__(self):
-        self.conf_location = Variable.get("CONFIG_FILE_LOCATION", "config")
+        self.conf_location = Variable.get("CONFIG_FILE_LOCATION", "/opt/airflow/airflow-framework/examples/config")
         self.max_task_retries = Variable.get("max_task_retries", 3)
 
     def parse_dags(self):

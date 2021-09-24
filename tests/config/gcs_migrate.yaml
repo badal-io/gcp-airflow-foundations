@@ -7,11 +7,7 @@ source:
   acceptable_delay_minutes: 5
   extra_options:
     gcs_bucket: airflow-datasets-poc-v2
-<<<<<<< HEAD
-    gcs_objects: ["bigquery/bigquery_raw_measurements_migrate_add.csv"] #bigquery_raw_measurements_migrate_add
-=======
-    gcs_objects: ["bigquery/raw_measurements.csv"] #bigquery_raw_measurements_migrate_add
->>>>>>> Schema migration
+    gcs_objects: ["bigquery/bigquery_raw_measurements_migrate_add.csv"]
   gcp_project: sandbox-keyera-poc
   dataset_data_name: airflow_test
   connection: google_cloud_default
@@ -22,14 +18,11 @@ source:
   landing_zone_options:
     landing_zone_dataset: airflow_landing
 tables:
-  - table_name: raw_measurements_staging
-<<<<<<< HEAD
-    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_migrate_add.json #schema_migrate_add
-=======
-    source_table_schema_object: gs://airflow-datasets-poc-v2/schema.json #schema_migrate_add
->>>>>>> Schema migration
-    ingestion_type: FULL
+  - table_name: raw_measurements_migrate
+    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_migrate_add.json
+    ingestion_type: INCREMENTAL
     surrogate_keys: ['timestamp','device_id','property_measured']
+    update_columns: ['value']
     ods_metadata:
       hash_column_name: af_metadata_row_hash
       primary_key_hash_column_name: af_metadata_primary_key_hash
