@@ -3,6 +3,8 @@ from airflow.exceptions import AirflowException
 from dacite import Config
 from dataclasses import dataclass, field
 
+from pydantic import validator
+
 from datetime import datetime
 from typing import List, Optional
 
@@ -39,7 +41,6 @@ class OdsTableConfig:
     version: int = 1
     catchup: bool = True
 
-
     # Override values for optional fields
     def __post_init__(self):
         if self.landing_zone_table_name_override is None:
@@ -47,3 +48,4 @@ class OdsTableConfig:
 
         if self.merge_type is None:
             self.merge_type = "SG_KEY_WITH_HASH"
+

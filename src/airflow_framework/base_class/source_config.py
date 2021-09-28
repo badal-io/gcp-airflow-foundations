@@ -26,12 +26,33 @@ class SourceConfig:
     version: int = 1
     sla_mins: int = 900
 
-    @validator("ingest_schedule")
-    def valid_ingest_schedule(cls, v):
-        assert "@daily" == v, "only @daily schedule is currently supported"
+    @validator("name")
+    def valid_name(cls, v):
+        assert v, "Name must not be empty"
         return v
 
-    @validator("extra_options")
-    def cloud_storage_options(cls, v, values, **kwargs):
-        assert v["gcs_bucket"], "bucket_name must not be empty"
+    @validator("source_type")
+    def valid_source_type(cls, v):
+        assert v, "Source type must not be empty"
         return v
+
+    @validator("ingest_schedule")
+    def valid_ingest_schedule(cls, v):
+        assert (v in ["@hourly", "@daily", "@weekly", "@monthly"] or croniter.is_valid(v)), \
+            "invalid ingest schedule: see Airflow documentation for more details"
+        return v
+
+    @validator("landing_zone")
+    def valid_landing_zone(cls, v):
+        assert v, "Landing zone table name must not be empty"
+        return v
+
+    @validator("ods_target")
+    def valid_ods_target(cls, v):
+        assert v, "ODS target table name must not be empty"
+        return
+
+    @validator("start_date")
+    def valid_start_date(cls, v):
+        assert datetime.datetime.strptime(v, "%Y-%m-%d"), \
+            "The date format for Start Date should be YYYY-MM-DD"

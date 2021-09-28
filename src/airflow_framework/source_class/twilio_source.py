@@ -14,12 +14,15 @@ from airflow_framework.plugins.gcp_custom.load_taskgroup import TaskGroupBuilder
 
 from urllib.parse import urlparse
 
+
 class TwilioToBQDagBuilder(DagBuilder):
     """
     Builds DAGs to load data from Twilio's API to a BigQuery Table.
     """
-    def build_dags(self, config: DataSourceTablesConfig):
-        data_source = config.source
+    source_type = "TWILIO"
+
+    def build_dags(self):
+        data_source = self.config.source
 
         project_id = data_source.gcp_project
 
@@ -29,7 +32,7 @@ class TwilioToBQDagBuilder(DagBuilder):
         landing_dataset = data_source.landing_zone_options.landing_zone_dataset
 
         dags = []
-        for table_config in config.tables:
+        for table_config in self.config.tables:
             table_default_task_args = self.default_task_args_for_table(
                 config, table_config
             )
@@ -46,7 +49,7 @@ class TwilioToBQDagBuilder(DagBuilder):
 
                 destination_table = f"{table_config.landing_zone_table_name_override}"
 
-                #1 Load Twilio data to BQ Landing Zone 
+                # 1 Load Twilio data to BQ Landing Zone
                 load_to_bq_landing = TwilioToBigQueryOperator(
                     task_id='import_twilio_to_bq_landing',
                     twilio_account_sid=data_source.extra_options["twilio_account_sid"],
@@ -56,8 +59,8 @@ class TwilioToBQDagBuilder(DagBuilder):
                     table_id=destination_table,
                     dag=dag)
 
-                #2 Create TaskGroup for loading data to ODS/HDS tables
-                task_group_builder = TaskGroupBuilder(
+                # 2 Create ODS table (if it doesn't exist) and merge or replace it with the staging table
+                taskgroup = build_create_load_taskgroup(
                     project_id=data_source.gcp_project,
                     table_id=table_config.table_name,
                     dataset_id=data_source.dataset_data_name,
@@ -83,4 +86,4 @@ class TwilioToBQDagBuilder(DagBuilder):
 
                 dags.append(dag)
 
-        return dags                                  
+        return dags
