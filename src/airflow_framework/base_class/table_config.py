@@ -3,6 +3,8 @@ from airflow.exceptions import AirflowException
 from dacite import Config
 from dataclasses import dataclass, field
 
+from pydantic import validator
+
 from datetime import datetime
 from typing import List, Optional
 
@@ -42,7 +44,6 @@ class OdsTableConfig:
     version: int = 1
     catchup: bool = True
 
-
     # Override values for optional fields
     def __post_init__(self):
         if self.landing_zone_table_name_override is None:
@@ -50,3 +51,13 @@ class OdsTableConfig:
 
         if self.merge_type is None:
             self.merge_type = "SG_KEY_WITH_HASH"
+
+    @validator("table_name")
+    def valid_name(cls, v):
+        assert v, "Table name must not be empty"
+        return v
+
+    @validator("sink_table_name")
+    def valid_name(cls, v):
+        assert v, "Sink table name must not be empty"
+        return v
