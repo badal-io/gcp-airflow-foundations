@@ -20,8 +20,19 @@ from airflow_framework.base_class.hds_table_config import HdsTableConfig
 class MergeBigQueryHDS(BigQueryOperator):
     """
     Merge data into a BigQuery HDS table.
+    
+    Attributes:
+        project_id: GCP project ID               
+        stg_table_name: Source table name    
+        data_table_name: Target table name
+        stg_dataset_name: Source dataset name
+        data_dataset_name: Target dataset name
+        surrogate_keys: List of surrogate keys
+        delegate_to: The account to impersonate using domain-wide delegation of authority, if any
+        gcp_conn_id: Airflow GCP connection ID
+        column_mapping: Column mapping dictionary
+        hds_table_config: HdsTableConfig object with user-provided HDS configuration options
     """
-
     template_fields = (
         "stg_table_name",
         "data_table_name",
@@ -42,7 +53,6 @@ class MergeBigQueryHDS(BigQueryOperator):
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
         hds_table_config: HdsTableConfig,
-
         **kwargs,
     ) -> None:
         super(MergeBigQueryHDS, self).__init__(
@@ -94,14 +104,17 @@ class MergeBigQueryHDS(BigQueryOperator):
             columns=columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
+            time_partitioning=self.hds_table_config.hds_table_time_partitioning.value,
             hds_metadata=self.hds_table_config.hds_metadata
         )
 
         if self.hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
             sql = sql_helper.create_snapshot_sql_with_hash()
+            write_disposition = "WRITE_TRUNCATE"
 
         elif self.hds_table_config.hds_table_type == HdsTableType.SCD2:
             sql = sql_helper.create_scd2_sql_with_hash()
+            write_disposition = "WRITE_APPEND"
 
         else:
             raise AirflowException("Invalid HDS table type", self.hds_table_config.hds_table_type)
@@ -109,3 +122,4 @@ class MergeBigQueryHDS(BigQueryOperator):
         logging.info(f"Executing sql: {sql}")
 
         self.sql = sql
+        self.write_disposition = write_disposition

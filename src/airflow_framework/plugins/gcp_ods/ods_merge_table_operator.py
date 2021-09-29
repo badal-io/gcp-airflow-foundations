@@ -20,6 +20,18 @@ from airflow_framework.enums.ingestion_type import IngestionType
 class MergeBigQueryODS(BigQueryOperator):
     """
     Merge data into a BigQuery ODS table.
+    
+    Attributes:
+        project_id: GCP project ID               
+        stg_table_name: Source table name    
+        data_table_name: Target table name
+        stg_dataset_name: Source dataset name
+        data_dataset_name: Target dataset name
+        surrogate_keys: List of surrogate keys
+        delegate_to: The account to impersonate using domain-wide delegation of authority, if any
+        gcp_conn_id: Airflow GCP connection ID
+        column_mapping: Column mapping dictionary
+        ods_table_config: OdsTableConfig object with user-provided ODS configuration options
     """
 
     template_fields = (
@@ -40,7 +52,6 @@ class MergeBigQueryODS(BigQueryOperator):
         surrogate_keys: [str],
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
-        merge_type="SG_KEY",
         column_mapping: dict,
         ods_table_config: OdsTableConfig,
         **kwargs,
@@ -55,7 +66,6 @@ class MergeBigQueryODS(BigQueryOperator):
             **kwargs,
         )
         self.project_id = project_id
-        self.merge_type = merge_type
         self.stg_table_name = stg_table_name
         self.data_table_name = data_table_name
         self.stg_dataset_name = stg_dataset_name
@@ -68,7 +78,7 @@ class MergeBigQueryODS(BigQueryOperator):
 
     def pre_execute(self, context) -> None:
         self.log.info(
-            f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}, {self.merge_type}"
+            f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}"
         )
 
         hook = BigQueryHook(
@@ -109,7 +119,7 @@ class MergeBigQueryODS(BigQueryOperator):
             write_disposition = "WRITE_TRUNCATE"
 
         else:
-            raise AirflowException("Invalid merge type", self.ingestion_type)
+            raise AirflowException("Invalid ingestion type", self.ingestion_type)
 
         logging.info(f"Executing sql: {sql}. Write disposition: {write_disposition}")
 

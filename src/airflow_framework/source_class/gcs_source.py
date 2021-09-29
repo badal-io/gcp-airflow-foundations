@@ -32,7 +32,7 @@ class GCStoBQDagBuilder(DagBuilder):
         dags = []
         for table_config in self.config.tables:
             table_default_task_args = self.default_task_args_for_table(
-                config, table_config
+                self.config, table_config
             )
             logging.info(f"table_default_task_args {table_default_task_args}")
 
@@ -76,13 +76,9 @@ class GCStoBQDagBuilder(DagBuilder):
                     schema_fields=None,
                     ods_table_config=table_config.ods_config,
                     hds_table_config=table_config.hds_config,
+                    preceding_task=load_to_bq_landing,
                     dag=dag
                 )
-
-                for taskgroup in taskgroups:
-                    load_to_bq_landing >> taskgroup
-
-                logging.info(f"Created dag for {table_config}, {dag}")
 
                 dags.append(dag)
 
@@ -91,6 +87,7 @@ class GCStoBQDagBuilder(DagBuilder):
     def validate_extra_options(self):
         # Example of extra validation to do
         extra_options = self.config.source.extra_options
+
         # assert bucket and object/s are non-empty
         assert extra_options["gcs_bucket"]
         assert extra_options["gcs_objects"]

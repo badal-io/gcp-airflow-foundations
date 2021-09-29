@@ -1,4 +1,19 @@
 class SqlHelperHDS:
+    """
+    SQL helper class used to formulate the SQL queries for the merge operations of HDS tables.
+    
+    Attributes:              
+        source: Source table name    
+        target: Target table name
+        source_dataset: Source dataset name
+        target_dataset: Target dataset name
+        columns: List of columns of the source table
+        surrogate_keys: List of surrogate keys
+        column_mapping: Column mapping dictionary
+        time_partitioning: Time partitioning option for BigQuery target table. One of HOUR, DAY, or MONTH
+        hds_metadata: User-provided options for HDS metadata column naming
+        gcp_conn_id: Airflow GCP connection ID
+    """
     def __init__(
         self,
         source_dataset,
@@ -8,6 +23,7 @@ class SqlHelperHDS:
         columns,
         surrogate_keys,
         column_mapping,
+        time_partitioning,
         hds_metadata,
         gcp_conn_id='google_cloud_default'):
 
@@ -19,6 +35,7 @@ class SqlHelperHDS:
         self.column_mapping = column_mapping
         self.hds_metadata = hds_metadata
         self.gcp_conn_id = gcp_conn_id
+        self.time_partitioning = time_partitioning
         self.columns = columns
 
         if not column_mapping:
@@ -26,6 +43,7 @@ class SqlHelperHDS:
 
         self.hash_column_name = hds_metadata.hash_column_name
         self.eff_start_time_column_name = hds_metadata.eff_start_time_column_name
+        self.partition_column_name = hds_metadata.partition_time_column_name
         self.eff_end_time_column_name = hds_metadata.eff_end_time_column_name
 
         self.columns_str_source: str = ",".join(["`{}`".format(col) for col in columns])
@@ -65,7 +83,7 @@ class SqlHelperHDS:
 
         return f"""
                 INSERT INTO `{self.target_dataset}.{self.target}`
-                ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.hash_column_name})
-                SELECT {self.columns_str_source}, CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S)))
+                ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.partition_column_name}, {self.hash_column_name})
+                SELECT {self.columns_str_source}, CURRENT_TIMESTAMP(), TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), {self.time_partitioning}), TO_BASE64(MD5(TO_JSON_STRING(S)))
                 FROM `{self.source_dataset}.{self.source}` S
             """

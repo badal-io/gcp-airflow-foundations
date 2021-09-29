@@ -1,7 +1,7 @@
-from airflow_framework.source_type import SourceType
+from airflow_framework.enums.source_type import SourceType
 
 from airflow_framework.source_class.gcs_source import GCStoBQDagBuilder
-#from airflow_framework.source_class.twilio_source import TwilioToBQDagBuilder
+from airflow_framework.source_class.twilio_source import TwilioToBQDagBuilder
 
 from airflow_framework.base_class.data_source_table_config import DataSourceTablesConfig
 

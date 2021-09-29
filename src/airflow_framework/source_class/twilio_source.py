@@ -10,7 +10,7 @@ from airflow_framework.source_class.source import DagBuilder
 from airflow_framework.plugins.api.operators.twilio_operator import TwilioToBigQueryOperator
 from airflow_framework.plugins.api.schemas.twilio import get_twilio_schema
 
-from airflow_framework.plugins.gcp_custom.load_taskgroup import TaskGroupBuilder
+from airflow_framework.plugins.gcp_common.load_builder import load_builder
 
 from urllib.parse import urlparse
 
@@ -23,7 +23,7 @@ class TwilioToBQDagBuilder(DagBuilder):
 
     def build_dags(self):
         data_source = self.config.source
-
+        logging.info(f"Building DAG for Twilio {data_source.name}")
         project_id = data_source.gcp_project
 
         logging.info(f"Building DAG for Twilio {data_source.name}")
@@ -34,7 +34,7 @@ class TwilioToBQDagBuilder(DagBuilder):
         dags = []
         for table_config in self.config.tables:
             table_default_task_args = self.default_task_args_for_table(
-                config, table_config
+                self.config, table_config
             )
             logging.info(f"table_default_task_args {table_default_task_args}")
 
@@ -59,31 +59,33 @@ class TwilioToBQDagBuilder(DagBuilder):
                     table_id=destination_table,
                     dag=dag)
 
-                # 2 Create ODS table (if it doesn't exist) and merge or replace it with the staging table
-                taskgroup = build_create_load_taskgroup(
+                #2 Create task groups for loading data to ODS/HDS tables
+                taskgroups = load_builder(
                     project_id=data_source.gcp_project,
                     table_id=table_config.table_name,
                     dataset_id=data_source.dataset_data_name,
                     landing_zone_dataset=landing_dataset,
                     landing_zone_table_name_override=table_config.landing_zone_table_name_override,
                     surrogate_keys=table_config.surrogate_keys,
-                    dag=dag,
                     column_mapping=table_config.column_mapping,
                     gcs_schema_object=None,
                     schema_fields=get_twilio_schema(tableId=destination_table),
-                    hds_metadata=table_config.hds_metadata,
-                    ods_metadata=table_config.ods_metadata,
-                    merge_type=table_config.merge_type,
-                    ingestion_type=table_config.ingestion_type,
-                    hds_table_type=table_config.hds_table_type,
+                    ods_table_config=table_config.ods_config,
+                    hds_table_config=table_config.hds_config,
+                    preceding_task=load_to_bq_landing,
+                    dag=dag
                 )
-
-                taskgroup = task_group_builder.build_task_group()
-
-                load_to_bq_landing >> taskgroup
 
                 logging.info(f"Created dag for {table_config}, {dag}")
 
                 dags.append(dag)
 
         return dags
+
+    def validate_extra_options(self):
+        # Example of extra validations to do
+        extra_options = self.config.source.extra_options
+
+        # assert bucket and object/s are non-empty
+        assert extra_options["gcs_bucket"]
+        assert extra_options["twilio_account_sid"]

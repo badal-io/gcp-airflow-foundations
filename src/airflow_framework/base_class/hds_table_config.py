@@ -2,25 +2,29 @@ from airflow.exceptions import AirflowException
 
 from dacite import Config
 from dataclasses import dataclass, field
+from pydantic import validator
 
 from datetime import datetime
 from typing import List, Optional
 
 from airflow_framework.base_class.hds_metadata_config import HdsTableMetadataConfig
 from airflow_framework.enums.hds_table_type import HdsTableType
+from airflow_framework.enums.time_partitioning import TimePartitioning
 
 @dataclass
 class HdsTableConfig:
     """
     Attributes:
-        table_name : Table name. Used for Dag Id
-        ods_table_name_override: Optional ods table name. If None, use table_name instead
-        table_type : Reserved for future use. For now only valid value is SCD_TYPE2
-        surrogate_keys : Keys used to identify unique records when merging into ODS
-        ods_partition : BigQuery partitioning schema for ODS data table (should not be changed after first run )
-        version : The Dag version for the table. Can be incremented if logic changes
-        catchup : Passed to a dag [see doc](https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#catchup).
-            Defaults to True. May want to change it to False if Dag version is changed, and we don't want to rerun past dags.
+        hds_table_type : SNAPSHOT OR SCD2
+        hds_table_time_partitioning: Partitioning for BigQuery table. One of DAY, HOUR, or MONTH
+        hds_metadata : See HdsTableMetadataConfig class 
     """
     hds_table_type: HdsTableType # SNAPSHOT OR SCD2
+    hds_table_time_partitioning: Optional[TimePartitioning] # DAY, HOUR, or MONTH
     hds_metadata: HdsTableMetadataConfig
+
+    @validator('hds_table_time_partitioning')
+    def check_value(cls, v, values):
+        if values['hds_table_type'] == HdsTableType.SNAPSHOT:
+            assert v is not None, 'Time partitioning must be set for HDS Snapshot tables'
+        return v

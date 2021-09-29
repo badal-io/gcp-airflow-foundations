@@ -28,14 +28,20 @@ def hds_builder(
     labels=None,
     encryption_configuration=None) -> TaskGroup:
 
+    """
+    Method for building a Task Group consisting of the following operators:
+    1) BigQueryCreateEmptyTableOperator for creating (if it doesn't already exist) the target HDS table using the parsed schema
+    2) MergeBigQueryHDS for merging the staging table data into the target HDS table
+    """
+
     taskgroup = TaskGroup(group_id="create_hds_merge_taskgroup")
 
     if hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
         table_id = f"{table_id}_HDS_Snapshot"
 
         time_partitioning = {
-            "type":"DAY", #change to ingestion schedule interval
-            "field":hds_table_config.hds_metadata.eff_start_time_column_name
+            "type":hds_table_config.hds_table_time_partitioning.value,
+            "field":hds_table_config.hds_metadata.partition_time_column_name
         }
 
     elif hds_table_config.hds_table_type == HdsTableType.SCD2:

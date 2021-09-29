@@ -28,6 +28,11 @@ def ods_builder(
     labels=None,
     encryption_configuration=None) -> TaskGroup:
 
+    """
+    Method for building a Task Group consisting of the following operators:
+    1) BigQueryCreateEmptyTableOperator for creating (if it doesn't already exist) the target ODS table using the parsed schema
+    2) MergeBigQueryODS for merging the staging table data into the target ODS table using the selected ingestion method
+    """
     taskgroup = TaskGroup(group_id="create_ods_merge_taskgroup")
 
     if ods_table_config.ingestion_type == IngestionType.INCREMENTAL:

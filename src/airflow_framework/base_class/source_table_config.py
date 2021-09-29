@@ -21,10 +21,13 @@ class SourceTableConfig:
     """
     Attributes:
         table_name : Table name. Used for Dag Id
-        ods_table_name_override: Optional ods table name. If None, use table_name instead
-        table_type : Reserved for future use. For now only valid value is SCD_TYPE2
+        landing_zone_table_name_override: Optional staging zone table name.
+        dest_table_override: Optional target table name. If None, use table_name instead
+        source_table_schema_object: GCS schema object URI
         surrogate_keys : Keys used to identify unique records when merging into ODS
-        ods_partition : BigQuery partitioning schema for ODS data table (should not be changed after first run )
+        column_mapping : Mapping used to rename columns
+        ods_config : See OdsTableConfig
+        hds_config : See HdsTableConfig
         version : The Dag version for the table. Can be incremented if logic changes
         catchup : Passed to a dag [see doc](https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#catchup).
             Defaults to True. May want to change it to False if Dag version is changed, and we don't want to rerun past dags.
@@ -46,3 +49,8 @@ class SourceTableConfig:
     def __post_init__(self):
         if self.landing_zone_table_name_override is None:
             self.landing_zone_table_name_override = self.table_name
+
+    @validator("table_name")
+    def valid_ods_target(cls, v):
+        assert v, "Target table name must not be empty"
+        return

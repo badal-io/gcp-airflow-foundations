@@ -1,13 +1,13 @@
 ---
 source:
-  name: "test"
-  source_type: GCS
+  name: "twilio_text_messages"
+  source_type: TWILIO
   ingest_schedule: "@daily"
   start_date: "2021-08-30"
   acceptable_delay_minutes: 5
   extra_options:
-    gcs_bucket: airflow-datasets-poc-v2
-    gcs_objects: ["bigquery/hds_test_data.csv"]
+    gcs_bucket: airflow-datasets-poc
+    twilio_account_sid: AC6e889487026563887777c14fdd2c4276
   gcp_project: sandbox-keyera-poc
   dataset_data_name: airflow_test
   connection: google_cloud_default
@@ -18,9 +18,8 @@ source:
   landing_zone_options:
     landing_zone_dataset: airflow_landing
 tables:
-  - table_name: test
-    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_hds.json
-    surrogate_keys: ['customer_id','key']
+  - table_name: twilio_text_messages
+    surrogate_keys: ['sid']
     ods_config:
       ingestion_type: INCREMENTAL
       ods_metadata:
@@ -29,12 +28,9 @@ tables:
         ingestion_time_column_name: af_metadata_inserted_at
         update_time_column_name: af_metadata_updated_at
     hds_config:
-      hds_table_type: SCD2
+      hds_table_type: SNAPSHOT
+      hds_table_time_partitioning: DAY
       hds_metadata:
         eff_start_time_column_name: af_metadata_created_at
         eff_end_time_column_name: af_metadata_expired_at
         hash_column_name: af_metadata_row_hash
-    column_mapping: 
-      customer_id: customerID
-      key: key_id
-      city: city_name

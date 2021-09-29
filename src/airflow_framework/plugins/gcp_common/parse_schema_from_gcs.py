@@ -88,6 +88,10 @@ def parse_schema(
                 "type": "TIMESTAMP"
             },
             {
+                "name": hds_metadata.partition_time_column_name,
+                "type": "TIMESTAMP"
+            },
+            {
                 "name": hds_metadata.hash_column_name,
                 "type": "STRING"
             }
