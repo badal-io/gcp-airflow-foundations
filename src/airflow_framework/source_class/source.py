@@ -6,12 +6,24 @@ from airflow_framework.base_class.source_table_config import SourceTableConfig
 
 class DagBuilder(ABC):
     """
-    A base DAG buider
+    A base DAG builder for creating a list of DAGs for a given source.
+
+    Attributes:
+        sources:              List of initialized subclasses of this class (dynamically updated during runtime)
+        config:               DataSourceTablesConfig object for DAG configuration
+        type_mappings:        Dictionary of source-specific type mappings between source and target (BigQuery)
+        type:                 Ingestion type
+
     """
     sources = []
+    config: DataSourceTablesConfig
+    type_mappings: dict
+    source_type: str
 
-    def __init__(self, default_task_args: dict):
+    def __init__(self, default_task_args: dict, config: DataSourceTablesConfig):
         self.default_task_args = default_task_args
+        self.config = config
+        self.validate_extra_options()
         super().__init__()
 
     def __init_subclass__(cls, **kwargs):
@@ -19,7 +31,11 @@ class DagBuilder(ABC):
         cls.sources.append(cls)
 
     @abstractmethod
-    def build_dags(self, config: DataSourceTablesConfig):
+    def build_dags(self):
+        pass
+
+    @abstractmethod
+    def validate_extra_options(self):
         pass
 
     def default_task_args_for_table(

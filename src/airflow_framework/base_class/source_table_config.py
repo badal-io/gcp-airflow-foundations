@@ -3,6 +3,8 @@ from airflow.exceptions import AirflowException
 from dacite import Config
 from dataclasses import dataclass, field
 
+from pydantic import validator
+
 from datetime import datetime
 from typing import List, Optional
 

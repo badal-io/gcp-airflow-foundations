@@ -17,10 +17,11 @@ class GCStoBQDagBuilder(DagBuilder):
     """
     Builds DAGs to load a CSV file from GCS to a BigQuery Table.
     """
-    def build_dags(self, config: DataSourceTablesConfig):
-        data_source = config.source
-        logging.info(f"Building DAG for GCS {data_source.name}")
+    source_type = "GCS"
 
+    def build_dags(self):
+        data_source = self.config.source
+        logging.info(f"Building DAG for GCS {data_source.name}")
 
         # gcs args
         gcs_bucket = data_source.extra_options["gcs_bucket"]
@@ -29,7 +30,7 @@ class GCStoBQDagBuilder(DagBuilder):
         landing_dataset = data_source.landing_zone_options.landing_zone_dataset
 
         dags = []
-        for table_config in config.tables:
+        for table_config in self.config.tables:
             table_default_task_args = self.default_task_args_for_table(
                 config, table_config
             )
@@ -44,7 +45,7 @@ class GCStoBQDagBuilder(DagBuilder):
                 default_args=table_default_task_args
             ) as dag:
 
-                #1 Load CSV to BQ Landing Zone 
+                # 1 Load CSV to BQ Landing Zone
                 destination_table = f"{landing_dataset}.{table_config.landing_zone_table_name_override}"
 
                 parsed_url = urlparse(table_config.source_table_schema_object)
@@ -85,4 +86,11 @@ class GCStoBQDagBuilder(DagBuilder):
 
                 dags.append(dag)
 
-        return dags                                  
+        return dags
+
+    def validate_extra_options(self):
+        # Example of extra validation to do
+        extra_options = self.config.source.extra_options
+        # assert bucket and object/s are non-empty
+        assert extra_options["gcs_bucket"]
+        assert extra_options["gcs_objects"]
