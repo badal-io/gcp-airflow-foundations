@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod, abstractproperty
 
 from airflow_framework.base_class.data_source_table_config import DataSourceTablesConfig
-from airflow_framework.base_class.table_config import OdsTableConfig
+from airflow_framework.base_class.source_table_config import SourceTableConfig
 
 
 class DagBuilder(ABC):
@@ -23,9 +23,9 @@ class DagBuilder(ABC):
         pass
 
     def default_task_args_for_table(
-        self, config: DataSourceTablesConfig, table_config: OdsTableConfig
+        self, config: DataSourceTablesConfig, table_config: SourceTableConfig
     ):
         return {
             **self.default_task_args,
-            "start_date": config.table_start_date(table_config),
+            "start_date": config.table_start_date(table_config)
         }

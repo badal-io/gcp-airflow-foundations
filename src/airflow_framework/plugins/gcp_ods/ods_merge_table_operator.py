@@ -13,12 +13,13 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from airflow_framework.plugins.gcp_custom.sql_upsert_helpers import create_scd2_sql_with_hash, create_snapshot_sql_with_hash
-from airflow_framework.enums.hds_table_type import HdsTableType
+from airflow_framework.plugins.gcp_ods.ods_sql_upsert_helpers import SqlHelperODS
+from airflow_framework.base_class.ods_table_config import OdsTableConfig
+from airflow_framework.enums.ingestion_type import IngestionType
 
-class MergeBigQueryHDS(BigQueryOperator):
+class MergeBigQueryODS(BigQueryOperator):
     """
-    Merge data into a BigQuery HDS table.
+    Merge data into a BigQuery ODS table.
     """
 
     template_fields = (
@@ -37,15 +38,14 @@ class MergeBigQueryHDS(BigQueryOperator):
         stg_dataset_name: str,
         data_dataset_name: str,
         surrogate_keys: [str],
-        hds_table_type: HdsTableType,
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
+        merge_type="SG_KEY",
         column_mapping: dict,
-        hds_metadata: dict,
-
+        ods_table_config: OdsTableConfig,
         **kwargs,
     ) -> None:
-        super(MergeBigQueryHDS, self).__init__(
+        super(MergeBigQueryODS, self).__init__(
             delegate_to=delegate_to,
             gcp_conn_id=gcp_conn_id,
             use_legacy_sql=False,
@@ -55,20 +55,20 @@ class MergeBigQueryHDS(BigQueryOperator):
             **kwargs,
         )
         self.project_id = project_id
+        self.merge_type = merge_type
         self.stg_table_name = stg_table_name
         self.data_table_name = data_table_name
         self.stg_dataset_name = stg_dataset_name
         self.data_dataset_name = data_dataset_name
         self.surrogate_keys = surrogate_keys
         self.gcp_conn_id = gcp_conn_id
-        self.hds_table_type = hds_table_type
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
-        self.hds_metadata = hds_metadata
+        self.ods_table_config = ods_table_config
 
     def pre_execute(self, context) -> None:
         self.log.info(
-            f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}"
+            f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}, {self.merge_type}"
         )
 
         hook = BigQueryHook(
@@ -87,30 +87,31 @@ class MergeBigQueryHDS(BigQueryOperator):
 
         sql = ""
 
-        if self.hds_table_type == HdsTableType.SCD2:
-            sql = create_scd2_sql_with_hash(
-                self.stg_dataset_name,
-                self.data_dataset_name,
-                self.stg_table_name,
-                self.data_table_name,
-                self.surrogate_keys,
-                columns,
-                self.column_mapping,
-                self.hds_metadata
-            )
-            
-        elif self.hds_table_type == HdsTableType.SNAPSHOT:
-            sql = create_snapshot_sql_with_hash(
-                self.stg_dataset_name,
-                self.data_dataset_name,
-                self.stg_table_name,
-                self.data_table_name,
-                self.surrogate_keys,
-                columns,
-                self.column_mapping,
-                self.hds_metadata
-            )
+        sql_helper = SqlHelperODS(
+            source_dataset=self.stg_dataset_name,
+            target_dataset=self.data_dataset_name ,
+            source=self.stg_table_name,
+            target=self.data_table_name,
+            columns=columns,
+            surrogate_keys=self.surrogate_keys,
+            column_mapping=self.column_mapping,
+            ods_metadata=self.ods_table_config.ods_metadata
+        )
 
-        logging.info(f"Executing sql: {sql}")
+        if self.ods_table_config.ingestion_type == IngestionType.INCREMENTAL:
+            # Append staging table to ODS table
+            sql = sql_helper.create_upsert_sql_with_hash()
+            write_disposition = "WRITE_APPEND"
+
+        elif self.ods_table_config.ingestion_type == IngestionType.FULL:
+            # Overwrite ODS table with the staging table data
+            sql = sql_helper.create_truncate_sql()
+            write_disposition = "WRITE_TRUNCATE"
+
+        else:
+            raise AirflowException("Invalid merge type", self.ingestion_type)
+
+        logging.info(f"Executing sql: {sql}. Write disposition: {write_disposition}")
 
         self.sql = sql
+        self.write_disposition = write_disposition

@@ -8,10 +8,7 @@ from airflow_framework.base_class.data_source_table_config import DataSourceTabl
 
 from airflow_framework.source_class.source import DagBuilder
 
-from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeBigQueryODS
-from airflow_framework.plugins.gcp_custom.bq_create_table_operator import BigQueryCreateTableOperator
-
-from airflow_framework.plugins.gcp_custom.load_taskgroup import TaskGroupBuilder
+from airflow_framework.plugins.gcp_common.load_builder import load_builder
 
 from urllib.parse import urlparse
 
@@ -64,29 +61,25 @@ class GCStoBQDagBuilder(DagBuilder):
                     create_disposition='CREATE_IF_NEEDED',
                     skip_leading_rows=1,
                     dag=dag)
-
-                #2 Create TaskGroup for loading data to ODS/HDS tables
-                task_group_builder = TaskGroupBuilder(
+             
+                #2 Create task groups for loading data to ODS/HDS tables
+                taskgroups = load_builder(
                     project_id=data_source.gcp_project,
                     table_id=table_config.table_name,
                     dataset_id=data_source.dataset_data_name,
                     landing_zone_dataset=landing_dataset,
                     landing_zone_table_name_override=table_config.landing_zone_table_name_override,
                     surrogate_keys=table_config.surrogate_keys,
-                    dag=dag,
                     column_mapping=table_config.column_mapping,
                     gcs_schema_object=table_config.source_table_schema_object,
                     schema_fields=None,
-                    hds_metadata=table_config.hds_metadata,
-                    ods_metadata=table_config.ods_metadata,
-                    merge_type=table_config.merge_type,
-                    ingestion_type=table_config.ingestion_type,
-                    hds_table_type=table_config.hds_table_type,
+                    ods_table_config=table_config.ods_config,
+                    hds_table_config=table_config.hds_config,
+                    dag=dag
                 )
 
-                taskgroup = task_group_builder.build_task_group()
-                    
-                load_to_bq_landing >> taskgroup
+                for taskgroup in taskgroups:
+                    load_to_bq_landing >> taskgroup
 
                 logging.info(f"Created dag for {table_config}, {dag}")
 

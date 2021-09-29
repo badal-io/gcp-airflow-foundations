@@ -13,18 +13,19 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from airflow_framework.plugins.gcp_custom.sql_upsert_helpers import create_truncate_sql
+from airflow_framework.plugins.gcp_hds.hds_sql_upsert_helpers import SqlHelperHDS
+from airflow_framework.enums.hds_table_type import HdsTableType
+from airflow_framework.base_class.hds_table_config import HdsTableConfig
 
-class TruncateBigQueryODS(BigQueryOperator):
+class MergeBigQueryHDS(BigQueryOperator):
     """
-    Truncate data into a BigQuery ODS table.
+    Merge data into a BigQuery HDS table.
     """
 
     template_fields = (
         "stg_table_name",
         "data_table_name",
-        "stg_dataset_name",
-        "stg_dataset_name",
+        "stg_dataset_name"
     )
 
     @apply_defaults
@@ -39,22 +40,21 @@ class TruncateBigQueryODS(BigQueryOperator):
         surrogate_keys: [str],
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
-        merge_type="SG_KEY",
         column_mapping: dict,
-        ods_metadata: dict,
+        hds_table_config: HdsTableConfig,
+
         **kwargs,
     ) -> None:
-        super(TruncateBigQueryODS, self).__init__(
+        super(MergeBigQueryHDS, self).__init__(
             delegate_to=delegate_to,
             gcp_conn_id=gcp_conn_id,
             use_legacy_sql=False,
-            write_disposition="WRITE_TRUNCATE",
+            write_disposition="WRITE_APPEND",
             create_disposition="CREATE_NEVER",
             sql="sql",
             **kwargs,
         )
         self.project_id = project_id
-        self.merge_type = merge_type
         self.stg_table_name = stg_table_name
         self.data_table_name = data_table_name
         self.stg_dataset_name = stg_dataset_name
@@ -63,11 +63,11 @@ class TruncateBigQueryODS(BigQueryOperator):
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
-        self.ods_metadata = ods_metadata
+        self.hds_table_config = hds_table_config
 
     def pre_execute(self, context) -> None:
         self.log.info(
-            f"Execute BigQueryTruncateTableOperator {self.stg_table_name}, {self.data_table_name}, {self.merge_type}"
+            f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}"
         )
 
         hook = BigQueryHook(
@@ -86,16 +86,25 @@ class TruncateBigQueryODS(BigQueryOperator):
 
         sql = ""
 
-        sql = create_truncate_sql(
-            self.stg_dataset_name,
-            self.data_dataset_name,
-            self.stg_table_name,
-            self.data_table_name,
-            self.surrogate_keys,
-            columns,
-            self.column_mapping,
-            self.ods_metadata
+        sql_helper = SqlHelperHDS(
+            source_dataset=self.stg_dataset_name,
+            target_dataset=self.data_dataset_name,
+            source=self.stg_table_name,
+            target=self.data_table_name,
+            columns=columns,
+            surrogate_keys=self.surrogate_keys,
+            column_mapping=self.column_mapping,
+            hds_metadata=self.hds_table_config.hds_metadata
         )
+
+        if self.hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
+            sql = sql_helper.create_snapshot_sql_with_hash()
+
+        elif self.hds_table_config.hds_table_type == HdsTableType.SCD2:
+            sql = sql_helper.create_scd2_sql_with_hash()
+
+        else:
+            raise AirflowException("Invalid HDS table type", self.hds_table_config.hds_table_type)
 
         logging.info(f"Executing sql: {sql}")
 
