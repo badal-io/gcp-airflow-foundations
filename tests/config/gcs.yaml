@@ -8,10 +8,14 @@ source:
   extra_options:
     gcs_bucket: airflow-datasets-poc-v2
 <<<<<<< HEAD
+<<<<<<< HEAD
     gcs_objects: ["bigquery/bigquery_raw_measurements_migrate_add.csv"] #bigquery_raw_measurements_migrate_add
 =======
     gcs_objects: ["bigquery/raw_measurements.csv"] #bigquery_raw_measurements_migrate_add
 >>>>>>> Schema migration
+=======
+    gcs_objects: ["bigquery/raw_measurements.csv"] #bigquery_raw_measurements_migrate_add
+>>>>>>> 2c747cc8f58298fe3aff953b4e38bf2582b92402
   gcp_project: sandbox-keyera-poc
   dataset_data_name: airflow_test
   connection: google_cloud_default
@@ -24,10 +28,14 @@ source:
 tables:
   - table_name: raw_measurements_staging
 <<<<<<< HEAD
+<<<<<<< HEAD
     source_table_schema_object: gs://airflow-datasets-poc-v2/schema_migrate_add.json #schema_migrate_add
 =======
     source_table_schema_object: gs://airflow-datasets-poc-v2/schema.json #schema_migrate_add
 >>>>>>> Schema migration
+=======
+    source_table_schema_object: gs://airflow-datasets-poc-v2/schema.json #schema_migrate_add
+>>>>>>> 2c747cc8f58298fe3aff953b4e38bf2582b92402
     ingestion_type: FULL
     surrogate_keys: ['timestamp','device_id','property_measured']
     ods_metadata:
