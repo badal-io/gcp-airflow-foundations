@@ -13,7 +13,7 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from airflow_framework.plugins.gcp_ods.ods_sql_upsert_helpers import SqlHelperODS
+from airflow_framework.operators.gcp.ods.ods_sql_upsert_helpers import SqlHelperODS
 from airflow_framework.base_class.ods_table_config import OdsTableConfig
 from airflow_framework.enums.ingestion_type import IngestionType
 

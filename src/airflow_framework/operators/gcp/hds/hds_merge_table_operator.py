@@ -13,7 +13,7 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from airflow_framework.plugins.gcp_hds.hds_sql_upsert_helpers import SqlHelperHDS
+from airflow_framework.operators.gcp.hds.hds_sql_upsert_helpers import SqlHelperHDS
 from airflow_framework.enums.hds_table_type import HdsTableType
 from airflow_framework.base_class.hds_table_config import HdsTableConfig
 

@@ -3,15 +3,16 @@ from airflow.exceptions import AirflowException
 
 from airflow_framework.enums.ingestion_type import IngestionType
 
-from airflow_framework.plugins.gcp_ods.ods_sql_upsert_helpers import SqlHelperODS
-
 from airflow.utils.task_group import TaskGroup
+
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateEmptyTableOperator,
     BigQueryExecuteQueryOperator
 )
 
-from airflow_framework.plugins.gcp_ods.ods_merge_table_operator import MergeBigQueryODS
+from airflow_framework.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
+from airflow_framework.operators.gcp.ods.ods_sql_upsert_helpers import SqlHelperODS
+
 
 def ods_builder(
     project_id,

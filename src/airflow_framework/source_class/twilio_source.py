@@ -7,10 +7,10 @@ from airflow_framework.base_class.data_source_table_config import DataSourceTabl
 
 from airflow_framework.source_class.source import DagBuilder
 
-from airflow_framework.plugins.api.operators.twilio_operator import TwilioToBigQueryOperator
-from airflow_framework.plugins.api.schemas.twilio import get_twilio_schema
+from airflow_framework.operators.api.operators.twilio_operator import TwilioToBigQueryOperator
+from airflow_framework.operators.api.schemas.twilio import get_twilio_schema
 
-from airflow_framework.plugins.gcp_common.load_builder import load_builder
+from airflow_framework.common.gcp.load_builder import load_builder
 
 from urllib.parse import urlparse
 

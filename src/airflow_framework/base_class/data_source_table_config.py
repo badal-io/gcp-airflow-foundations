@@ -1,3 +1,4 @@
+from pydantic import validator
 from dataclasses import dataclass
 from datetime import timedelta
 from datetime import datetime
@@ -39,4 +40,4 @@ class DataSourceTablesConfig:
         for table in v:
             if (table.hds_config is not None) and (table.hds_config.hds_table_type == HdsTableType.SNAPSHOT):
                 assert partitioning_options[table.hds_config.hds_table_time_partitioning.value] == ingest_schedule, \
-                    "Invalid partitioning time selection"
+                    "Invalid partitioning time selection - partitioning time must match ingestion schedule"

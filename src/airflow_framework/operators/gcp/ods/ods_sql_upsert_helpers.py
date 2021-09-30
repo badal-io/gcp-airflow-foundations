@@ -48,20 +48,26 @@ class SqlHelperODS:
         self.columns_str_keys: str = ",".join(surrogate_keys)
         self.columns_str_target: str = ",".join(["`{}`".format(column_mapping[i]) for i in columns])
 
+    def create_insert_sql(self):
+        rows = f"""{self.columns_str_target}, {self.ingestion_time_column_name}, {self.update_time_column_name}, {self.hash_column_name}, {self.primary_key_hash_column_name}"""
+        values = f"""{self.columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in self.surrogate_keys])}], "")))"""
+        return rows, values
 
     def create_truncate_sql(self):
-        comma = ","
+        rows, values = self.create_insert_sql()
 
         return f"""
-                INSERT INTO `{self.target_dataset}.{self.target}`
-                ({self.columns_str_target}, {self.ingestion_time_column_name}, {self.update_time_column_name}, {self.hash_column_name}, {self.primary_key_hash_column_name})
-                SELECT {self.columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in self.surrogate_keys])}], "")))
+                INSERT `{self.target_dataset}.{self.target}`
+                ({rows})
+                SELECT {values}
                 FROM `{self.source_dataset}.{self.source}` S
             """
 
 
     def create_upsert_sql_with_hash(self):
         comma = ","
+
+        rows, values = self.create_insert_sql()
 
         return f"""
                 MERGE `{self.target_dataset}.{self.target}` T
@@ -71,6 +77,6 @@ class SqlHelperODS:
                 WHEN MATCHED THEN UPDATE
                     SET {(','.join(f'`{self.column_mapping[col]}`=S.`{col}`' for col in self.columns )) + f'{comma}' + f'{self.update_time_column_name}=CURRENT_TIMESTAMP()' + f'{comma}' +  f'{self.hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }
                 WHEN NOT MATCHED THEN
-                INSERT ({self.columns_str_target}, {self.ingestion_time_column_name}, {self.update_time_column_name}, {self.hash_column_name}, {self.primary_key_hash_column_name})
-                VALUES ({self.columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in self.surrogate_keys])}], ""))))
+                    INSERT ({rows})
+                    VALUES ({values})
             """

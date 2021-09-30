@@ -7,7 +7,7 @@ from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from airflow_framework.plugins.api.hooks.twilio_hook import TwilioHook
+from airflow_framework.operators.api.hooks.twilio_hook import TwilioHook
 
 
 class TwilioToBigQueryOperator(BaseOperator):

@@ -3,15 +3,15 @@ from airflow.exceptions import AirflowException
 
 from airflow_framework.enums.hds_table_type import HdsTableType
 
-from airflow_framework.plugins.gcp_hds.hds_sql_upsert_helpers import SqlHelperHDS
-
 from airflow.utils.task_group import TaskGroup
+
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateEmptyTableOperator,
     BigQueryExecuteQueryOperator
 )
 
-from airflow_framework.plugins.gcp_hds.hds_merge_table_operator import MergeBigQueryHDS
+from airflow_framework.operators.gcp.hds.hds_merge_table_operator import MergeBigQueryHDS
+from airflow_framework.operators.gcp.hds.hds_sql_upsert_helpers import SqlHelperHDS
 
 def hds_builder(
     project_id,

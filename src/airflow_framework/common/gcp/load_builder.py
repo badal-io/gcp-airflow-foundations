@@ -1,6 +1,6 @@
-from airflow_framework.plugins.gcp_hds.load_hds_taskgroup import hds_builder
-from airflow_framework.plugins.gcp_ods.load_ods_taskgroup import ods_builder
-from airflow_framework.plugins.gcp_common.parse_schema_from_gcs import parse_schema
+from airflow_framework.operators.gcp.hds.load_hds_taskgroup import hds_builder
+from airflow_framework.operators.gcp.ods.load_ods_taskgroup import ods_builder
+from airflow_framework.common.gcp.parse_schema_from_gcs import parse_schema
 
 import logging
 
