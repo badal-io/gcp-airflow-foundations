@@ -1,6 +1,6 @@
 ---
 source:
-  name: "test_csv_file"
+  name: "test_iot"
   source_type: GCS
   ingest_schedule: "@daily"
   start_date: "2021-08-30"
@@ -18,17 +18,23 @@ source:
   landing_zone_options:
     landing_zone_dataset: airflow_landing
 tables:
-  - table_name: raw_measurements_staging
-    dest_table_override: ods
-    source_table_schema_object: gs://airflow-datasets-poc-v2/schema.json
-    ingestion_type: INCREMENTAL
+  - table_name: test_iot
+    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_iot_data.json
     surrogate_keys: ['timestamp','device_id','property_measured']
-    update_columns: ['value']
-    ods_metadata:
-      hash_column_name: af_metadata_row_hash
-      primary_key_hash_column_name: af_metadata_primary_key_hash
-      ingestion_time_column_name: af_metadata_inserted_at
-      update_time_column_name: af_metadata_updated_at
+    ods_config:
+      ingestion_type: INCREMENTAL
+      ods_metadata:
+        hash_column_name: af_metadata_row_hash
+        primary_key_hash_column_name: af_metadata_primary_key_hash
+        ingestion_time_column_name: af_metadata_inserted_at
+        update_time_column_name: af_metadata_updated_at
+    hds_config:
+      hds_table_type: SNAPSHOT
+      hds_table_time_partitioning: DAY
+      hds_metadata:
+        eff_start_time_column_name: af_metadata_created_at
+        eff_end_time_column_name: af_metadata_expired_at
+        hash_column_name: af_metadata_row_hash
     column_mapping: 
       timestamp: datetime
       device_id: sensorID

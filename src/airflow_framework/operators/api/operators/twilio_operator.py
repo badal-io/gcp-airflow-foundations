@@ -7,12 +7,23 @@ from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from airflow_framework.plugins.api.hooks.twilio_hook import TwilioHook
+from airflow_framework.operators.api.hooks.twilio_hook import TwilioHook
 
 
 class TwilioToBigQueryOperator(BaseOperator):
     """
     Twilio Text Message data to BigQuery
+    
+    Attributes:
+        twilio_account_sid: Twilio Account SID to be used in the API
+        project_id: GCP project ID               
+        table_id: Staging table name    
+        dataset_id: Staging dataset name
+        schema_fields: Schema fields provided by the Airflow Framework for the Twilio Staging table
+        delegate_to: The account to impersonate using domain-wide delegation of authority, if any
+        gcp_conn_id: Airflow GCP connection ID
+        twilio_conn_id: Airflow Twilio connection ID
+        column_mapping: Column mapping dictionary
     """
     template_fields = ('dataset_id', 'table_id', 'project_id', 'labels')
 
