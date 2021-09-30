@@ -53,7 +53,6 @@ class SqlHelperODS:
         comma = ","
 
         return f"""
-                TRUNCATE TABLE `{self.target_dataset}.{self.target}`;
                 INSERT INTO `{self.target_dataset}.{self.target}`
                 ({self.columns_str_target}, {self.ingestion_time_column_name}, {self.update_time_column_name}, {self.hash_column_name}, {self.primary_key_hash_column_name})
                 SELECT {self.columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in self.surrogate_keys])}], "")))

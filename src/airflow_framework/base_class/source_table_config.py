@@ -51,6 +51,6 @@ class SourceTableConfig:
             self.landing_zone_table_name_override = self.table_name
 
     @validator("table_name")
-    def valid_ods_target(cls, v):
+    def valid_target(cls, v):
         assert v, "Target table name must not be empty"
         return

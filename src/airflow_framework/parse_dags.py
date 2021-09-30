@@ -26,7 +26,7 @@ class DagParser:
 
             default_task_args = {
                 "owner": config.source.owner,
-                #"retries": self.max_task_retries,
+                "retries": self.max_task_retries,
                 "retry_exponential_backoff": True,
                 "retry_delay": datetime.timedelta(seconds=300),
                 "project_id": config.source.gcp_project,
