@@ -8,10 +8,7 @@ from airflow_framework.base_class.data_source_table_config import DataSourceTabl
 
 from airflow_framework.source_class.source import DagBuilder
 
-from airflow_framework.plugins.gcp_custom.bq_merge_table_operator import MergeBigQueryODS
-from airflow_framework.plugins.gcp_custom.bq_create_table_operator import BigQueryCreateTableOperator
-
-from airflow_framework.plugins.gcp_custom.load import build_create_load_taskgroup
+from airflow_framework.common.gcp.load_builder import load_builder
 
 from urllib.parse import urlparse
 
@@ -35,7 +32,7 @@ class GCStoBQDagBuilder(DagBuilder):
         dags = []
         for table_config in self.config.tables:
             table_default_task_args = self.default_task_args_for_table(
-                config, table_config
+                self.config, table_config
             )
             logging.info(f"table_default_task_args {table_default_task_args}")
 
@@ -65,27 +62,23 @@ class GCStoBQDagBuilder(DagBuilder):
                     create_disposition='CREATE_IF_NEEDED',
                     skip_leading_rows=1,
                     dag=dag)
-
-                # 2 Create ODS table (if it doesn't exist) and merge or replace it with the staging table
-                taskgroup = build_create_load_taskgroup(
+             
+                #2 Create task groups for loading data to ODS/HDS tables
+                taskgroups = load_builder(
                     project_id=data_source.gcp_project,
                     table_id=table_config.table_name,
                     dataset_id=data_source.dataset_data_name,
                     landing_zone_dataset=landing_dataset,
                     landing_zone_table_name_override=table_config.landing_zone_table_name_override,
+                    surrogate_keys=table_config.surrogate_keys,
                     column_mapping=table_config.column_mapping,
                     gcs_schema_object=table_config.source_table_schema_object,
                     schema_fields=None,
-                    ods_metadata=table_config.ods_metadata,
-                    surrogate_keys=table_config.surrogate_keys,
-                    update_columns=table_config.update_columns,
-                    merge_type=table_config.merge_type,
-                    ingestion_type=table_config.ingestion_type,
-                    dag=dag)
-
-                load_to_bq_landing >> taskgroup
-
-                logging.info(f"Created dag for {table_config}, {dag}")
+                    ods_table_config=table_config.ods_config,
+                    hds_table_config=table_config.hds_config,
+                    preceding_task=load_to_bq_landing,
+                    dag=dag
+                )
 
                 dags.append(dag)
 
@@ -94,6 +87,7 @@ class GCStoBQDagBuilder(DagBuilder):
     def validate_extra_options(self):
         # Example of extra validation to do
         extra_options = self.config.source.extra_options
+
         # assert bucket and object/s are non-empty
         assert extra_options["gcs_bucket"]
         assert extra_options["gcs_objects"]
