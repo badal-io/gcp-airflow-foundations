@@ -23,8 +23,8 @@ class SqlHelperHDS:
         columns,
         surrogate_keys,
         column_mapping,
-        time_partitioning,
         hds_metadata,
+        time_partitioning=None,
         gcp_conn_id='google_cloud_default'):
 
         self.source_dataset = source_dataset
@@ -40,6 +40,10 @@ class SqlHelperHDS:
 
         if not column_mapping:
             self.column_mapping = {i:i for i in columns}
+        else:
+            for i in columns:
+                if i not in column_mapping:
+                    column_mapping[i] = i
 
         self.hash_column_name = hds_metadata.hash_column_name
         self.eff_start_time_column_name = hds_metadata.eff_start_time_column_name

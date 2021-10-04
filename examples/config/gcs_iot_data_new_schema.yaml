@@ -1,13 +1,13 @@
 ---
 source:
-  name: "test_iot"
+  name: "test_iot_new_schema"
   source_type: GCS
   ingest_schedule: "@daily"
   start_date: "2021-08-30"
   acceptable_delay_minutes: 5
   extra_options:
     gcs_bucket: airflow-datasets-poc-v2
-    gcs_objects: ["bigquery/iot.csv"]
+    gcs_objects: ["bigquery/iot_new_schema.csv"]
   gcp_project: sandbox-keyera-poc
   dataset_data_name: airflow_test
   connection: google_cloud_default
@@ -19,7 +19,7 @@ source:
     landing_zone_dataset: airflow_landing
 tables:
   - table_name: test_iot
-    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_iot_data.json
+    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_iot_data_new_schema.json
     surrogate_keys: ['timestamp','device_id','property_measured']
     ods_config:
       ingestion_type: INCREMENTAL
@@ -42,3 +42,4 @@ tables:
       value: value
       units_of_measurement: UOM
       device_version: device_version
+      

@@ -38,6 +38,10 @@ class SqlHelperODS:
 
         if not column_mapping:
             self.column_mapping = {i:i for i in columns}
+        else:
+            for i in columns:
+                if i not in column_mapping:
+                    column_mapping[i] = i
 
         self.hash_column_name = ods_metadata.hash_column_name
         self.primary_key_hash_column_name = ods_metadata.primary_key_hash_column_name

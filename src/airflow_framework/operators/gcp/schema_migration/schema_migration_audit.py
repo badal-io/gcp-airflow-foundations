@@ -1,5 +1,7 @@
 import json
 import logging
+import uuid
+from datetime import datetime
 
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 from airflow.contrib.hooks.gcs_hook import (
@@ -25,37 +27,29 @@ class SchemaMigrationAudit:
         self.bigquery_conn_id = bigquery_conn_id
         self.delegate_to = delegate_to
 
+        self.migration_id = uuid.uuid4().hex
+        self.migration_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # First check if audit table exists
-        if self.table_exists():
-            logging.info("Discovered existing audit table in BQ.")
-        else:
-            logging.info("Creating audit table in BQ.")
-            self.create_audit_table()
+        logging.info("Creating audit table in BQ.")
+        self.create_audit_table()
 
 
     def insert_change_log_rows(
         self, 
         change_log: list
     ):
+
+        for i in change_log:
+            i['schema_updated_at'] = self.migration_time
+            i['migration_id'] = self.migration_id
+            
         client = bigquery.Client(project=self.project_id)
 
         table_ref = client.dataset(self.dataset_id).table(self.table_id)
         table = client.get_table(table_ref)
 
         results = client.insert_rows(table, change_log)
-
-        logging.info(results) 
                
-
-    def table_exists(self):
-        bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id, delegate_to=self.delegate_to)
-        return bq_hook.table_exists(
-                                project_id=self.project_id,
-                                dataset_id=self.dataset_id,
-                                table_id=self.table_id
-                            )
-    
 
     def create_audit_table(self):
             bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id, delegate_to=self.delegate_to)
@@ -66,11 +60,12 @@ class SchemaMigrationAudit:
                 project_id=self.project_id,
                 dataset_id=self.dataset_id,
                 table_id=self.table_id,
-                schema_fields=self.audit_table_schema_fields()
+                schema_fields=self.__audit_table_schema_fields(),
+                exists_ok=True
             )
 
 
-    def audit_table_schema_fields(self):
+    def __audit_table_schema_fields(self):
         return [
             {
                 "name":"table_id",

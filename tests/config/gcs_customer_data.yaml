@@ -1,13 +1,13 @@
 ---
 source:
-  name: "test_iot"
+  name: "test_customer_data"
   source_type: GCS
   ingest_schedule: "@daily"
   start_date: "2021-08-30"
   acceptable_delay_minutes: 5
   extra_options:
     gcs_bucket: airflow-datasets-poc-v2
-    gcs_objects: ["bigquery/iot.csv"]
+    gcs_objects: ["bigquery/hds_test_data.csv"]
   gcp_project: sandbox-keyera-poc
   dataset_data_name: airflow_test
   connection: google_cloud_default
@@ -18,9 +18,9 @@ source:
   landing_zone_options:
     landing_zone_dataset: airflow_landing
 tables:
-  - table_name: test_iot
-    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_iot_data.json
-    surrogate_keys: ['timestamp','device_id','property_measured']
+  - table_name: test_customer_data
+    source_table_schema_object: gs://airflow-datasets-poc-v2/schema_customer_data.json
+    surrogate_keys: ['customer_id','key']
     ods_config:
       ingestion_type: INCREMENTAL
       ods_metadata:
@@ -29,16 +29,13 @@ tables:
         ingestion_time_column_name: af_metadata_inserted_at
         update_time_column_name: af_metadata_updated_at
     hds_config:
-      hds_table_type: SCD2
-      #hds_table_time_partitioning: DAY
+      hds_table_type: SNAPSHOT
+      hds_table_time_partitioning: DAY
       hds_metadata:
         eff_start_time_column_name: af_metadata_created_at
         eff_end_time_column_name: af_metadata_expired_at
         hash_column_name: af_metadata_row_hash
     column_mapping: 
-      timestamp: datetime
-      device_id: sensorID
-      property_measured: property
-      value: value
-      units_of_measurement: UOM
-      device_version: device_version
+      customer_id: customerID
+      key: key_id
+      city: city_name

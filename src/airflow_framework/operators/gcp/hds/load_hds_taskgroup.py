@@ -12,6 +12,8 @@ from airflow.providers.google.cloud.operators.bigquery import (
 
 from airflow_framework.operators.gcp.hds.hds_merge_table_operator import MergeBigQueryHDS
 from airflow_framework.operators.gcp.hds.hds_sql_upsert_helpers import SqlHelperHDS
+from airflow_framework.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
+
 
 def hds_builder(
     project_id,
@@ -20,6 +22,7 @@ def hds_builder(
     landing_zone_dataset,
     landing_zone_table_name_override,
     column_mapping,
+    columns,
     schema_fields,
     surrogate_keys,
     hds_table_config,
@@ -65,7 +68,18 @@ def hds_builder(
         dag=dag
     )
 
-    #2 Load staging table to HDS table
+    #2 Migrate schema
+    migrate_schema = MigrateSchema(
+        task_id="schema_migration",
+        project_id=project_id,
+        table_id=table_id,
+        dataset_id=dataset_id, 
+        new_schema_fields=schema_fields,
+        task_group=taskgroup,
+        dag=dag
+    )
+
+    #3 Load staging table to HDS table
     insert = MergeBigQueryHDS(
         task_id="insert_into_hds_table",
         project_id=project_id,
@@ -75,11 +89,12 @@ def hds_builder(
         data_table_name=table_id,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
+        columns=columns,
         hds_table_config=hds_table_config,
         task_group=taskgroup,
         dag=dag
     )
 
-    create_table >> insert
+    create_table >> migrate_schema >> insert
 
     return taskgroup
