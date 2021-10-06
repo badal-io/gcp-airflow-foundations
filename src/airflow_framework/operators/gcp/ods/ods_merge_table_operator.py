@@ -53,6 +53,7 @@ class MergeBigQueryODS(BigQueryOperator):
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
+        columns: list,
         ods_table_config: OdsTableConfig,
         **kwargs,
     ) -> None:
@@ -74,26 +75,13 @@ class MergeBigQueryODS(BigQueryOperator):
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
+        self.columns = columns
         self.ods_table_config = ods_table_config
 
     def pre_execute(self, context) -> None:
         self.log.info(
             f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}"
         )
-
-        hook = BigQueryHook(
-            bigquery_conn_id=self.gcp_conn_id,
-            delegate_to=self.delegate_to,
-        )
-        conn = hook.get_conn()
-        bq_cursor = conn.cursor()
-
-        schema = bq_cursor.get_schema(
-            dataset_id=self.stg_dataset_name, table_id=self.stg_table_name
-        )
-        self.log.info("Target table schema is : %s", schema)
-
-        columns: list[str] = list(map(lambda x: x["name"], schema["fields"]))
 
         sql = ""
 
@@ -102,7 +90,7 @@ class MergeBigQueryODS(BigQueryOperator):
             target_dataset=self.data_dataset_name ,
             source=self.stg_table_name,
             target=self.data_table_name,
-            columns=columns,
+            columns=self.columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             ods_metadata=self.ods_table_config.ods_metadata

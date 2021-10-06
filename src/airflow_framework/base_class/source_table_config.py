@@ -53,4 +53,4 @@ class SourceTableConfig:
     @validator("table_name")
     def valid_source_table(cls, v):
         assert v, "Source table name must not be empty"
-        return
+        return v
