@@ -11,7 +11,7 @@ from airflow.providers.google.cloud.operators.bigquery import (
 )
 
 from airflow_framework.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
-from airflow_framework.operators.gcp.ods.ods_sql_upsert_helpers import SqlHelperODS
+from airflow_framework.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
 
 
 def ods_builder(
@@ -21,6 +21,7 @@ def ods_builder(
     landing_zone_dataset,
     landing_zone_table_name_override,
     column_mapping,
+    columns,
     schema_fields,
     surrogate_keys,
     ods_table_config,
@@ -56,7 +57,18 @@ def ods_builder(
         dag=dag
     )
 
-    #2 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
+    #2 Migrate schema
+    migrate_schema = MigrateSchema(
+        task_id="schema_migration",
+        project_id=project_id,
+        table_id=table_id,
+        dataset_id=dataset_id, 
+        new_schema_fields=schema_fields,
+        task_group=taskgroup,
+        dag=dag
+    )
+
+    #3 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
     insert = MergeBigQueryODS(
         task_id="insert_into_ods_table",
         project_id=project_id,
@@ -66,11 +78,12 @@ def ods_builder(
         data_table_name=table_id,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
+        columns=columns,
         ods_table_config=ods_table_config,
         task_group=taskgroup,
         dag=dag
     )
 
-    create_table >> insert
+    create_table >> migrate_schema >> insert
 
     return taskgroup

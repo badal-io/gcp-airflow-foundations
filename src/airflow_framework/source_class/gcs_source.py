@@ -39,7 +39,7 @@ class GCStoBQDagBuilder(DagBuilder):
             start_date = table_default_task_args["start_date"]
 
             with DAG(
-                dag_id=f"gcs_to_bq_{table_config.table_name}",
+                dag_id=f"gcs_to_bq_{data_source.name}",
                 description=f"BigQuery load for {table_config.table_name}",
                 schedule_interval=None,
                 default_args=table_default_task_args
