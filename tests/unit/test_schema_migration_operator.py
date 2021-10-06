@@ -11,8 +11,14 @@ class TestSchemaMigrationOperator(object):
     """
     Assert that the SchemaMigration Operator successfully returns a list of SQL statemets for migrating the schema of the test table columns
     """
-    def test_should_pick_columns_for_schema_migration(self, project_id, target_dataset, config):
-        for table in config.tables:
+    @pytest.fixture(autouse=True)
+    def setup(self, project_id, target_dataset, config):
+        self.project_id = project_id
+        self.target_dataset = target_dataset
+        self.config = config
+
+    def test_should_pick_columns_for_ods_schema_migration(self):
+        for table in self.config.tables:
             if table.ods_config:
 
                 if table.ods_config.ingestion_type == IngestionType.INCREMENTAL:
@@ -28,7 +34,13 @@ class TestSchemaMigrationOperator(object):
                     ods_metadata=table.ods_config.ods_metadata
                 )
 
-            elif table.hds_config:
+                expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_primary_key_hash`,`af_metadata_updated_at`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_ODS_Incremental`;"
+
+                assert self.get_schema_migration_sql(table_id, schema_fields) == expected_query 
+
+    def test_should_pick_columns_for_hds_schema_migration(self):
+        for table in self.config.tables:
+            if table.hds_config:
                 if table.hds_config.hds_table_type == HdsTableType.SNAPSHOT:
                     table_id = f"{table.table_name}_HDS_Snapshot"
 
@@ -41,16 +53,21 @@ class TestSchemaMigrationOperator(object):
                     column_mapping=table.column_mapping,            
                     hds_metadata=table.hds_config.hds_metadata,
                     hds_table_type=table.hds_config.hds_table_type
-                )        
+                )    
 
-            migrate_schema = MigrateSchema(
-                task_id="schema_migration",
-                project_id=project_id,
-                table_id=table_id,
-                dataset_id=target_dataset, 
-                new_schema_fields=schema_fields
-            )
+                expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_created_at`,`partition_time`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_HDS_Snapshot`;"
 
-            query, schema_fields_updates, sql_column_statements, change_log = migrate_schema.build_schema_query()
+                assert self.get_schema_migration_sql(table_id, schema_fields) == expected_query
 
-            assert sql_column_statements is not None, "Could not validate MigrateSchema operator"     
+    def get_schema_migration_sql(self, table_id, schema_fields):
+        migrate_schema = MigrateSchema(
+            task_id="schema_migration",
+            project_id=self.project_id,
+            table_id=table_id,
+            dataset_id=self.target_dataset, 
+            new_schema_fields=schema_fields
+        )
+
+        query, _, _, _= migrate_schema.build_schema_query()
+
+        return query

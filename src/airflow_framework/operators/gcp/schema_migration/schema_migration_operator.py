@@ -85,6 +85,13 @@ class MigrateSchema(BaseOperator):
         1) Column type
         2) New column
         3) Deleted column
+
+        The build_schema_query method returns the following output:
+
+        - query: a string with the SQL query that will be executed in BigQuery to modify the table's schema
+        - schema_fields_updates: a list of the columns whose mode will be relaxed to nullable after being deleted in the source table. The list is used in the update_table_schema method of the BigQuery hook.
+        - sql_columns: a list of updated columns that is used to check whether there are any columns to be updated before proceeding to execute the SQL query.
+        - change_log: a list of rows of changes that is inserted in the schema migration audit table. 
         """
 
         self.current_schema_fields = self.cursor.get_schema(dataset_id=self.dataset_id, table_id=self.table_id).get("fields", None)
@@ -165,9 +172,7 @@ class MigrateSchema(BaseOperator):
                     {"name":column_name,"mode":"NULLABLE","type":column_type}
                 )
 
-        query = f"""
-                SELECT {",".join(sql_columns)} FROM `{self.dataset_id}.{self.table_id}`;
-            """
+        query = f"""SELECT {",".join(sql_columns)} FROM `{self.dataset_id}.{self.table_id}`;"""
 
         return query, schema_fields_updates, sql_columns, change_log
 

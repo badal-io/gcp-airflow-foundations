@@ -159,7 +159,7 @@ class TestHdsMerge(object):
             SELECT 
                 customerID, key_id, city_name
             FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_HDS_SCD2 
-            ORDER BY key_id ASC"""
+            ORDER BY key_id ASC, city_name ASC"""
 
         query_config = bigquery.QueryJobConfig(use_legacy_sql=False)
 
@@ -192,7 +192,7 @@ class TestHdsMerge(object):
             SELECT 
                 customerID, key_id, city_name
             FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_HDS_SCD2 
-            ORDER BY key_id ASC"""
+            ORDER BY key_id ASC, city_name ASC"""
 
         query_config = bigquery.QueryJobConfig(use_legacy_sql=False)
 

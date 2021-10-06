@@ -29,7 +29,7 @@ tables:
         ingestion_time_column_name: af_metadata_inserted_at
         update_time_column_name: af_metadata_updated_at
     hds_config:
-      hds_table_type: SNAPSHOT
+      hds_table_type: SCD2
       hds_table_time_partitioning: DAY
       hds_metadata:
         eff_start_time_column_name: af_metadata_created_at
