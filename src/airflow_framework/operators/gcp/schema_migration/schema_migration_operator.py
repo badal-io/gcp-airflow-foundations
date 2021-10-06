@@ -41,6 +41,13 @@ class MigrateSchema(BaseOperator):
         self.delegate_to = delegate_to
         self.encryption_configuration = encryption_configuration
 
+        self.hook = BigQueryHook(
+            gcp_conn_id=self.gcp_conn_id,
+            delegate_to=self.delegate_to,
+        )
+        conn = self.hook.get_conn()
+        self.cursor = conn.cursor()
+
     def execute(self, context):
         query, schema_fields_updates, sql_columns, change_log = self.build_schema_query()
 
@@ -48,7 +55,7 @@ class MigrateSchema(BaseOperator):
             logging.info("Migrating new schema to target table")
 
             if sql_columns:
-                cursor.run_query(
+                self.cursor.run_query(
                     sql=query,
                     use_legacy_sql=False,
                     destination_dataset_table=f"{self.dataset_id}.{self.table_id}",
@@ -56,7 +63,7 @@ class MigrateSchema(BaseOperator):
                 )
 
             if schema_fields_updates:
-                hook.update_table_schema(
+                self.hook.update_table_schema(
                     dataset_id=self.dataset_id, 
                     table_id=self.table_id,
                     schema_fields_updates=schema_fields_updates,
@@ -79,14 +86,8 @@ class MigrateSchema(BaseOperator):
         2) New column
         3) Deleted column
         """
-        hook = BigQueryHook(
-            gcp_conn_id=self.gcp_conn_id,
-            delegate_to=self.delegate_to,
-        )
-        conn = hook.get_conn()
-        cursor = conn.cursor()
 
-        self.current_schema_fields = cursor.get_schema(dataset_id=self.dataset_id, table_id=self.table_id).get("fields", None)
+        self.current_schema_fields = self.cursor.get_schema(dataset_id=self.dataset_id, table_id=self.table_id).get("fields", None)
         
         logging.info(f"The current schema is: {self.current_schema_fields}")
 
@@ -125,7 +126,7 @@ class MigrateSchema(BaseOperator):
             else:
                 column_type_new = self.bigQuery_mapping(next((i['type'] for i in self.new_schema_fields if i["name"] == column_name), None))
                 if (column_type_new is not None) and (column_type_new != column_type):
-                    self.allowed_casting(column_name, column_type, column_type_new)
+                    assert self.allowed_casting(column_name, column_type, column_type_new), f"Data type of column {column_name} cannot be changed from {column_type} to {column_type_new}"
 
                     logging.info(f"Data type of column `{column_name}` was changed from {column_type} to {column_type_new}")
 
@@ -201,4 +202,6 @@ class MigrateSchema(BaseOperator):
         allowed_casting = casting[current_data_type]
 
         if new_data_type not in allowed_casting:
-            AirflowException("Invalid casting type", f"Data type of column {column_name} cannot be changed from {current_data_type} to {current_data_type}")
+            return False
+        else:
+            return True

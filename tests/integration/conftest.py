@@ -11,6 +11,8 @@ from airflow_framework.base_class.utils import load_tables_config
 
 from airflow.hooks.base_hook import BaseHook
 
+from google.cloud import bigquery
+
 
 @pytest.fixture(scope="session")
 def project_id():
@@ -25,6 +27,14 @@ def test_dag():
                 default_args={'owner': 'airflow', 'start_date': datetime(2021, 1, 1)}
             ) 
 
+def run_task(task):
+    ti = TaskInstance(task=task, execution_date=datetime.now())
+    task.execute(ti.get_template_context())
+
+def run_task_with_pre_execute(task):
+    ti = TaskInstance(task=task, execution_date=datetime.now())
+    task.pre_execute(ti.get_template_context())
+    task.execute(ti.get_template_context())
 
 @pytest.fixture(scope="session")
 def config():
@@ -45,3 +55,29 @@ def staging_dataset(config):
 @pytest.fixture(scope="session")
 def target_dataset(config):
     return config.source.dataset_data_name
+
+@pytest.fixture(scope="session")
+def target_table_id():
+    return "test_table"
+
+@pytest.fixture(scope="session")
+def mock_data_rows():
+    rows = [
+        {
+            "customerID": "customer_1",
+            "key_id": 1,
+            "city_name": "Toronto"
+        },
+        {
+            "customerID": "customer_2",
+            "key_id": 2,
+            "city_name": "Montreal"
+        },
+        {
+            "customerID": "customer_3",
+            "key_id": 3,
+            "city_name": "Ottawa"
+        },
+    ]
+
+    return rows

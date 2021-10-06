@@ -11,7 +11,6 @@ from airflow.providers.google.cloud.operators.bigquery import (
 )
 
 from airflow_framework.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
-from airflow_framework.operators.gcp.ods.ods_sql_upsert_helpers import SqlHelperODS
 from airflow_framework.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
 
 
