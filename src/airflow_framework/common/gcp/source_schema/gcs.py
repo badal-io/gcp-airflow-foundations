@@ -16,7 +16,7 @@ def read_schema_from_gcs(
     google_cloud_storage_conn_id='google_cloud_default',
     bigquery_conn_id='google_cloud_default') -> list:
     """
-        Helper method to load table schema from a GCS URI, unless a list of schema fields is provided.
+        Helper method to load table schema from a GCS URI, unless a list of schema fields is provided to be used instead.
     """
 
     bq_hook = BigQueryHook(bigquery_conn_id=bigquery_conn_id, delegate_to=None)
