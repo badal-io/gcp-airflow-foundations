@@ -9,7 +9,7 @@ from airflow_framework.operators.gcp.schema_migration.schema_migration_operator 
 
 class TestSchemaMigrationOperator(object):
     """
-    Assert that the SchemaMigration Operator successfully returns a list of SQL statemets for migrating the schema of the test table columns
+    Tests that the SchemaMigration Operator successfully returns a list of SQL statemets for migrating the schema of the test table columns
     """
     @pytest.fixture(autouse=True)
     def setup(self, project_id, target_dataset, config):

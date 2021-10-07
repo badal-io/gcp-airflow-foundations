@@ -19,19 +19,28 @@ from airflow_framework.enums.ingestion_type import IngestionType
 
 class MergeBigQueryODS(BigQueryOperator):
     """
-    Merge data into a BigQuery ODS table.
+    Merges data into a BigQuery ODS table.
     
-    Attributes:
-        project_id: GCP project ID               
-        stg_table_name: Source table name    
-        data_table_name: Target table name
-        stg_dataset_name: Source dataset name
-        data_dataset_name: Target dataset name
-        surrogate_keys: List of surrogate keys
-        delegate_to: The account to impersonate using domain-wide delegation of authority, if any
-        gcp_conn_id: Airflow GCP connection ID
-        column_mapping: Column mapping dictionary
-        ods_table_config: OdsTableConfig object with user-provided ODS configuration options
+    :param project_id: GCP project ID  
+    :type project_id: str
+    :param stg_table_name: Source table name
+    :type stg_table_name: str
+    :param data_table_name: Target table name
+    :type data_table_name: str
+    :param stg_dataset_name: Source dataset name
+    :type stg_dataset_name: str
+    :param data_dataset_name: Target dataset name
+    :type data_dataset_name: str
+    :param surrogate_keys: Surrogate keys of the target table
+    :type surrogate_keys: list
+    :param delegate_to: The account to impersonate using domain-wide delegation of authority, if any
+    :type delegate_to: str
+    :param gcp_conn_id: Airflow GCP connection ID
+    :type gcp_conn_id: str
+    :param column_mapping: Column mapping
+    :type column_mapping: dict
+    :param ods_table_config: User-provided ODS configuration options
+    :type ods_table_config: OdsTableConfig
     """
 
     template_fields = (

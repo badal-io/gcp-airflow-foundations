@@ -2,18 +2,28 @@ class SqlHelperODS:
     """
     SQL helper class used to formulate the SQL queries for the merge operations of ODS tables.
     
-    Attributes:              
-        source: Source table name    
-        target: Target table name
-        source_dataset: Source dataset name
-        target_dataset: Target dataset name
-        columns: List of columns of the source table
-        surrogate_keys: List of surrogate keys
-        column_mapping: Column mapping dictionary
-        time_partitioning: Time partitioning option for BigQuery target table. One of HOUR, DAY, or MONTH
-        ods_metadata: User-provided options for ODS metadata column naming
-        gcp_conn_id: Airflow GCP connection ID
+    :param source: Source table name
+    :type source: str
+    :param target: Target table name
+    :type target: str
+    :param source_dataset: Source dataset name
+    :type source_dataset: str
+    :param target_dataset: Target dataset name
+    :type target_dataset: str
+    :param surrogate_keys: Surrogate keys of the target table
+    :type surrogate_keys: list
+    :param columns: List of source table columns
+    :type columns: list
+    :param gcp_conn_id: Airflow GCP connection ID
+    :type gcp_conn_id: str
+    :param column_mapping: Column mapping
+    :type column_mapping: dict
+    :param time_partitioning: Time partitioning option for BigQuery target table. One of HOUR, DAY, or MONTH
+    :type time_partitioning: str
+    :param ods_metadata: User-provided options for ODS metadata column naming
+    :type ods_metadata: OdsTableMetadataConfig
     """
+
     def __init__(
         self,
         source_dataset,

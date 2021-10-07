@@ -12,7 +12,7 @@ from airflow_framework.operators.gcp.hds.hds_sql_upsert_helpers import SqlHelper
 
 class TestSqlHelpers(object):
     """
-    Assert that the SQL queries used for updating the ODS and HDS tables are run without erros on BigQuery using the dry-run query configuration
+    Tests that the SQL queries used for updating the ODS and HDS tables are run without erros on BigQuery using the dry-run query configuration
     """
     def setup(self):
         bq_hook = BigQueryHook(gcp_conn_id='google_cloud_default')

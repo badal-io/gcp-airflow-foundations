@@ -11,7 +11,7 @@ from airflow_framework.operators.gcp.ods.load_ods_taskgroup import ods_builder
 
 class TestTaskGroupBuilder(object):
     """
-    Assert that the task groups for ODS and HDS tables are loaded
+    Tests that the task groups for ODS and HDS tables are loaded
     """
     def test_should_load_ods_task_group(self, test_dag, config, project_id, staging_dataset, target_dataset):
         data_source = config.source

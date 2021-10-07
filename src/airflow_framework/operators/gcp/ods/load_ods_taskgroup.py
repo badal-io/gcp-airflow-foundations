@@ -31,9 +31,7 @@ def ods_builder(
     encryption_configuration=None) -> TaskGroup:
 
     """
-    Method for building a Task Group consisting of the following operators:
-    1) BigQueryCreateEmptyTableOperator for creating (if it doesn't already exist) the target ODS table using the parsed schema
-    2) MergeBigQueryODS for merging the staging table data into the target ODS table using the selected ingestion method
+    Method for returning a Task Group for 1) creating an empty target ODS table (if it doesn't already exist) and for 2) for merging the staging table data into the target ODS table
     """
     taskgroup = TaskGroup(group_id="create_ods_merge_taskgroup")
 

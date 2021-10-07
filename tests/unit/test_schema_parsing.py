@@ -7,7 +7,7 @@ from airflow_framework.common.gcp.hds.schema_utils import parse_hds_schema
 
 class TestSchemaParsing(object):
     """
-    Assert that the schema is read from GCS and parsed accordingly based on whether the table is ODS or HDS
+    Tests that the schema is read from GCS and parsed accordingly based on whether the table is ODS or HDS
     """
     def test_should_read_from_gcs(self, config):
         for table in config.tables:

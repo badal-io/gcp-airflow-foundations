@@ -1,7 +1,8 @@
 from airflow_framework.parse_dags import DagParser
-from airflow.models import Variable
 
-parser = DagParser()
+parser = DagParser() 
+
+# Can overwrite the "CONFIG_FILE_LOCATION" variable here by setting the parser.conf_location attribute to the desired path
 
 parsed_dags = parser.parse_dags()
 

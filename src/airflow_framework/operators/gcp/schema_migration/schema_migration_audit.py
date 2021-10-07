@@ -11,20 +11,34 @@ from airflow.contrib.hooks.gcs_hook import (
 from google.cloud import bigquery
 
 class SchemaMigrationAudit:
+    """
+    Inserts the the audit log rows of the schema migration operations that are executed by the MigrateSchema class. The table is created if it does not exist.
+    
+    :param project_id: GCP project ID  
+    :type project_id: str
+    :param table_id: Target table name
+    :type table_id: str
+    :param dataset_id: Target dataset name
+    :type dataset_id: str
+    :param delegate_to: The account to impersonate using domain-wide delegation of authority, if any
+    :type delegate_to: str
+    :param gcp_conn_id: Airflow GCP connection ID
+    :type gcp_conn_id: str
+    """
 
     def __init__(
         self,
         project_id,
         dataset_id,
         table_id='schema_migration_audit_table',
-        bigquery_conn_id='google_cloud_default',
+        gcp_conn_id='google_cloud_default',
         delegate_to=None
     ):
 
         self.project_id = project_id
         self.dataset_id = dataset_id
         self.table_id = table_id
-        self.bigquery_conn_id = bigquery_conn_id
+        self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
 
         self.migration_id = uuid.uuid4().hex
@@ -35,10 +49,15 @@ class SchemaMigrationAudit:
 
 
     def insert_change_log_rows(
+        
         self, 
         change_log: list
     ):
-
+        """
+        :param change_log: The schema migration operations executed by the MigrateSchema class
+        :type change_log: list
+        """
+        
         for i in change_log:
             i['schema_updated_at'] = self.migration_time
             i['migration_id'] = self.migration_id
@@ -52,7 +71,7 @@ class SchemaMigrationAudit:
                
 
     def create_audit_table(self):
-            bq_hook = BigQueryHook(bigquery_conn_id=self.bigquery_conn_id, delegate_to=self.delegate_to)
+            bq_hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to)
             conn = bq_hook.get_conn()
             cursor = conn.cursor()
 

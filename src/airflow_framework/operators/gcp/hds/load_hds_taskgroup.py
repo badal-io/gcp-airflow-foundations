@@ -31,9 +31,7 @@ def hds_builder(
     encryption_configuration=None) -> TaskGroup:
 
     """
-    Method for building a Task Group consisting of the following operators:
-    1) BigQueryCreateEmptyTableOperator for creating (if it doesn't already exist) the target HDS table using the parsed schema
-    2) MergeBigQueryHDS for merging the staging table data into the target HDS table
+    Method for returning a Task Group for 1) creating an empty target HDS table (if it doesn't already exist) and for 2) for merging the staging table data into the target HDS table
     """
 
     taskgroup = TaskGroup(group_id="create_hds_merge_taskgroup")

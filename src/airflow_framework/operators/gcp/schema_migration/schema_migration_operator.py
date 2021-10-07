@@ -17,6 +17,22 @@ from airflow_framework.operators.gcp.schema_migration.schema_migration_audit imp
 
 
 class MigrateSchema(BaseOperator):
+    """
+    Detects any changes in the source table's schema and updates the target table's schema.
+    
+    :param project_id: GCP project ID  
+    :type project_id: str
+    :param table_id: Target table name
+    :type table_id: str
+    :param dataset_id: Target dataset name
+    :type dataset_id: str
+    :param new_schema_fields: The current schema fields of the source table
+    :type new_schema_fields: list
+    :param delegate_to: The account to impersonate using domain-wide delegation of authority, if any
+    :type delegate_to: str
+    :param gcp_conn_id: Airflow GCP connection ID
+    :type gcp_conn_id: str
+    """
 
     @apply_defaults
     def __init__(
@@ -81,17 +97,17 @@ class MigrateSchema(BaseOperator):
 
     def build_schema_query(self):
         """
-        Schema change cases:
+        Schema change types supported:
         1) Column type
         2) New column
         3) Deleted column
 
-        The build_schema_query method returns the following output:
-
-        - query: a string with the SQL query that will be executed in BigQuery to modify the table's schema
-        - schema_fields_updates: a list of the columns whose mode will be relaxed to nullable after being deleted in the source table. The list is used in the update_table_schema method of the BigQuery hook.
-        - sql_columns: a list of updated columns that is used to check whether there are any columns to be updated before proceeding to execute the SQL query.
-        - change_log: a list of rows of changes that is inserted in the schema migration audit table. 
+        :returns: list of
+                    string of the SQL query that will be executed in BigQuery to modify the table's schema,
+                    list of the columns whose mode will be relaxed to nullable after being deleted in the source table. The list is used in the update_table_schema method of the BigQuery hook,
+                    list of updated columns that is used to check whether there are any columns to be updated before proceeding to execute the SQL query,
+                    list of rows of changes that is inserted in the schema migration audit table
+        :rtype: list
         """
 
         self.current_schema_fields = self.cursor.get_schema(dataset_id=self.dataset_id, table_id=self.table_id).get("fields", None)

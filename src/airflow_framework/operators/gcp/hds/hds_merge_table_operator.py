@@ -19,20 +19,30 @@ from airflow_framework.base_class.hds_table_config import HdsTableConfig
 
 class MergeBigQueryHDS(BigQueryOperator):
     """
-    Merge data into a BigQuery HDS table.
+    Merges data into a BigQuery HDS table.
     
-    Attributes:
-        project_id: GCP project ID               
-        stg_table_name: Source table name    
-        data_table_name: Target table name
-        stg_dataset_name: Source dataset name
-        data_dataset_name: Target dataset name
-        surrogate_keys: List of surrogate keys
-        delegate_to: The account to impersonate using domain-wide delegation of authority, if any
-        gcp_conn_id: Airflow GCP connection ID
-        column_mapping: Column mapping dictionary
-        hds_table_config: HdsTableConfig object with user-provided HDS configuration options
+    :param project_id: GCP project ID  
+    :type project_id: str
+    :param stg_table_name: Source table name
+    :type stg_table_name: str
+    :param data_table_name: Target table name
+    :type data_table_name: str
+    :param stg_dataset_name: Source dataset name
+    :type stg_dataset_name: str
+    :param data_dataset_name: Target dataset name
+    :type data_dataset_name: str
+    :param surrogate_keys: Surrogate keys of the target table
+    :type surrogate_keys: list
+    :param delegate_to: The account to impersonate using domain-wide delegation of authority, if any
+    :type delegate_to: str
+    :param gcp_conn_id: Airflow GCP connection ID
+    :type gcp_conn_id: str
+    :param column_mapping: Column mapping
+    :type column_mapping: dict
+    :param hds_table_config: User-provided HDS configuration options
+    :type hds_table_config: HdsTableConfig
     """
+    
     template_fields = (
         "stg_table_name",
         "data_table_name",
