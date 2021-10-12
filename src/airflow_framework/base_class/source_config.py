@@ -22,8 +22,8 @@ class SourceConfig:
         landing_zone_options : Staging dataset name
         acceptable_delay_minutes : Delay minutes limit
         notification_emails : Email address for notification emails
-        owner : Aiflow user owning the DAG
-        start_date : Start data for DAG
+        owner : Airflow user owning the DAG
+        start_date : Start date for DAG
         start_date_tz : Timezone
         version : The Dag version. Can be incremented if logic changes
         sla_mins : SLA mins
