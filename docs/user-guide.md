@@ -22,7 +22,7 @@ pip install 'gcp-airflow-foundations'
 ```
 
 ## Usage
-###Configuring the Data Ingestion Pipeline
+### Configuring the Data Ingestion Pipeline
 After installing _gcp-airflow-foundations_ in your Airflow environment, the user needs to first create a YAML configuration file.
 The package reads the YAML configuration files from a common directory. The user should create a new Airflow variable ```CONFIG_FILE_LOCATION``` 
 to store the absolute path to that directory. A configuration file consists of two main keys: 1) source and 2) tables, 
