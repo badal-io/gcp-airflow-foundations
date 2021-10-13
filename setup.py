@@ -18,7 +18,7 @@ def main():
         version=about["__version__"],
         description=about["__description__"],
         url=about["__url__"],
-        download_url="https://github.com/badal-io/airflow-framework/archive/refs/tags/v1.0.0.tar.gz",
+        download_url=["__download_url__"],
         author=about["__author__"],
         author_email=about["__author_email__"],
         license=about["__license__"],
