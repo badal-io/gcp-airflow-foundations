@@ -5,7 +5,7 @@ from airflow import DAG
 from airflow.models import DagBag
 from airflow.utils.dag_cycle_tester import test_cycle
 
-from airflow_framework.parse_dags import DagParser
+from gcp_airflow_foundations.parse_dags import DagParser
 
 import logging
 

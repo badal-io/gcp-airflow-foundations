@@ -1,6 +1,6 @@
 import pytest
 
-from airflow_framework.operators.api.hooks.twilio_hook import TwilioHook
+from gcp_airflow_foundations.operators.api.hooks.twilio_hook import TwilioHook
 
 
 from airflow.hooks.base_hook import BaseHook

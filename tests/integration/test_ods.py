@@ -15,12 +15,12 @@ from airflow.providers.google.cloud.operators.bigquery import (
 
 from tests.integration.conftest import run_task, run_task_with_pre_execute
 
-from airflow_framework.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
+from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
 
-from airflow_framework.base_class.ods_metadata_config import OdsTableMetadataConfig
-from airflow_framework.enums.ingestion_type import IngestionType
-from airflow_framework.base_class.ods_table_config import OdsTableConfig
-from airflow_framework.common.gcp.ods.schema_utils import parse_ods_schema
+from gcp_airflow_foundations.base_class.ods_metadata_config import OdsTableMetadataConfig
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
+from gcp_airflow_foundations.common.gcp.ods.schema_utils import parse_ods_schema
 
 from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField

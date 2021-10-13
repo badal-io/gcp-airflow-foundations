@@ -9,9 +9,9 @@ from airflow.hooks.base_hook import BaseHook
 from airflow import DAG
 from airflow.models import DagBag
 
-from airflow_framework.parse_dags import DagParser
-from airflow_framework.base_class.utils import load_tables_config_from_dir
-from airflow_framework.base_class.utils import load_tables_config
+from gcp_airflow_foundations.parse_dags import DagParser
+from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
+from gcp_airflow_foundations.base_class.utils import load_tables_config
 
 import logging
 

@@ -1,5 +1,5 @@
-# airflow-framework
-[![PyPI version](https://badge.fury.io/py/airflow-framework.svg)](https://badge.fury.io/py/airflow-framework)  
+# gcp-airflow-foundations
+[![PyPI version](https://badge.fury.io/py/gcp-airflow-foundations.svg)](https://badge.fury.io/py/gcp-airflow-foundations)  
 
 Airflow is an awesome open source orchestration framework that is the go-to for building data ingestion pipelines on GCP (using Composer - a hosted AIrflow service). However, most companies using it face the same set of problems 
 Learning curve: Airflow requires python knowledge and has some gotchas that take time to learn. Further, writing Python DAGs for every single table that needs to get ingested becomes cumbersome. Most companies end up building utilities for creating DAGs out of configuration files to simplify DAG creation and to allow non-developers to configure ingestion
@@ -18,7 +18,7 @@ Well tested - We maintain a rich suite of both unit and integration tests
 
 ## Installing from PyPI
 ```bash
-pip install 'airflow-framework'
+pip install 'gcp-airflow-foundations'
 ```
 ## Usage
-See the [airflow-framework documentation](https://badal-io.github.io/airflow-framework/) for more details.
+See the [gcp-airflow-foundations documentation](https://badal-io.github.io/gcp-airflow-foundations/) for more details.

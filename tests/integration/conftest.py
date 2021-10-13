@@ -7,7 +7,7 @@ from datetime import datetime
 from airflow.models import TaskInstance
 from airflow import DAG
 
-from airflow_framework.base_class.utils import load_tables_config
+from gcp_airflow_foundations.base_class.utils import load_tables_config
 
 from airflow.hooks.base_hook import BaseHook
 

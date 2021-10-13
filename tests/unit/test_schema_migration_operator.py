@@ -1,10 +1,10 @@
 import pytest
 
-from airflow_framework.common.gcp.ods.schema_utils import parse_ods_schema
-from airflow_framework.common.gcp.hds.schema_utils import parse_hds_schema
-from airflow_framework.enums.ingestion_type import IngestionType
-from airflow_framework.enums.hds_table_type import HdsTableType
-from airflow_framework.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
+from gcp_airflow_foundations.common.gcp.ods.schema_utils import parse_ods_schema
+from gcp_airflow_foundations.common.gcp.hds.schema_utils import parse_hds_schema
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
+from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
 
 
 class TestSchemaMigrationOperator(object):
@@ -34,7 +34,7 @@ class TestSchemaMigrationOperator(object):
                     ods_metadata=table.ods_config.ods_metadata
                 )
 
-                expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_primary_key_hash`,`af_metadata_updated_at`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_ODS_Incremental`;"
+                expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_updated_at`,`af_metadata_primary_key_hash`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_ODS_Incremental`;"
 
                 assert self.get_schema_migration_sql(table_id, schema_fields) == expected_query 
 
@@ -55,7 +55,7 @@ class TestSchemaMigrationOperator(object):
                     hds_table_type=table.hds_config.hds_table_type
                 )    
 
-                expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_created_at`,`partition_time`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_HDS_Snapshot`;"
+                expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_created_at`,`af_metadata_expired_at`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_HDS_SCD2`;"
 
                 assert self.get_schema_migration_sql(table_id, schema_fields) == expected_query
 

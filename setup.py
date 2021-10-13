@@ -7,7 +7,7 @@ from pathlib import Path
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 
-with open(os.path.join(here, "src", "airflow_framework", "__version__.py"), "r") as f:
+with open(os.path.join(here, "src", "gcp_airflow_foundations", "__version__.py"), "r") as f:
     exec(f.read(), about)
 
 with open(os.path.join(here, "requirements.txt"), "r") as f:

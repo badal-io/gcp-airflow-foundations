@@ -2,12 +2,12 @@ import pytest
 
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
-from airflow_framework.common.gcp.ods.schema_utils import parse_ods_schema
-from airflow_framework.common.gcp.hds.schema_utils import parse_hds_schema
-from airflow_framework.enums.ingestion_type import IngestionType
-from airflow_framework.enums.hds_table_type import HdsTableType
-from airflow_framework.operators.gcp.ods.ods_sql_upsert_helpers import SqlHelperODS
-from airflow_framework.operators.gcp.hds.hds_sql_upsert_helpers import SqlHelperHDS
+from gcp_airflow_foundations.common.gcp.ods.schema_utils import parse_ods_schema
+from gcp_airflow_foundations.common.gcp.hds.schema_utils import parse_hds_schema
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
+from gcp_airflow_foundations.operators.gcp.ods.ods_sql_upsert_helpers import SqlHelperODS
+from gcp_airflow_foundations.operators.gcp.hds.hds_sql_upsert_helpers import SqlHelperHDS
 
 
 class TestSqlHelpers(object):

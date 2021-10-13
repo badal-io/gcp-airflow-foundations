@@ -1,8 +1,8 @@
 import pytest
 
-from airflow_framework.common.gcp.source_schema.gcs import read_schema_from_gcs
-from airflow_framework.common.gcp.ods.schema_utils import parse_ods_schema
-from airflow_framework.common.gcp.hds.schema_utils import parse_hds_schema
+from gcp_airflow_foundations.common.gcp.source_schema.gcs import read_schema_from_gcs
+from gcp_airflow_foundations.common.gcp.ods.schema_utils import parse_ods_schema
+from gcp_airflow_foundations.common.gcp.hds.schema_utils import parse_hds_schema
 
 
 class TestSchemaParsing(object):

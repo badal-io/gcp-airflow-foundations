@@ -7,7 +7,7 @@ from time import sleep
 
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow import DAG
-from airflow_framework.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
+from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
 
 from tests.integration.conftest import run_task
 

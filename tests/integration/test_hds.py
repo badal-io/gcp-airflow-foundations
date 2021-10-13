@@ -15,12 +15,12 @@ from airflow.providers.google.cloud.operators.bigquery import (
 
 from tests.integration.conftest import run_task, run_task_with_pre_execute
 
-from airflow_framework.operators.gcp.hds.hds_merge_table_operator import MergeBigQueryHDS
+from gcp_airflow_foundations.operators.gcp.hds.hds_merge_table_operator import MergeBigQueryHDS
 
-from airflow_framework.base_class.hds_metadata_config import HdsTableMetadataConfig
-from airflow_framework.enums.hds_table_type import HdsTableType
-from airflow_framework.base_class.hds_table_config import HdsTableConfig
-from airflow_framework.common.gcp.hds.schema_utils import parse_hds_schema
+from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetadataConfig
+from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
+from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
+from gcp_airflow_foundations.common.gcp.hds.schema_utils import parse_hds_schema
 
 from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
