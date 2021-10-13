@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-VERSION = (0, 1, 0)
+VERSION = (1, 0, 0)
 PRERELEASE = None
 REVISION = None
 
@@ -15,7 +15,7 @@ def generate_version(version, prerelease=None, revision=None):
 
 
 __title__ = "airflow_framework"
-__description__ = "Airflow toolkit"
+__description__ = "Opinionated framework based on Airflow 2.0 for building pipelines to ingest data into a BigQuery data warehouse"
 __url__ = "https://github.com/badal-io/airflow-foundations"
 __version__ = generate_version(VERSION, prerelease=PRERELEASE, revision=REVISION)
 __author__ = "Badal.io"
