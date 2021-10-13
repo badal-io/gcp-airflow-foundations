@@ -2,6 +2,7 @@ import os
 import sys
 
 from setuptools import setup, find_packages
+from pathlib import Path
 
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
@@ -12,13 +13,18 @@ with open(os.path.join(here, "src", "airflow_framework", "__version__.py"), "r")
 with open(os.path.join(here, "requirements.txt"), "r") as f:
 	requirements = f.read().strip().split('\n')
 
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 def main():
     metadata = dict(
         name=about["__title__"],
         version=about["__version__"],
         description=about["__description__"],
+        long_description=long_description,
+        long_description_content_type='text/markdown',
         url=about["__url__"],
-        download_url=["__download_url__"],
+        download_url=about["__download_url__"],
         author=about["__author__"],
         author_email=about["__author_email__"],
         license=about["__license__"],
