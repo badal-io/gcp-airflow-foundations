@@ -82,8 +82,7 @@ class SqlHelperHDS:
                 UNION ALL 
                 SELECT
                     {",".join(["source.`{}`".format(surrogate_key) for surrogate_key in self.surrogate_keys])},
-                    {",".join(["NULL" for surrogate_key in self.surrogate_keys])},
-                    {",".join(["source.`{}`".format(col) for col in self.columns if col not in self.surrogate_keys])}
+                    {",".join(["source.`{}`".format(col) if col not in self.surrogate_keys else "NULL" for col in self.columns])}
                     FROM `{self.source_dataset}.{self.source}` source
                     JOIN `{self.target_dataset}.{self.target}` target
                     ON {' AND '.join([f'target.{self.column_mapping[surrogate_key]}=source.{surrogate_key}' for surrogate_key in self.surrogate_keys])}
@@ -96,7 +95,7 @@ class SqlHelperHDS:
         matched_clause = f"UPDATE SET {self.eff_end_time_column_name} = CURRENT_TIMESTAMP()"
         not_matched_clause = f"""
             INSERT ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.eff_end_time_column_name}, {self.hash_column_name})
-            VALUES ({",".join(["join_key_{}".format(surrogate_key, surrogate_key) for surrogate_key in self.surrogate_keys])},{",".join(["`{}`".format(col) for col in self.columns if col not in self.surrogate_keys])}, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S))))
+            VALUES ({",".join(["`{}`".format(col) if col not in self.surrogate_keys else "join_key_{}".format(col) for col in self.columns])}, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S))))
         """
 
         sql = TEMPLATE.format(
