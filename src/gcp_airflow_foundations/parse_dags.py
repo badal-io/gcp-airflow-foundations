@@ -12,7 +12,7 @@ import logging
 class DagParser:
     """ Parsed Airflow DAGs from the user-provided YAML configuration files """
     def __init__(self):
-        self.conf_location = Variable.get("CONFIG_FILE_LOCATION", "/opt/airflow/airflow-framework/examples/config")
+        self.conf_location = Variable.get("CONFIG_FILE_LOCATION", "/opt/airflow/gcp_airflow_foundations/examples/config")
         self.max_task_retries = Variable.get("max_task_retries", 3)
 
     def parse_dags(self):
