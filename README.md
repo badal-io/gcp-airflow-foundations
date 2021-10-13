@@ -20,5 +20,6 @@ Well tested - We maintain a rich suite of both unit and integration tests
 ```bash
 pip install 'gcp-airflow-foundations'
 ```
+
 ## Usage
 See the [gcp-airflow-foundations documentation](https://badal-io.github.io/gcp-airflow-foundations/) for more details.
