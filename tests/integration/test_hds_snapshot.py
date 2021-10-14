@@ -19,6 +19,7 @@ from gcp_airflow_foundations.operators.gcp.hds.hds_merge_table_operator import M
 
 from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetadataConfig
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
+from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.common.gcp.hds.schema_utils import parse_hds_schema
 
@@ -27,18 +28,7 @@ from google.cloud.bigquery import SchemaField
 
 from airflow.models import TaskInstance
 
-class TestHdsMerge(object):
-    """ 
-        End-to-end testing for HDS table ETL. Steps covered:
-        
-            1) Mock data (version 1) are loaded to staging dataset
-            2) MergeBigQueryHDS operator is used to insert the version #1 staging data to the HDS table
-            3) Mock data (version 2) are loaded to staging dataset
-            4) MergeBigQueryHDS operator is used to insert/update the version #2 staging data to the HDS table
-            5) The rows of the HDS table are queried after every insert operation to validate that they match the expected rows
-
-        The tables are cleaned up at the end of the test
-    """
+class TestHdsMergeSnapshot(object):
     @pytest.fixture(autouse=True)
     def setup(self, test_dag, project_id, staging_dataset, target_dataset, target_table_id, mock_data_rows):
         self.test_dag = test_dag
@@ -51,12 +41,7 @@ class TestHdsMerge(object):
             {
                 "customerID": "customer_1",
                 "key_id": 1,
-                "city_name": "Ottawa"
-            },
-            {
-                "customerID": "customer_4",
-                "key_id": 4,
-                "city_name": "Montreal"
+                "city_name": "Vancouver"
             }
         ]
 
@@ -72,8 +57,8 @@ class TestHdsMerge(object):
                 eff_end_time_column_name='af_metadata_expired_at', 
                 hash_column_name='af_metadata_row_hash', 
             ), 
-            hds_table_type=HdsTableType.SCD2, 
-            hds_table_time_partitioning=None
+            hds_table_type=HdsTableType.SNAPSHOT, 
+            hds_table_time_partitioning=TimePartitioning.DAY
         )
 
         self.schema_fields = [
@@ -83,7 +68,7 @@ class TestHdsMerge(object):
         ]
 
         self.bq_schema_fields = [SchemaField.from_api_repr(i) for i in self.schema_fields]
-
+   
     def insert_mock_data(self):
         staging_table_id = f"{self.project_id}.{self.staging_dataset}.{self.target_table_id}"
         table = bigquery.Table(staging_table_id, schema=self.bq_schema_fields)
@@ -101,13 +86,18 @@ class TestHdsMerge(object):
  
         df = pd.DataFrame.from_dict(self.mock_new_data_rows)
 
-        job_config = bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
+        job_config = bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE")
         load_job = self.client.load_table_from_dataframe(df, staging_table_id, job_config=job_config)
 
         while load_job.running():
                     sleep(1)
-
+                    
     def create_hds(self):
+        time_partitioning = {
+            "type":self.hds_table_config.hds_table_time_partitioning.value,
+            "field":self.hds_table_config.hds_metadata.partition_time_column_name
+        }
+
         hds_schema_fields, _ = parse_hds_schema(
             gcs_schema_object=None,
             schema_fields=self.schema_fields,
@@ -119,23 +109,16 @@ class TestHdsMerge(object):
         create_table = BigQueryCreateEmptyTableOperator(
             task_id=f"{uuid.uuid4().hex}",
             dataset_id=self.target_dataset,
-            table_id=f"{self.target_table_id}_HDS_SCD2",
+            table_id=f"{self.target_table_id}_HDS_SNAPSHOT",
             schema_fields=hds_schema_fields,
-            time_partitioning=None,
+            time_partitioning=time_partitioning,
             exists_ok=True,
             dag=self.test_dag
         )
 
         run_task(create_table)
 
-    def clean_up(self):
-        staging_table_ref = self.client.dataset(self.staging_dataset).table(self.target_table_id)
-        self.client.delete_table(staging_table_ref)
-
-        target_table_ref = self.client.dataset(self.target_dataset).table(f"{self.target_table_id}_HDS_SCD2")
-        self.client.delete_table(target_table_ref)
-
-    def test_merge_hds(self):
+    def test_merge_hds_snapshot(self):
         self.insert_mock_data()
         self.create_hds()
 
@@ -145,7 +128,7 @@ class TestHdsMerge(object):
             stg_dataset_name=self.staging_dataset,
             data_dataset_name=self.target_dataset,
             stg_table_name=self.target_table_id,
-            data_table_name=f"{self.target_table_id}_HDS_SCD2",
+            data_table_name=f"{self.target_table_id}_HDS_SNAPSHOT",
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             columns=self.columns,
@@ -158,7 +141,7 @@ class TestHdsMerge(object):
         sql = f""" 
             SELECT 
                 customerID, key_id, city_name
-            FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_HDS_SCD2 
+            FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_HDS_SNAPSHOT 
             ORDER BY key_id ASC, city_name ASC"""
 
         query_config = bigquery.QueryJobConfig(use_legacy_sql=False)
@@ -169,16 +152,16 @@ class TestHdsMerge(object):
 
         assert query_results == expected_rows
 
-    def test_merge_hds_with_change(self):
+    def test_merge_snapshot_hds_with_change(self):
         self.insert_new_rows()
-        
+
         insert = MergeBigQueryHDS(
             task_id=f"{uuid.uuid4().hex}",
             project_id=self.project_id,
             stg_dataset_name=self.staging_dataset,
             data_dataset_name=self.target_dataset,
             stg_table_name=self.target_table_id,
-            data_table_name=f"{self.target_table_id}_HDS_SCD2",
+            data_table_name=f"{self.target_table_id}_HDS_SNAPSHOT",
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             columns=self.columns,
@@ -191,17 +174,38 @@ class TestHdsMerge(object):
         sql = f""" 
             SELECT 
                 customerID, key_id, city_name
-            FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_HDS_SCD2 
+            FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_HDS_SNAPSHOT 
             ORDER BY key_id ASC, city_name ASC"""
 
         query_config = bigquery.QueryJobConfig(use_legacy_sql=False)
 
         query_results = self.client.query(sql, job_config=query_config).to_dataframe().to_dict(orient='record')
 
-        expected_rows = self.mock_data_rows[:]
-        expected_rows.insert(0, self.mock_new_data_rows[0])
-        expected_rows.insert(4, self.mock_new_data_rows[1])
+        expected_rows = [
+            {
+                "customerID": "customer_1",
+                "key_id": 1,
+                "city_name": "Vancouver"
+            },
+            {
+                "customerID": "customer_2",
+                "key_id": 2,
+                "city_name": "Montreal"
+            },
+            {
+                "customerID": "customer_3",
+                "key_id": 3,
+                "city_name": "Ottawa"
+            },
+        ]
 
         assert query_results == expected_rows
 
         self.clean_up()
+
+    def clean_up(self):
+        staging_table_ref = self.client.dataset(self.staging_dataset).table(self.target_table_id)
+        self.client.delete_table(staging_table_ref)
+
+        target_table_ref = self.client.dataset(self.target_dataset).table(f"{self.target_table_id}_HDS_SNAPSHOT")
+        self.client.delete_table(target_table_ref)

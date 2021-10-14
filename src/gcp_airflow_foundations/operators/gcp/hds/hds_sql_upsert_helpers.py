@@ -113,9 +113,31 @@ class SqlHelperHDS:
     def create_snapshot_sql_with_hash(self):
         comma = ","
 
-        return f"""
-                INSERT INTO `{self.target_dataset}.{self.target}`
-                ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.partition_column_name}, {self.hash_column_name})
-                SELECT {self.columns_str_source}, CURRENT_TIMESTAMP(), TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), {self.time_partitioning}), TO_BASE64(MD5(TO_JSON_STRING(S)))
-                FROM `{self.source_dataset}.{self.source}` S
-            """
+        TEMPLATE = """
+                    MERGE `{target}` T
+                    USING `{source}` S
+                    ON {merge_condition}
+                    WHEN MATCHED AND {search_condition} THEN {matched_clause}
+                    WHEN NOT MATCHED THEN {not_matched_clause}
+        """
+
+        target = f"{self.target_dataset}.{self.target}"
+        source = f"{self.source_dataset}.{self.source}"
+        merge_condition = f"{' AND '.join([f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])}"
+        search_condition = f"{self.partition_column_name} = TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), {self.time_partitioning})"
+        matched_clause = f"UPDATE SET {(','.join(f'`{self.column_mapping[col]}`=S.`{col}`' for col in self.columns )) + f'{comma}' +  f'{self.hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }"
+        not_matched_clause = f"""
+            INSERT ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.partition_column_name}, {self.hash_column_name})
+            VALUES ({self.columns_str_source}, CURRENT_TIMESTAMP(), TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), {self.time_partitioning}), TO_BASE64(MD5(TO_JSON_STRING(S))))
+        """
+
+        sql = TEMPLATE.format(
+            target=target,
+            source=source,
+            merge_condition=merge_condition,
+            search_condition=search_condition,
+            matched_clause=matched_clause,
+            not_matched_clause=not_matched_clause
+        )
+
+        return sql
