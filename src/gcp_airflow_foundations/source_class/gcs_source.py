@@ -74,6 +74,8 @@ class GCStoBQDagBuilder(DagBuilder):
                     column_mapping=table_config.column_mapping,
                     gcs_schema_object=table_config.source_table_schema_object,
                     schema_fields=None,
+                    table_expiration_date=data_source.table_expiration_date,
+                    partition_expiration=data_source.partition_expiration,
                     ods_table_config=table_config.ods_config,
                     hds_table_config=table_config.hds_config,
                     preceding_task=load_to_bq_landing,

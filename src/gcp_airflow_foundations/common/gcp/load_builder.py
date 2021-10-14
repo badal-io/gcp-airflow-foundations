@@ -17,6 +17,8 @@ def load_builder(
     column_mapping,
     gcs_schema_object,
     schema_fields,
+    table_expiration_date,
+    partition_expiration,
     hds_table_config,
     ods_table_config,
     preceding_task,
@@ -48,6 +50,7 @@ def load_builder(
             column_mapping=column_mapping,
             columns=source_table_columns,
             schema_fields=ods_schema_fields,
+            table_expiration_date=table_expiration_date,
             ods_table_config=ods_table_config,
             dag=dag
         )
@@ -75,6 +78,8 @@ def load_builder(
             column_mapping=column_mapping,
             columns=source_table_columns,
             schema_fields=hds_schema_fields,
+            table_expiration_date=table_expiration_date,
+            partition_expiration=partition_expiration,
             hds_table_config=hds_table_config,
             dag=dag
         )
