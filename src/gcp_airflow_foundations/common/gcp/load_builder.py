@@ -18,6 +18,7 @@ def load_builder(
     gcs_schema_object,
     schema_fields,
     ingestion_type,
+    partition_expiration,
     hds_table_config,
     ods_table_config,
     preceding_task,
@@ -79,6 +80,7 @@ def load_builder(
             columns=[column_mapping[i] for i in source_table_columns],
             schema_fields=hds_schema_fields,
             ingestion_type=ingestion_type,
+            partition_expiration=partition_expiration,
             hds_table_config=hds_table_config,
             dag=dag
         )

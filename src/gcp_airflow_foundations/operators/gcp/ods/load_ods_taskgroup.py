@@ -26,6 +26,7 @@ def ods_builder(
     surrogate_keys,
     ingestion_type,
     ods_table_config,
+    table_expiration_date,
     dag,
     time_partitioning=None,
     labels=None,
@@ -45,13 +46,17 @@ def ods_builder(
     #1 Check if ODS table exists and if not create it using the provided schema file
     create_table = BigQueryCreateEmptyTableOperator(
         task_id="create_ods_table",
+        project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
-        schema_fields=schema_fields,
-        time_partitioning=time_partitioning,
+        table_resource={
+                "schema":{'fields': schema_fields},
+                "expirationTime":table_expiration_date,
+                "timePartitioning":time_partitioning,
+                "encryptionConfiguration":encryption_configuration,
+                "labels":labels
+        },
         exists_ok=True,
-        labels=labels,
-        encryption_configuration=encryption_configuration,
         task_group=taskgroup,
         dag=dag
     )
