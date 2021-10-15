@@ -116,15 +116,15 @@ class SqlHelperHDS:
         TEMPLATE = """
                     MERGE `{target}` T
                     USING `{source}` S
-                    ON {merge_condition}
-                    WHEN MATCHED AND {search_condition} THEN {matched_clause}
+                    ON {merge_condition_1} AND {merge_condition_2}
+                    WHEN MATCHED THEN {matched_clause}
                     WHEN NOT MATCHED THEN {not_matched_clause}
         """
 
         target = f"{self.target_dataset}.{self.target}"
         source = f"{self.source_dataset}.{self.source}"
-        merge_condition = f"{' AND '.join([f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])}"
-        search_condition = f"{self.partition_column_name} = TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), {self.time_partitioning})"
+        merge_condition_1 = f"{' AND '.join([f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])}"
+        merge_condition_2 = f"T.{self.partition_column_name} = TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), {self.time_partitioning})"
         matched_clause = f"UPDATE SET {(','.join(f'`{self.column_mapping[col]}`=S.`{col}`' for col in self.columns )) + f'{comma}' +  f'{self.hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }"
         not_matched_clause = f"""
             INSERT ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.partition_column_name}, {self.hash_column_name})
@@ -134,8 +134,8 @@ class SqlHelperHDS:
         sql = TEMPLATE.format(
             target=target,
             source=source,
-            merge_condition=merge_condition,
-            search_condition=search_condition,
+            merge_condition_1=merge_condition_1,
+            merge_condition_2=merge_condition_2,
             matched_clause=matched_clause,
             not_matched_clause=not_matched_clause
         )
