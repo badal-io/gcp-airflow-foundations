@@ -48,7 +48,7 @@ class SqlHelperHDS:
         self.time_partitioning = time_partitioning
         self.columns = columns
 
-        if not column_mapping:
+        if column_mapping == None:
             self.column_mapping = {i:i for i in columns}
         else:
             for i in columns:
@@ -77,7 +77,8 @@ class SqlHelperHDS:
 
         target = f"{self.target_dataset}.{self.target}"
         source_query = f"""
-                SELECT  {",".join(["{} AS join_key_{}".format(surrogate_key, surrogate_key) for surrogate_key in self.surrogate_keys])}, * 
+                SELECT  {",".join(["{} AS join_key_{}".format(surrogate_key, surrogate_key) for surrogate_key in self.surrogate_keys])},
+                        {",".join([col for col in self.columns])}
                 FROM `{self.source_dataset}.{self.source}`
                 UNION ALL 
                 SELECT
