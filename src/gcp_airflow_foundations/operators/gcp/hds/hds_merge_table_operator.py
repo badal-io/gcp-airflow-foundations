@@ -17,6 +17,8 @@ import logging
 from gcp_airflow_foundations.operators.gcp.hds.hds_sql_upsert_helpers import SqlHelperHDS
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+
 
 class MergeBigQueryHDS(BigQueryOperator):
     """
@@ -40,6 +42,8 @@ class MergeBigQueryHDS(BigQueryOperator):
     :type gcp_conn_id: str
     :param column_mapping: Column mapping
     :type column_mapping: dict
+    :param ingestion_type: Source table ingestion time (Full or Incremental)
+    :type ingestion_type: IngestionType
     :param hds_table_config: User-provided HDS configuration options
     :type hds_table_config: HdsTableConfig
     """
@@ -64,6 +68,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
         columns: list,
+        ingestion_type: IngestionType,
         hds_table_config: HdsTableConfig,
         **kwargs,
     ) -> None:
@@ -73,7 +78,8 @@ class MergeBigQueryHDS(BigQueryOperator):
             use_legacy_sql=False,
             write_disposition="WRITE_APPEND",
             create_disposition="CREATE_NEVER",
-            sql="sql",
+            destination_dataset_table=None,
+            sql="",
             **kwargs,
         )
         self.project_id = project_id
@@ -86,6 +92,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
         self.columns = columns
+        self.ingestion_type = ingestion_type
         self.hds_table_config = hds_table_config
 
     def pre_execute(self, context) -> None:
@@ -121,15 +128,14 @@ class MergeBigQueryHDS(BigQueryOperator):
             else:
                 raise AirflowException(f"Could not determine partition ID format from `{partitioning_dimension}`")
 
-            write_disposition = "WRITE_TRUNCATE"
-            create_disposition = "CREATE_IF_NEEDED"
-            destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}${partition_id}"
+            self.write_disposition = "WRITE_TRUNCATE"
+            self.create_disposition = "CREATE_IF_NEEDED"
+            self.destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}${partition_id}"
 
         elif self.hds_table_config.hds_table_type == HdsTableType.SCD2:
-            sql = sql_helper.create_scd2_sql_with_hash()
-            write_disposition = "WRITE_APPEND"
-            create_disposition = "CREATE_NEVER"
-            destination_dataset_table = None
+            sql = sql_helper.create_scd2_sql_with_hash(
+                ingestion_type=self.ingestion_type
+            )
 
         else:
             raise AirflowException("Invalid HDS table type", self.hds_table_config.hds_table_type)
@@ -137,6 +143,3 @@ class MergeBigQueryHDS(BigQueryOperator):
         logging.info(f"Executing sql: {sql}")
 
         self.sql = sql
-        self.write_disposition = write_disposition
-        self.create_disposition = create_disposition
-        self.destination_dataset_table = destination_dataset_table

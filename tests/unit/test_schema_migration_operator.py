@@ -19,13 +19,16 @@ class TestSchemaMigrationOperator(object):
 
     def test_should_pick_columns_for_ods_schema_migration(self):
         for table in self.config.tables:
+            ingestion_type = table.ingestion_type
             if table.ods_config:
 
-                if table.ods_config.ingestion_type == IngestionType.INCREMENTAL:
+                if ingestion_type == IngestionType.INCREMENTAL:
                     table_id = f"{table.table_name}_ODS_Incremental"
+                    expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_updated_at`,`af_metadata_primary_key_hash`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_ODS_Incremental`;"
 
-                elif table.ods_config.ingestion_type == IngestionType.FULL:
+                elif ingestion_type == IngestionType.FULL:
                     table_id = f"{table.table_name}_ODS_Full"
+                    expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_updated_at`,`af_metadata_row_hash`,`af_metadata_primary_key_hash` FROM `airflow_test.test_customer_data_ODS_Full`;"
 
                 schema_fields, _ = parse_ods_schema(
                     gcs_schema_object=table.source_table_schema_object,
@@ -33,8 +36,6 @@ class TestSchemaMigrationOperator(object):
                     column_mapping=table.column_mapping,
                     ods_metadata=table.ods_config.ods_metadata
                 )
-
-                expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_updated_at`,`af_metadata_primary_key_hash`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_ODS_Incremental`;"
 
                 assert self.get_schema_migration_sql(table_id, schema_fields) == expected_query 
 

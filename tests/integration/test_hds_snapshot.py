@@ -22,6 +22,7 @@ from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.common.gcp.hds.schema_utils import parse_hds_schema
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
 from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
@@ -51,6 +52,7 @@ class TestHdsMergeSnapshot(object):
         self.columns = ["customerID","key_id","city_name"]
         self.surrogate_keys = ["customerID","key_id"]
         self.column_mapping = {i:i for i in self.columns}
+        self.ingestion_type = IngestionType.INCREMENTAL
         self.hds_table_config = HdsTableConfig(
             hds_metadata=HdsTableMetadataConfig(
                 eff_start_time_column_name='af_metadata_created_at', 
@@ -132,6 +134,7 @@ class TestHdsMergeSnapshot(object):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             columns=self.columns,
+            ingestion_type = self.ingestion_type,
             hds_table_config=self.hds_table_config,
             dag=self.test_dag
         )
@@ -165,6 +168,7 @@ class TestHdsMergeSnapshot(object):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             columns=self.columns,
+            ingestion_type = self.ingestion_type,
             hds_table_config=self.hds_table_config,
             dag=self.test_dag
         )

@@ -39,6 +39,8 @@ class MergeBigQueryODS(BigQueryOperator):
     :type gcp_conn_id: str
     :param column_mapping: Column mapping
     :type column_mapping: dict
+    :param ingestion_type: Source table ingestion time (Full or Incremental)
+    :type ingestion_type: IngestionType
     :param ods_table_config: User-provided ODS configuration options
     :type ods_table_config: OdsTableConfig
     """
@@ -63,6 +65,7 @@ class MergeBigQueryODS(BigQueryOperator):
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
         columns: list,
+        ingestion_type: IngestionType,
         ods_table_config: OdsTableConfig,
         **kwargs,
     ) -> None:
@@ -72,7 +75,7 @@ class MergeBigQueryODS(BigQueryOperator):
             use_legacy_sql=False,
             write_disposition="WRITE_APPEND",
             create_disposition="CREATE_NEVER",
-            sql="sql",
+            sql="",
             **kwargs,
         )
         self.project_id = project_id
@@ -85,6 +88,7 @@ class MergeBigQueryODS(BigQueryOperator):
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
         self.columns = columns
+        self.ingestion_type = ingestion_type
         self.ods_table_config = ods_table_config
 
     def pre_execute(self, context) -> None:
@@ -105,20 +109,19 @@ class MergeBigQueryODS(BigQueryOperator):
             ods_metadata=self.ods_table_config.ods_metadata
         )
 
-        if self.ods_table_config.ingestion_type == IngestionType.INCREMENTAL:
+        if self.ingestion_type == IngestionType.INCREMENTAL:
             # Append staging table to ODS table
             sql = sql_helper.create_upsert_sql_with_hash()
-            write_disposition = "WRITE_APPEND"
 
-        elif self.ods_table_config.ingestion_type == IngestionType.FULL:
+        elif self.ingestion_type == IngestionType.FULL:
             # Overwrite ODS table with the staging table data
-            sql = sql_helper.create_truncate_sql()
-            write_disposition = "WRITE_TRUNCATE"
+            sql = sql_helper.create_full_sql()
+            self.write_disposition = "WRITE_TRUNCATE"
+            self.destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}"
 
         else:
             raise AirflowException("Invalid ingestion type", self.ingestion_type)
 
-        logging.info(f"Executing sql: {sql}. Write disposition: {write_disposition}")
+        logging.info(f"Executing sql: {sql}. Write disposition: {self.write_disposition}")
 
         self.sql = sql
-        self.write_disposition = write_disposition

@@ -17,6 +17,7 @@ def load_builder(
     column_mapping,
     gcs_schema_object,
     schema_fields,
+    ingestion_type,
     hds_table_config,
     ods_table_config,
     preceding_task,
@@ -47,6 +48,7 @@ def load_builder(
         column_mapping=column_mapping,
         columns=source_table_columns,
         schema_fields=ods_schema_fields,
+        ingestion_type=ingestion_type,
         ods_table_config=ods_table_config,
         dag=dag
     )
@@ -76,6 +78,7 @@ def load_builder(
             column_mapping={column_mapping[i]:column_mapping[i] for i in source_table_columns},
             columns=[column_mapping[i] for i in source_table_columns],
             schema_fields=hds_schema_fields,
+            ingestion_type=ingestion_type,
             hds_table_config=hds_table_config,
             dag=dag
         )

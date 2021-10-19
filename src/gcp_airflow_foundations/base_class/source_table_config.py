@@ -21,6 +21,7 @@ class SourceTableConfig:
     """
     Attributes:
         table_name : Table name. Used for Dag Id
+        ingestion_type: FULL or INCREMENTAL
         landing_zone_table_name_override: Optional staging zone table name.
         dest_table_override: Optional target table name. If None, use table_name instead
         source_table_schema_object: GCS schema object URI
@@ -34,6 +35,7 @@ class SourceTableConfig:
     """
 
     table_name: str
+    ingestion_type: IngestionType # FULL or INCREMENTAL
     landing_zone_table_name_override: Optional[str]
     dest_table_override: Optional[str]
     source_table_schema_object: Optional[str]

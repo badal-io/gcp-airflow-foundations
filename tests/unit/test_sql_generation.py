@@ -21,12 +21,13 @@ class TestSqlHelpers(object):
         
     def test_ods_sql_in_bq(self, staging_dataset, target_dataset, config):
         for table in config.tables:
+            ingestion_type = table.ingestion_type
             if table.ods_config:
 
-                if table.ods_config.ingestion_type == IngestionType.INCREMENTAL:
+                if ingestion_type == IngestionType.INCREMENTAL:
                     table_id = f"{table.table_name}_ODS_Incremental"
 
-                elif table.ods_config.ingestion_type == IngestionType.FULL:
+                elif ingestion_type == IngestionType.FULL:
                     table_id = f"{table.table_name}_ODS_Full"
 
                 schema_fields, columns = parse_ods_schema(
@@ -57,6 +58,7 @@ class TestSqlHelpers(object):
 
     def test_hds_sql_in_bq(self, staging_dataset, target_dataset, config):
         for table in config.tables:
+            ingestion_type = table.ingestion_type
             if table.hds_config:
 
                 if table.hds_config.hds_table_type == HdsTableType.SNAPSHOT:
@@ -91,7 +93,7 @@ class TestSqlHelpers(object):
                     sql = sql_helper.create_snapshot_sql_with_hash()
 
                 elif table.hds_config.hds_table_type == HdsTableType.SCD2:
-                    sql = sql_helper.create_scd2_sql_with_hash()
+                    sql = sql_helper.create_scd2_sql_with_hash(ingestion_type=ingestion_type)
 
                 print(f"HDS SQL query:{sql}")
 

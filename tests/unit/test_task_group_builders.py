@@ -37,6 +37,7 @@ class TestTaskGroupBuilder(object):
                         column_mapping=table.column_mapping,
                         columns=columns,
                         schema_fields=schema_fields,
+                        ingestion_type=IngestionType.INCREMENTAL,
                         ods_table_config=table.ods_config,
                         dag=dag
                     )
@@ -68,6 +69,7 @@ class TestTaskGroupBuilder(object):
                         column_mapping=table.column_mapping,
                         columns=columns,
                         schema_fields=schema_fields,
+                        ingestion_type=IngestionType.INCREMENTAL,
                         hds_table_config=table.hds_config,
                         dag=dag
                     )

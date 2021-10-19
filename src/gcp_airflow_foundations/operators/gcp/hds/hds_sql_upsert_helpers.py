@@ -1,3 +1,5 @@
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+
 class SqlHelperHDS:
     """
     SQL helper class used to formulate the SQL queries for the merge operations of HDS tables.
@@ -64,7 +66,7 @@ class SqlHelperHDS:
         self.columns_str_keys: str = ",".join(surrogate_keys)
         self.columns_str_target: str = ",".join(["`{}`".format(column_mapping[i]) for i in columns])
 
-    def create_scd2_sql_with_hash(self):
+    def create_scd2_sql_with_hash(self, ingestion_type):
         comma = ","
 
         TEMPLATE = """
@@ -72,7 +74,7 @@ class SqlHelperHDS:
                     USING ( {source_query} ) S
                     ON {merge_condition}
                     WHEN MATCHED AND {search_condition} THEN {matched_clause}
-                    WHEN NOT MATCHED THEN {not_matched_clause}
+                    WHEN NOT MATCHED BY TARGET THEN {not_matched_clause}
         """
 
         target = f"{self.target_dataset}.{self.target}"
@@ -108,8 +110,14 @@ class SqlHelperHDS:
             not_matched_clause=not_matched_clause
         )
 
-        return sql
+        if ingestion_type == IngestionType.INCREMENTAL:
+            return sql
 
+        elif ingestion_type == IngestionType.FULL:
+            return sql + \
+                f"""WHEN NOT MATCHED BY SOURCE THEN UPDATE
+                        SET T.{self.eff_end_time_column_name} = CURRENT_TIMESTAMP()
+                """  
 
     def create_snapshot_sql_with_hash(self):
         sql = f"""
