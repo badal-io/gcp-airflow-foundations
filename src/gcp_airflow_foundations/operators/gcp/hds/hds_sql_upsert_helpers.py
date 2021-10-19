@@ -48,7 +48,7 @@ class SqlHelperHDS:
         self.time_partitioning = time_partitioning
         self.columns = columns
 
-        if not column_mapping:
+        if column_mapping == None:
             self.column_mapping = {i:i for i in columns}
         else:
             for i in columns:
@@ -77,7 +77,8 @@ class SqlHelperHDS:
 
         target = f"{self.target_dataset}.{self.target}"
         source_query = f"""
-                SELECT  {",".join(["{} AS join_key_{}".format(surrogate_key, surrogate_key) for surrogate_key in self.surrogate_keys])}, * 
+                SELECT  {",".join(["{} AS join_key_{}".format(surrogate_key, surrogate_key) for surrogate_key in self.surrogate_keys])},
+                        {",".join([col for col in self.columns])}
                 FROM `{self.source_dataset}.{self.source}`
                 UNION ALL 
                 SELECT
@@ -111,11 +112,12 @@ class SqlHelperHDS:
 
 
     def create_snapshot_sql_with_hash(self):
-        comma = ","
-
-        return f"""
-                INSERT INTO `{self.target_dataset}.{self.target}`
-                ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.partition_column_name}, {self.hash_column_name})
-                SELECT {self.columns_str_source}, CURRENT_TIMESTAMP(), TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), {self.time_partitioning}), TO_BASE64(MD5(TO_JSON_STRING(S)))
-                FROM `{self.source_dataset}.{self.source}` S
-            """
+        sql = f"""
+                    SELECT
+                        {(','.join(f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns))},
+                        CURRENT_TIMESTAMP() AS {self.eff_start_time_column_name},
+                        TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), {self.time_partitioning}) AS {self.partition_column_name},
+                        TO_BASE64(MD5(TO_JSON_STRING(S))) AS {self.hash_column_name}
+                    FROM {self.source_dataset}.{self.source} S
+        """
+        return sql

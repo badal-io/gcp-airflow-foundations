@@ -30,33 +30,33 @@ def load_builder(
 
     builders = []
 
-    if ods_table_config:
-        ods_schema_fields, source_table_columns = parse_ods_schema(
-            gcs_schema_object=gcs_schema_object,
-            schema_fields=schema_fields,
-            column_mapping=column_mapping,
-            ods_metadata=ods_table_config.ods_metadata
-        )
+    ods_schema_fields, source_table_columns = parse_ods_schema(
+        gcs_schema_object=gcs_schema_object,
+        schema_fields=schema_fields,
+        column_mapping=column_mapping,
+        ods_metadata=ods_table_config.ods_metadata
+    )
 
-        logging.info(f"ODS table schema: {ods_schema_fields}")
+    logging.info(f"ODS table schema: {ods_schema_fields}")
 
-        ods_task_group = ods_builder(
-            project_id=project_id,
-            table_id=table_id,
-            dataset_id=dataset_id,
-            landing_zone_dataset=landing_zone_dataset,
-            landing_zone_table_name_override=landing_zone_table_name_override,
-            surrogate_keys=surrogate_keys,
-            column_mapping=column_mapping,
-            columns=source_table_columns,
-            schema_fields=ods_schema_fields,
-            table_expiration_date=table_expiration_date,
-            ods_table_config=ods_table_config,
-            dag=dag
-        )
-        
-        builders.append(ods_task_group)
+    ods_task_group, ods_table_id = ods_builder(
+        project_id=project_id,
+        table_id=table_id,
+        dataset_id=dataset_id,
+        landing_zone_dataset=landing_zone_dataset,
+        landing_zone_table_name_override=landing_zone_table_name_override,
+        surrogate_keys=surrogate_keys,
+        column_mapping=column_mapping,
+        columns=source_table_columns,
+        schema_fields=ods_schema_fields,
+        table_expiration_date=table_expiration_date,
+        ods_table_config=ods_table_config,
+        dag=dag
+    )
+    
+    builders.append(ods_task_group)
 
+    hds_task_group = None
     if hds_table_config:
         hds_schema_fields, source_table_columns = parse_hds_schema(
             gcs_schema_object=gcs_schema_object,
@@ -68,15 +68,16 @@ def load_builder(
 
         logging.info(f"HDS table schema: {hds_schema_fields}")
 
+        # the source dataset/table of the HDS is the ODS
         hds_task_group = hds_builder(
             project_id=project_id,
             table_id=table_id,
             dataset_id=dataset_id,
-            landing_zone_dataset=landing_zone_dataset,
-            landing_zone_table_name_override=landing_zone_table_name_override,
-            surrogate_keys=surrogate_keys,
-            column_mapping=column_mapping,
-            columns=source_table_columns,
+            landing_zone_dataset=dataset_id,
+            landing_zone_table_name_override=ods_table_id,
+            surrogate_keys=[column_mapping[i] for i in source_table_columns if i in surrogate_keys],
+            column_mapping={column_mapping[i]:column_mapping[i] for i in source_table_columns},
+            columns=[column_mapping[i] for i in source_table_columns],
             schema_fields=hds_schema_fields,
             table_expiration_date=table_expiration_date,
             partition_expiration=partition_expiration,
@@ -86,7 +87,9 @@ def load_builder(
         
         builders.append(hds_task_group)
 
-    for taskgroup in builders:
-        preceding_task >> taskgroup
+    if hds_task_group:
+        preceding_task >> ods_task_group >> hds_task_group
+    else:
+        preceding_task >> ods_task_group
 
     return builders

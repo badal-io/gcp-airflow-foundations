@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
 from airflow.contrib.operators.bigquery_operator import (
@@ -106,13 +107,29 @@ class MergeBigQueryHDS(BigQueryOperator):
         )
 
         if self.hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
-            sql_helper.time_partitioning = self.hds_table_config.hds_table_time_partitioning.value
+            partitioning_dimension = self.hds_table_config.hds_table_time_partitioning.value
+            sql_helper.time_partitioning = partitioning_dimension
             sql = sql_helper.create_snapshot_sql_with_hash()
+
+            now = datetime.now()
+            if partitioning_dimension == "HOUR":
+                partition_id = now.strftime("%Y%m%d%H")
+            elif partitioning_dimension == "DAY":
+                partition_id = now.strftime("%Y%m%d")
+            elif partitioning_dimension == "MONTH":
+                partition_id = now.strftime("%Y%m")
+            else:
+                raise AirflowException(f"Could not determine partition ID format from `{partitioning_dimension}`")
+
             write_disposition = "WRITE_TRUNCATE"
+            create_disposition = "CREATE_IF_NEEDED"
+            destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}${partition_id}"
 
         elif self.hds_table_config.hds_table_type == HdsTableType.SCD2:
             sql = sql_helper.create_scd2_sql_with_hash()
             write_disposition = "WRITE_APPEND"
+            create_disposition = "CREATE_NEVER"
+            destination_dataset_table = None
 
         else:
             raise AirflowException("Invalid HDS table type", self.hds_table_config.hds_table_type)
@@ -121,3 +138,5 @@ class MergeBigQueryHDS(BigQueryOperator):
 
         self.sql = sql
         self.write_disposition = write_disposition
+        self.create_disposition = create_disposition
+        self.destination_dataset_table = destination_dataset_table
