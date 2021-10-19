@@ -41,6 +41,7 @@ class SourceTableConfig:
     column_mapping: Optional[dict]
     ods_config: Optional[OdsTableConfig]
     hds_config: Optional[HdsTableConfig]
+    extra_options: dict = field(default_factory=dict)
     version: int = 1
     catchup: bool = True
 
@@ -49,6 +50,9 @@ class SourceTableConfig:
     def __post_init__(self):
         if self.landing_zone_table_name_override is None:
             self.landing_zone_table_name_override = self.table_name
+        if self.extra_options is None:
+            self.extra_options = {}
+            
 
     @validator("table_name")
     def valid_source_table(cls, v):
