@@ -84,4 +84,4 @@ def ods_builder(
 
     create_table >> migrate_schema >> insert
 
-    return taskgroup
+    return taskgroup, table_id
