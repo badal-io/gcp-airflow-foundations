@@ -67,16 +67,17 @@ class SqlHelperODS:
         values = f"""{self.columns_str_source}, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in self.surrogate_keys])}], "")))"""
         return rows, values
 
-    def create_truncate_sql(self):
+    def create_full_sql(self):
         rows, values = self.create_insert_sql()
 
         return f"""
-                INSERT `{self.target_dataset}.{self.target}`
-                ({rows})
-                SELECT {values}
-                FROM `{self.source_dataset}.{self.source}` S
-            """
-
+            SELECT {",".join([f"`{i}` AS `{self.column_mapping[i]}`" for i in self.columns])},
+                CURRENT_TIMESTAMP() AS {self.ingestion_time_column_name},
+                CURRENT_TIMESTAMP() AS {self.update_time_column_name}, 
+                TO_BASE64(MD5(TO_JSON_STRING(S))) AS {self.hash_column_name}, 
+                TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in self.surrogate_keys])}], ""))) AS {self.primary_key_hash_column_name}
+            FROM `{self.source_dataset}.{self.source}` S
+        """
 
     def create_upsert_sql_with_hash(self):
         comma = ","

@@ -52,6 +52,7 @@ class TestOdsMerge(object):
         self.columns = ["customerID","key_id","city_name"]
         self.surrogate_keys = ["customerID","key_id"]
         self.column_mapping = {i:i for i in self.columns}
+        self.ingestion_type = IngestionType.INCREMENTAL
         self.ods_table_config = OdsTableConfig(
             ods_metadata=OdsTableMetadataConfig(
                 hash_column_name='af_metadata_row_hash', 
@@ -59,7 +60,6 @@ class TestOdsMerge(object):
                 ingestion_time_column_name='af_metadata_inserted_at', 
                 update_time_column_name='af_metadata_updated_at'
             ), 
-            ingestion_type=IngestionType.INCREMENTAL, 
             merge_type='SG_KEY_WITH_HASH'
         )
 
@@ -124,6 +124,7 @@ class TestOdsMerge(object):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             columns=self.columns,
+            ingestion_type=self.ingestion_type,
             ods_table_config=self.ods_table_config,
             dag=self.test_dag
         )

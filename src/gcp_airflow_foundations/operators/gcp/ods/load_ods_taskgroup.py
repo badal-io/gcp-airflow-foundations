@@ -24,6 +24,7 @@ def ods_builder(
     columns,
     schema_fields,
     surrogate_keys,
+    ingestion_type,
     ods_table_config,
     dag,
     time_partitioning=None,
@@ -35,10 +36,10 @@ def ods_builder(
     """
     taskgroup = TaskGroup(group_id="create_ods_merge_taskgroup")
 
-    if ods_table_config.ingestion_type == IngestionType.INCREMENTAL:
+    if ingestion_type == IngestionType.INCREMENTAL:
         table_id = f"{table_id}_ODS_Incremental"
 
-    elif ods_table_config.ingestion_type == IngestionType.FULL:
+    elif ingestion_type == IngestionType.FULL:
         table_id = f"{table_id}_ODS_Full"
 
     #1 Check if ODS table exists and if not create it using the provided schema file
@@ -77,6 +78,7 @@ def ods_builder(
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
         columns=columns,
+        ingestion_type=ingestion_type,
         ods_table_config=ods_table_config,
         task_group=taskgroup,
         dag=dag

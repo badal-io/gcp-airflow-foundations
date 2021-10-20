@@ -21,6 +21,7 @@ from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetad
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.common.gcp.hds.schema_utils import parse_hds_schema
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
 from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
@@ -66,6 +67,7 @@ class TestHdsMergeSCD2(object):
         self.columns = ["customerID","key_id","city_name"]
         self.surrogate_keys = ["customerID","key_id"]
         self.column_mapping = {i:i for i in self.columns}
+        self.ingestion_type = IngestionType.FULL
         self.hds_table_config = HdsTableConfig(
             hds_metadata=HdsTableMetadataConfig(
                 eff_start_time_column_name='af_metadata_created_at', 
@@ -105,6 +107,15 @@ class TestHdsMergeSCD2(object):
         load_job = self.client.load_table_from_dataframe(df, staging_table_id, job_config=job_config)
 
         while load_job.running():
+                    sleep(1)
+
+    def delete_rows(self):
+        staging_table_id = f"{self.project_id}.{self.staging_dataset}.{self.target_table_id}"
+        sql = f"""DELETE FROM {staging_table_id} WHERE key_id = 1"""
+
+        query_job = self.client.query(query=sql)
+
+        while query_job.running():
                     sleep(1)
 
     def create_hds(self):
@@ -149,6 +160,7 @@ class TestHdsMergeSCD2(object):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             columns=self.columns,
+            ingestion_type = self.ingestion_type,
             hds_table_config=self.hds_table_config,
             dag=self.test_dag
         )
@@ -169,7 +181,7 @@ class TestHdsMergeSCD2(object):
 
         assert query_results == expected_rows
 
-    def test_merge_hds_with_change(self):
+    def test_merge_hds_with_insertion(self):
         self.insert_new_rows()
         
         insert = MergeBigQueryHDS(
@@ -182,6 +194,7 @@ class TestHdsMergeSCD2(object):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             columns=self.columns,
+            ingestion_type = self.ingestion_type,
             hds_table_config=self.hds_table_config,
             dag=self.test_dag
         )
@@ -203,5 +216,39 @@ class TestHdsMergeSCD2(object):
         expected_rows.insert(4, self.mock_new_data_rows[1])
 
         assert query_results == expected_rows
+
+    def test_merge_hds_with_deletion(self):
+        self.delete_rows()
+        
+        insert = MergeBigQueryHDS(
+            task_id=f"{uuid.uuid4().hex}",
+            project_id=self.project_id,
+            stg_dataset_name=self.staging_dataset,
+            data_dataset_name=self.target_dataset,
+            stg_table_name=self.target_table_id,
+            data_table_name=f"{self.target_table_id}_HDS_SCD2",
+            surrogate_keys=self.surrogate_keys,
+            column_mapping=self.column_mapping,
+            columns=self.columns,
+            ingestion_type = self.ingestion_type,
+            hds_table_config=self.hds_table_config,
+            dag=self.test_dag
+        )
+
+        run_task_with_pre_execute(insert)
+
+        sql = f""" 
+            SELECT 
+                customerID, key_id, city_name, af_metadata_expired_at
+            FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_HDS_SCD2 
+            WHERE key_id = 1"""
+
+        query_config = bigquery.QueryJobConfig(use_legacy_sql=False)
+
+        query_results = self.client.query(sql, job_config=query_config).to_dataframe().to_dict(orient='record')
+
+        af_metadata_expired_at = next((i["af_metadata_expired_at"] for i in query_results if i['key_id']==1), None)
+        
+        assert pd.isna(af_metadata_expired_at) is False, af_metadata_expired_at
 
         self.clean_up()

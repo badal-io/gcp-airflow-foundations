@@ -24,6 +24,7 @@ def hds_builder(
     columns,
     schema_fields,
     surrogate_keys,
+    ingestion_type,
     hds_table_config,
     dag,
     time_partitioning=None,
@@ -87,6 +88,7 @@ def hds_builder(
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
         columns=columns,
+        ingestion_type=ingestion_type,
         hds_table_config=hds_table_config,
         task_group=taskgroup,
         dag=dag
