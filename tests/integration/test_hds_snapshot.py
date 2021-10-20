@@ -40,8 +40,8 @@ class TestHdsMergeSnapshot(object):
         self.mock_data_rows = mock_data_rows
         self.mock_new_data_rows = [
             {
-                "customerID": "customer_1",
-                "key_id": 1,
+                "customerID": "customer_4",
+                "key_id": 4,
                 "city_name": "Vancouver"
             }
         ]
@@ -88,7 +88,7 @@ class TestHdsMergeSnapshot(object):
  
         df = pd.DataFrame.from_dict(self.mock_new_data_rows)
 
-        job_config = bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE")
+        job_config = bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
         load_job = self.client.load_table_from_dataframe(df, staging_table_id, job_config=job_config)
 
         while load_job.running():
@@ -189,7 +189,7 @@ class TestHdsMergeSnapshot(object):
             {
                 "customerID": "customer_1",
                 "key_id": 1,
-                "city_name": "Vancouver"
+                "city_name": "Toronto"
             },
             {
                 "customerID": "customer_2",
@@ -201,11 +201,17 @@ class TestHdsMergeSnapshot(object):
                 "key_id": 3,
                 "city_name": "Ottawa"
             },
+            {
+                "customerID": "customer_4",
+                "key_id": 4,
+                "city_name": "Vancouver"
+            },
         ]
 
         assert query_results == expected_rows
 
         self.clean_up()
+
 
     def clean_up(self):
         staging_table_ref = self.client.dataset(self.staging_dataset).table(self.target_table_id)

@@ -70,6 +70,7 @@ class TestTaskGroupBuilder(object):
                         columns=columns,
                         schema_fields=schema_fields,
                         ingestion_type=IngestionType.INCREMENTAL,
+                        partition_expiration=None,
                         hds_table_config=table.hds_config,
                         dag=dag
                     )

@@ -31,6 +31,7 @@ class SourceConfig:
         acceptable_delay_minutes : Delay minutes limit
         notification_emails : Email address for notification emails
         owner : Airflow user owning the DAG
+        partition_expiration: Expiration time for HDS Snapshot partitions in days.
         start_date : Start date for DAG
         start_date_tz : Timezone
         version : The Dag version. Can be incremented if logic changes
@@ -47,7 +48,6 @@ class SourceConfig:
     acceptable_delay_minutes: int
     notification_emails: List[str]
     owner: str
-    table_expiration_date: Optional[str]
     partition_expiration: Optional[int]
     start_date: str
     start_date_tz: str = "EST"
@@ -81,15 +81,10 @@ class SourceConfig:
             "The date format for Start Date should be YYYY-MM-DD"
         return v
 
-    @validator("table_expiration_date")
-    def valid_table_expiration_date(cls, v):
-        assert datetime.datetime.strptime(v, "%Y-%m-%d"), \
-            "The date format for Table Expiration Date should be YYYY-MM-DD"
-        return int(datetime.datetime.strptime(v, '%Y-%m-%d').timestamp())*1000
-
     @root_validator(pre=True)
     def valid_partition_expiration(cls, values):
-        assert values['partition_expiration'] < expiration_options[values['ingest_schedule']], \
-            f"The partition limit should be smaller than {expiration_options[values['ingest_schedule']]} days. It is currently set to {values['partition_expiration']}"
-        values['partition_expiration'] = values['partition_expiration']*ms_day
+        if values['partition_expiration'] is not None:
+            assert values['partition_expiration'] < expiration_options[values['ingest_schedule']], \
+                f"The partition limit should be smaller than {expiration_options[values['ingest_schedule']]} days. It is currently set to {values['partition_expiration']}"
+            values['partition_expiration'] = values['partition_expiration']*ms_day
         return values

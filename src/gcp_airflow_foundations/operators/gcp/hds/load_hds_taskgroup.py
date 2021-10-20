@@ -26,7 +26,6 @@ def hds_builder(
     surrogate_keys,
     ingestion_type,
     hds_table_config,
-    table_expiration_date,
     partition_expiration,
     dag,
     time_partitioning=None,
@@ -64,7 +63,6 @@ def hds_builder(
         table_id=table_id,
         table_resource={
                 "schema":{'fields': schema_fields},
-                "expirationTime":table_expiration_date,
                 "timePartitioning":time_partitioning,
                 "encryptionConfiguration":encryption_configuration,
                 "labels":labels
