@@ -26,6 +26,7 @@ def hds_builder(
     surrogate_keys,
     ingestion_type,
     hds_table_config,
+    partition_expiration,
     dag,
     time_partitioning=None,
     labels=None,
@@ -42,7 +43,8 @@ def hds_builder(
 
         time_partitioning = {
             "type":hds_table_config.hds_table_time_partitioning.value,
-            "field":hds_table_config.hds_metadata.partition_time_column_name
+            "field":hds_table_config.hds_metadata.partition_time_column_name,
+            "expirationMs":partition_expiration
         }
 
     elif hds_table_config.hds_table_type == HdsTableType.SCD2:
@@ -56,12 +58,16 @@ def hds_builder(
     #1 Check if HDS table exists and if not create it using the provided schema file
     create_table = BigQueryCreateEmptyTableOperator(
         task_id="create_hds_table",
+        project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
-        schema_fields=schema_fields,
-        time_partitioning=time_partitioning,
-        labels=labels,
-        encryption_configuration=encryption_configuration,
+        table_resource={
+                "schema":{'fields': schema_fields},
+                "timePartitioning":time_partitioning,
+                "encryptionConfiguration":encryption_configuration,
+                "labels":labels
+        },
+        exists_ok=True,
         task_group=taskgroup,
         dag=dag
     )

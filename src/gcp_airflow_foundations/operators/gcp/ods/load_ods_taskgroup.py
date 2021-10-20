@@ -45,13 +45,16 @@ def ods_builder(
     #1 Check if ODS table exists and if not create it using the provided schema file
     create_table = BigQueryCreateEmptyTableOperator(
         task_id="create_ods_table",
+        project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
-        schema_fields=schema_fields,
-        time_partitioning=time_partitioning,
+        table_resource={
+                "schema":{'fields': schema_fields},
+                "timePartitioning":time_partitioning,
+                "encryptionConfiguration":encryption_configuration,
+                "labels":labels
+        },
         exists_ok=True,
-        labels=labels,
-        encryption_configuration=encryption_configuration,
         task_group=taskgroup,
         dag=dag
     )
