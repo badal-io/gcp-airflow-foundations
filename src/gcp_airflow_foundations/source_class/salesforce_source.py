@@ -6,6 +6,8 @@ from airflow.models.dag import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 
+from gcp_airflow_foundations.base_class.salesforce_ingestion_config import SalesforceIngestionConfig
+
 from gcp_airflow_foundations.operators.api.operators.sf_to_gcs_query_operator import SalesforceToGcsQueryOperator
 from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
 from gcp_airflow_foundations.source_class.source import DagBuilder
@@ -109,6 +111,10 @@ class SalesforcetoBQDagBuilder(DagBuilder):
         return dags
 
     def validate_extra_options(self):
-        # TO-DO 
-        # Once configs are updated, add ingestion_type validation
-        pass
+        tables = self.config.tables
+
+        for each table in tables:
+            # either ingest all columns or one of field_names or fields_to_omit is non-empty
+            sf_config = table.extra_options.get("sf_config")
+            assert (sf_config.ingest_all_columns or (sf_config.field_names or sf_config.fields_to_omit))
+            
