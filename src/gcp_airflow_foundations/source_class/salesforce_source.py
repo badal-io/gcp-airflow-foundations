@@ -113,8 +113,8 @@ class SalesforcetoBQDagBuilder(DagBuilder):
     def validate_extra_options(self):
         tables = self.config.tables
 
-        for each table in tables:
+        for each table_config in tables:
             # either ingest all columns or one of field_names or fields_to_omit is non-empty
-            sf_config = table.extra_options.get("sf_config")
-            assert (sf_config.ingest_all_columns or (sf_config.field_names or sf_config.fields_to_omit))
+            sf_config = table_config.extra_options.get("sf_config")
+            assert (sf_config.ingest_all_columns or (sf_config.field_names or sf_config.fields_to_omit)), f"Assertion error: ingest_all_columns is False and both field_names and fields_to_omit are empty for the object {table_config.table_name}"
             
