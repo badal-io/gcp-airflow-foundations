@@ -1,19 +1,9 @@
-from gcp_airflow_foundations.common.gcp.source_schema.gcs import read_schema_from_gcs
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
-
 
 def parse_hds_schema(
     hds_metadata,
     hds_table_type,
-    gcs_schema_object=None,
-    schema_fields=None,
-    column_mapping=None) -> list:
-
-    source_schema_fields, source_table_columns = read_schema_from_gcs(
-        gcs_schema_object=gcs_schema_object,
-        schema_fields=schema_fields,
-        column_mapping=column_mapping
-    )
+    schema_fields) -> list:
 
     HDS_EXTRA_FIELDS_SCD2 = [
         {
@@ -45,10 +35,14 @@ def parse_hds_schema(
         }
     ]
 
+    hds_schema_fields = []
+
+    hds_schema_fields.extend(schema_fields)
+
     if hds_table_type == HdsTableType.SCD2:
-        source_schema_fields.extend(HDS_EXTRA_FIELDS_SCD2)
+        hds_schema_fields.extend(HDS_EXTRA_FIELDS_SCD2)
 
     elif hds_table_type == HdsTableType.SNAPSHOT:
-        source_schema_fields.extend(HDS_EXTRA_FIELDS_SNAPSHOT)
+        hds_schema_fields.extend(HDS_EXTRA_FIELDS_SNAPSHOT)
 
-    return source_schema_fields, source_table_columns    
+    return hds_schema_fields

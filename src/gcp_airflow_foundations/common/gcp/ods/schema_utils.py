@@ -1,17 +1,6 @@
-from gcp_airflow_foundations.common.gcp.source_schema.gcs import read_schema_from_gcs
-
-
 def parse_ods_schema(
     ods_metadata,
-    gcs_schema_object=None,
-    schema_fields=None,
-    column_mapping=None) -> list:
-
-    source_schema_fields, source_table_columns = read_schema_from_gcs(
-        gcs_schema_object=gcs_schema_object,
-        schema_fields=schema_fields,
-        column_mapping=column_mapping
-    )
+    schema_fields) -> list:
 
     ODS_EXTRA_FIELDS = [
         {
@@ -32,6 +21,9 @@ def parse_ods_schema(
         }
     ]
 
-    source_schema_fields.extend(ODS_EXTRA_FIELDS)
+    ods_schema_fields = []
 
-    return source_schema_fields, source_table_columns    
+    ods_schema_fields.extend(schema_fields)
+    ods_schema_fields.extend(ODS_EXTRA_FIELDS)
+
+    return ods_schema_fields    
