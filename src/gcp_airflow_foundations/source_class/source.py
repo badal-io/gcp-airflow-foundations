@@ -20,14 +20,9 @@ class DagBuilder(ABC):
     Attributes:
         sources:              List of initialized subclasses of this class (dynamically updated during runtime)
         config:               DataSourceTablesConfig object for DAG configuration
-        type_mappings:        Dictionary of source-specific type mappings between source and target (BigQuery)
-        type:                 Ingestion type
 
     """
     sources = []
-    config: DataSourceTablesConfig
-    type_mappings: dict
-    source_type: str
 
     def __init__(self, default_task_args: dict, config: DataSourceTablesConfig):
         self.default_task_args = default_task_args
@@ -99,8 +94,6 @@ class DagBuilder(ABC):
 
     def get_schema_method(self):
         if self.schema_source_type == SchemaSourceType.GCS:
-            for table_config in self.config.tables:
-                assert table_config.source_table_schema_object is not None, f'GCS Schema Object URI must be provided for table {table_config.table_name}'
             return read_schema_from_gcs
 
         elif self.schema_source_type == SchemaSourceType.LANDINGZONE:
@@ -110,7 +103,9 @@ class DagBuilder(ABC):
         if self.schema_source_type == SchemaSourceType.GCS:
             return {
                 'method':self.schema_method,
-                'kwargs':{'gcs_schema_object':table_config.source_table_schema_object}
+                'kwargs':{'gcs_schema_object':self.config.source.schema_options.schema_object_template.format(
+                    table_name=table_config.table_name
+                )}
             }
 
         elif self.schema_source_type == SchemaSourceType.LANDINGZONE:  

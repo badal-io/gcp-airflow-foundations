@@ -6,6 +6,7 @@ from pydantic.dataclasses import dataclass
 
 from gcp_airflow_foundations.enums.source_type import SourceType
 from gcp_airflow_foundations.base_class.landing_zone_config import LandingZoneConfig
+from gcp_airflow_foundations.base_class.schema_options_config import SchemaOptionsConfig
 
 partition_limit = 4000
 ms_day = 86400000
@@ -49,6 +50,7 @@ class SourceConfig:
     notification_emails: List[str]
     owner: str
     partition_expiration: Optional[int]
+    schema_options: SchemaOptionsConfig
     start_date: str
     start_date_tz: str = "EST"
     version: int = 1
@@ -79,6 +81,11 @@ class SourceConfig:
     def valid_start_date(cls, v):
         assert datetime.datetime.strptime(v, "%Y-%m-%d"), \
             "The date format for Start Date should be YYYY-MM-DD"
+        return v
+
+    @validator("schema_options")
+    def valid_schema_options(cls, v):
+        assert v is not None, 'Schema options configuration must be provided'
         return v
 
     @root_validator(pre=True)
