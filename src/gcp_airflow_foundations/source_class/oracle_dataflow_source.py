@@ -44,11 +44,11 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
         else:
             query = oracle_helpers.get_schema_query()
 
-        # 2. KMS-encrypt credentials for Dataflow jobkms_key = job_args['KMSEncryptionKey']
+        # 2. KMS-encrypt credentials for Dataflow job
         logging.info("Encrypting DB credentials with Google Cloud KMS.")
 
         kms_hook = CloudKMSHook()
-        kms_key = f'projects/abb-adw-prod/locations/global/keyRings/dataflow_jdbc_key/cryptoKeys/jdbc_key'
+        kms_key = config_params["kms_key_path"]
         
         jdbc_url = bytes(config_params["jdbc_url"], 'utf-8')
         jdbc_user = bytes(config_params["jdbc_user"], 'utf-8')
