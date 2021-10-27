@@ -6,3 +6,4 @@ class SourceType(Enum):
     GCS = "GCS"
     TWILIO = "TWILIO"
     BQ = "BQ"
+    ORACLE = "ORACLE"
