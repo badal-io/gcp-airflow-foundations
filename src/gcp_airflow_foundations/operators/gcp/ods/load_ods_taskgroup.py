@@ -72,7 +72,7 @@ def ods_builder(
 
     #3 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
     insert = MergeBigQueryODS(
-        task_id="insert_into_ods_table",
+        task_id=f"upsert_{table_id}",
         project_id=project_id,
         stg_dataset_name=landing_zone_dataset,
         data_dataset_name=dataset_id,
