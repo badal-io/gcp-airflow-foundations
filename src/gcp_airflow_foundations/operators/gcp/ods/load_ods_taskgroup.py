@@ -1,8 +1,6 @@
 from airflow import DAG
 from airflow.exceptions import AirflowException
 
-from gcp_airflow_foundations.enums.ingestion_type import IngestionType
-
 from airflow.utils.task_group import TaskGroup
 
 from airflow.providers.google.cloud.operators.bigquery import (
@@ -13,6 +11,8 @@ from airflow.providers.google.cloud.operators.bigquery import (
 from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
 from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
 
+from gcp_airflow_foundations.operators.gcp.create_table import CustomBigQueryCreateEmptyTableOperator
+
 
 def ods_builder(
     project_id,
@@ -21,8 +21,6 @@ def ods_builder(
     landing_zone_dataset,
     landing_zone_table_name_override,
     column_mapping,
-    columns,
-    schema_fields,
     surrogate_keys,
     ingestion_type,
     ods_table_config,
@@ -36,40 +34,27 @@ def ods_builder(
     """
     taskgroup = TaskGroup(group_id="create_ods_merge_taskgroup")
 
-    if ingestion_type == IngestionType.INCREMENTAL:
-        table_id = f"{table_id}_ODS_Incremental"
-
-    elif ingestion_type == IngestionType.FULL:
-        table_id = f"{table_id}_ODS_Full"
-
-    #1 Check if ODS table exists and if not create it using the provided schema file
-    create_table = BigQueryCreateEmptyTableOperator(
+    #1 Check if ODS table exists and if not create an empty table
+    create_table = CustomBigQueryCreateEmptyTableOperator(
         task_id="create_ods_table",
         project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
-        table_resource={
-                "schema":{'fields': schema_fields},
-                "timePartitioning":time_partitioning,
-                "encryptionConfiguration":encryption_configuration,
-                "labels":labels
-        },
-        exists_ok=True,
+        time_partitioning=None,
         task_group=taskgroup,
         dag=dag
     )
-
+    
     #2 Migrate schema
     migrate_schema = MigrateSchema(
         task_id="schema_migration",
         project_id=project_id,
         table_id=table_id,
         dataset_id=dataset_id, 
-        new_schema_fields=schema_fields,
         task_group=taskgroup,
         dag=dag
     )
-
+    
     #3 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
     insert = MergeBigQueryODS(
         task_id="insert_into_ods_table",
@@ -80,7 +65,6 @@ def ods_builder(
         data_table_name=table_id,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
-        columns=columns,
         ingestion_type=ingestion_type,
         ods_table_config=ods_table_config,
         task_group=taskgroup,
@@ -89,4 +73,4 @@ def ods_builder(
 
     create_table >> migrate_schema >> insert
 
-    return taskgroup, table_id
+    return taskgroup
