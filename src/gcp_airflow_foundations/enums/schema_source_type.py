@@ -4,5 +4,6 @@ from enum import Enum, unique
 @unique
 class SchemaSourceType(Enum):
     GCS = "GCS"
-    LANDINGZONE = "LANDINGZONE"
+    BQ = "BQ"
     CUSTOM = "CUSTOM"
+    AUTO = "AUTO"

@@ -2,6 +2,7 @@ import logging
 
 from airflow.models.dag import DAG
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
+from gcp_airflow_foundations.operators.gcp.gcs_to_bigquery import CustomGCSToBigQueryOperator
 
 from gcp_airflow_foundations.source_class.source import DagBuilder
 
@@ -21,8 +22,13 @@ class GCStoBQDagBuilder(DagBuilder):
         # 1 Load CSV to BQ Landing Zone with schema auto-detection
         data_source = self.config.source
 
-        load_to_bq_landing = GCSToBigQueryOperator(
+        schema_config = self.get_schema_method_class()
+
+        load_to_bq_landing = CustomGCSToBigQueryOperator(
             task_id='import_csv_to_bq_landing',
+            schema_config=schema_config,
+            data_source=data_source,
+            table_config=table_config,
             bucket=data_source.extra_options["gcs_bucket"],
             source_objects=data_source.extra_options["gcs_objects"],
             destination_project_dataset_table=f"{data_source.landing_zone_options.landing_zone_dataset}.{table_config.landing_zone_table_name_override}",

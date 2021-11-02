@@ -27,6 +27,7 @@ class CustomBigQueryCreateEmptyTableOperator(BigQueryCreateEmptyTableOperator):
         dataset_id: str,
         table_id: str,
         time_partitioning: Optional[dict] = None,
+        schema_task_id: Optional[str] = "schema_parsing"
         gcp_conn_id: str = "google_cloud_default",
         **kwargs,
     ) -> None:
@@ -41,9 +42,10 @@ class CustomBigQueryCreateEmptyTableOperator(BigQueryCreateEmptyTableOperator):
 
         self.table = table_id
         self.time_partitioning = time_partitioning
+        self.schema_task_id = schema_task_id
 
     def pre_execute(self, context) -> None:
-        schema_fields = self.xcom_pull(context=context, task_ids="schema_parsing")[self.table_id]
+        schema_fields = self.xcom_pull(context=context, task_ids=self.schema_task_id)[self.table_id]
 
         self.table_resource={
                 "schema":{'fields': schema_fields},

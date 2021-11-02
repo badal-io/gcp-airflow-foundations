@@ -29,22 +29,27 @@ class ParseSchema(BaseOperator):
         *,
         schema_config,
         column_mapping=None,
-        ods_table_config=None,
-        hds_table_config=None,
+        data_source=None,
+        table_config=None,
         **kwargs
     ) -> list:
         super().__init__(**kwargs)
 
         self.schema_config = schema_config
         self.column_mapping = column_mapping
-        self.ods_table_config = ods_table_config
-        self.hds_table_config = hds_table_config
+        self.data_source = data_source
+        self.table_config = table_config
+
+        self.ods_table_config = table_config.ods_config
+        self.hds_table_config = table_config.hds_config
 
     def execute(self, context):
 
-        schema_method = self.schema_config['method']
+        schema_source_config_class = self.schema_config
+        schema_method = schema_source_config_class().schema_method()
+        schema_method_arguments = schema_source_config_class().schema_method_arguments(self.data_source, self.table_config)
 
-        source_schema_fields = schema_method(**self.schema_config['kwargs'])
+        source_schema_fields = schema_method(**schema_method_arguments)
         logging.info(f"Parsed schema using: {schema_method}")
 
         schema_xcom = {'source_table_columns':[field["name"] for field in source_schema_fields]}

@@ -95,6 +95,7 @@ class MergeBigQueryHDS(BigQueryOperator):
 
     def pre_execute(self, context) -> None:
         columns = [self.column_mapping[i] for i in self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']]
+        column_mapping = {self.column_mapping[i]:self.column_mapping[i] for i in self.column_mapping}
 
         self.log.info(
             f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}"
@@ -109,7 +110,7 @@ class MergeBigQueryHDS(BigQueryOperator):
             target=self.data_table_name,
             columns=columns,
             surrogate_keys=self.surrogate_keys,
-            column_mapping={self.column_mapping[i]:self.column_mapping[i] for i in self.column_mapping},
+            column_mapping=column_mapping,
             hds_metadata=self.hds_table_config.hds_metadata
         )
 
