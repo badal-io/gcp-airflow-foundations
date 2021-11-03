@@ -1,6 +1,6 @@
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
-from mailgun_hook_test import MailgunHook
+from gcp_airflow_foundations.operators.api.hooks.mailgun_hook_test import MailgunHook
 from typing import Any
 
 class MailgunValidateSensor(BaseSensorOperator):

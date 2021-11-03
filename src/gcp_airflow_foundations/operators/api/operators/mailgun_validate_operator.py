@@ -3,7 +3,7 @@ from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.utils.decorators import apply_defaults
 from airflow.exceptions import AirflowException
 
-from mailgun_hook_test import MailgunHook
+from gcp_airflow_foundations.operators.api.hooks.mailgun_hook_test import MailgunHook
 
 import logging
 import os
