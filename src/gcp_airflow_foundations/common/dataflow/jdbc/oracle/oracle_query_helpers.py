@@ -1,6 +1,10 @@
 import logging
 
+<<<<<<< HEAD
 def get_query_for_oracle_load_full(table_name, columns, owner):
+=======
+def get_query_for_oracle_load_full(table_name, columns):
+>>>>>>> 4d9de4bedec6b99b79e52ff05cf9e6cd3012534f
     """
     JDBC query for full ingestion of one table
     """
