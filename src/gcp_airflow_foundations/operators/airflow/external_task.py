@@ -31,15 +31,14 @@ from airflow.utils.session import provide_session
 from airflow.utils.state import State
 
 
-class CustomExternalTaskSensor(BaseSensorOperator):
+class TableIngestionSensor(BaseSensorOperator):
     """
-    Waits for a different DAG or a task in a different DAG to complete for a
+    Waits for table ingestion DAGs to complete for a
     specific execution_date
-    :param external_ids_map: A map whose keys are the DAG IDs you 
-        want to wait for and the values are a list of the task IDs you want
-        to wait for
-    :type external_ids_map: dict
 
+    :param external_source_tables: A map whose keys are the sourcs you 
+        want to wait for and the values are a list of the tables for each source
+    :type external_source_tables: dict
     :param allowed_states: Iterable of allowed states, default is ``['success']``
     :type allowed_states: Iterable
     :param failed_states: Iterable of failed or dis-allowed states, default is ``None``
@@ -52,13 +51,13 @@ class CustomExternalTaskSensor(BaseSensorOperator):
     :type execution_delta: Optional[datetime.timedelta]
     """
 
-    template_fields = ['external_ids_map']
+    template_fields = ['external_source_tables']
     ui_color = '#19647e'
 
     def __init__(
         self,
         *,
-        external_ids_map: dict,
+        external_source_tables: dict,
         allowed_states: Optional[Iterable[str]] = None,
         failed_states: Optional[Iterable[str]] = None,
         execution_delta: Optional[datetime.timedelta] = None,
@@ -76,17 +75,9 @@ class CustomExternalTaskSensor(BaseSensorOperator):
                 f"Duplicate values provided as allowed "
                 f"`{self.allowed_states}` and failed states `{self.failed_states}`"
             )
-
-        # TO-DO Add validation statements here
        
-        if execution_delta is not None and execution_date_fn is not None:
-            raise ValueError(
-                'Only one of `execution_delta` or `execution_date_fn` may '
-                'be provided to ExternalTaskSensor; not both.'
-            )
-
         self.execution_delta = execution_delta
-        self.external_ids_map = external_ids_map
+        self.external_dag_ids = self.get_external_dag_ids()
 
     @provide_session
     def poke(self, context, session=None):
@@ -122,30 +113,12 @@ class CustomExternalTaskSensor(BaseSensorOperator):
         """
         TI = TaskInstance
         DR = DagRun
-
-        expected_tasks_count = sum([len(self.external_ids_map[i]) for i in self.external_ids_map])
-        count = 0
-
-        for external_dag_id in self.external_ids_map:
-            external_task_ids = self.external_ids_map[external_dag_id]
-
-            if len(external_task_ids) > 0:
-                count += (
-                    session.query(func.count())  # .count() is inefficient
-                    .filter(
-                        TI.dag_id == external_dag_id,
-                        TI.task_id.in_(external_task_ids),
-                        TI.state.in_(states),
-                        TI.execution_date.in_(dttm_filter),
-                    )
-                    .scalar()
-                )
         
-        external_dag_ids = [i for i in self.external_ids_map if len(self.external_ids_map[i]) == 0]
-        count += (
+        expected_count = len(self.external_dag_ids)
+        count = (
             session.query(func.count())
             .filter(
-                DR.dag_id.in_(external_dag_ids),
+                DR.dag_id.in_(self.external_dag_ids),
                 DR.state.in_(states),
                 DR.execution_date.in_(dttm_filter),
             )
@@ -153,10 +126,50 @@ class CustomExternalTaskSensor(BaseSensorOperator):
         )
 
         self.log.info(
-            'Count is %s, expected dag is %s, expected tasks is %s',
+            'Current count of completed tasks is %s. The expected DAG count is %s',
             count,
-            len(external_dag_ids),
-            expected_tasks_count
+            expected_count,
         )
             
-        return count / (expected_tasks_count + len(external_dag_ids))
+        return count / expected_count
+
+    @provide_session
+    def get_external_dag_ids(self, context, session=None) -> list:
+        """
+        Retrieve a list of external DAG IDs based on the provided source & table combinations
+        """
+        schedule_interval = context['dag'].schedule_interval
+
+        external_dag_ids = []
+        sources = [i for i in self.external_source_tables]
+
+        query = session.query(DagModel).filter(DagModel.is_active==True).all()
+        active_dags = [i.dag_id for i in query]
+        schedule_map = {i.dag_id:i.schedule_interval for i in query}
+
+        if not active_dags:
+            raise AirflowException(f'No active dags found')
+
+        for source in sources:
+            tables = self.external_source_tables[source]
+            source_dags = [i for i in active_dags if source in i]
+            
+            if not source_dags:
+                raise AirflowException(f'No active dags found for source {source}')
+
+            if tables = []:
+                external_dag_ids.extend(source_dags)
+            else:
+                for table in tables:
+                    table_dags = [i for i in source_dags if table in i]
+
+                    if not table_dags:
+                        raise AirflowException(f'No active dagσ found for source {source} and table {table}')
+
+                    external_dag_ids.extent(table_dags)
+
+        for dag in external_dag_ids:
+            if schedule_interval != schedule_map[dag]:
+                raise AirflowException(f'No matching schedule with DAG {dag}. The schedule of the current DAG must match that of the external DAGs')
+
+        return external_dag_ids
