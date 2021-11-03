@@ -6,7 +6,6 @@ from airflow.sensors.external_task import ExternalTaskSensor
 
 
 def dataflow_taskgroup_builder(
-    dag,
     query_schema,
     dataflow_job_params,
     destination_table,
@@ -31,10 +30,10 @@ def dataflow_taskgroup_builder(
         op_kwargs={"config_params": dataflow_job_params,
                     "destination_table": destination_table,
                     "destination_schema_table": destination_schema_table,
-                    "query_schema": query_schema},
+                    "query_schema": query_schema,
+                    "owner": dataflow_job_params["database_owner"]},
         python_callable=create_job_params,
         task_group=taskgroup,
-        dag=dag
     )
 
     trigger_dataflow_job = PythonOperator(
@@ -45,7 +44,6 @@ def dataflow_taskgroup_builder(
                     "query_schema": query_schema},
         python_callable=run_dataflow_job,
         task_group=taskgroup,
-        dag=dag
     )
 
     if not query_schema:
@@ -53,7 +51,6 @@ def dataflow_taskgroup_builder(
             task_id="check_bq_schema_updated",
             external_dag_id="update_CSG_schema",
             task_group=taskgroup,
-            dag=dag
         )
 
         schema_task_sensor >> create_job_parameters >> trigger_dataflow_job

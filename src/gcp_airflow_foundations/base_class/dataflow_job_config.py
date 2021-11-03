@@ -19,7 +19,9 @@ class DataflowJobConfig:
         jdbc_pass_secret_name: the secret name of the database password
         kms_key_path: the KMS key path for encrypting/decrypting JDBC credentials
         sql_casts: a dictionary of sql casts to use when querying the source DB
+        database_owner: owner of the tables to query (query scope)
     """
+    system_name: str
     project: str
     region: str
     subnetwork: str
@@ -33,5 +35,4 @@ class DataflowJobConfig:
     kms_key_path: str
     sql_casts: Optional[dict]
     bq_schema_table: str
-
-    
+    database_owner: str

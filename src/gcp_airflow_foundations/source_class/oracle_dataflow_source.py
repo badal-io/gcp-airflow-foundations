@@ -22,7 +22,7 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
     """
     source_type = "ORACLE"
 
-    def create_job_params(self, config_params, destination_table, destination_schema_table, query_schema, **kwargs):
+    def create_job_params(self, config_params, destination_table, destination_schema_table, query_schema, owner, **kwargs):
         #   1.  Generate SQL Query
         #    a. get source schema from BQ table
         bq_hook = BigQueryHook()
@@ -38,11 +38,11 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
             logging.info(casted_columns)
 
             #    c. get query
-            query = oracle_helpers.get_query_for_oracle_load_full(config_params["table_name"], casted_columns)
+            query = oracle_helpers.get_query_for_oracle_load_full(config_params["table_name"], casted_columns, owner)
             logging.info(query)
         
         else:
-            query = oracle_helpers.get_schema_query()
+            query = oracle_helpers.get_schema_query(owner)
 
         # 2. KMS-encrypt credentials for Dataflow job
         logging.info("Encrypting DB credentials with Google Cloud KMS.")

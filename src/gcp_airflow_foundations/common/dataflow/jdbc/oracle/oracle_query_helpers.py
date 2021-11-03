@@ -1,6 +1,6 @@
 import logging
 
-def get_query_for_oracle_load_full(table_name, columns):
+def get_query_for_oracle_load_full(table_name, columns, owner):
     """
     JDBC query for full ingestion of one table
     """
@@ -9,7 +9,7 @@ def get_query_for_oracle_load_full(table_name, columns):
 
     select_cols = ",".join(str(x) for x in columns)
 
-    return f'select {select_cols} from "OPS$ABB".{table_name}'
+    return f'select {select_cols} from {owner}.{table_name}'
 
 def convert_schema_to_json(lists, labels):
     """
@@ -40,7 +40,7 @@ def cast_columns(columns, dtypes, casts):
     return castings
 
 
-def get_schema_query():
+def get_schema_query(owner):
     """
     Oracle query for getting schema information for all tables
     """
@@ -48,7 +48,7 @@ def get_schema_query():
     cols = ["TABLE_NAME", "COLUMN_NAME", "DATA_TYPE", "COLUMN_ID"]
     cols = ",".join(cols)
 
-    return f"""select {cols} from alL_tab_columns where OWNER = 'OPS$ABB'"""
+    return f"""select {cols} from alL_tab_columns where OWNER = {owner}"""
 
 
 def get_table_schema_query(schema_table, source_table_name):
@@ -60,7 +60,7 @@ def get_table_schema_query(schema_table, source_table_name):
         where TABLE_NAME = '{source_table_name}' order by COLUMN_ID)"
     
 def get_type_mappings(self):
-        return {
+    return {
         # STRING
         "VARCHAR2": "STRING",
         "NVARCHAR2": "STRING",

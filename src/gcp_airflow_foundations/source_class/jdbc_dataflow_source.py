@@ -22,7 +22,7 @@ from airflow.providers.google.cloud.operators.dataflow import DataflowTemplatedJ
 from airflow.providers.google.cloud.hooks.kms import CloudKMSHook
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.models import Variable
-from gcp_airflow_foundations.source_class.dataflow_taskgroups import dataflow_taskgroup_builder
+from gcp_airflow_foundations.common.dataflow.jdbc.dataflow_taskgroups import dataflow_taskgroup_builder
 
 from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
 from gcp_airflow_foundations.source_class.source import DagBuilder
@@ -31,57 +31,40 @@ from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
 class JdbcToBQDataflowDagBuilder(DagBuilder):
 
-    def build_dags(self):
+    def get_extra_dags(self):
+        return [self.get_schema_dag()]
+
+    def set_schema_method_type(self):
+        self.schema_source_type = self.config.source.schema_options.schema_source_type     
+
+    def get_bq_ingestion_task(self, table_config):
         data_source = self.config.source
-        logging.info(f"Building DAG for GCS {data_source.name}")
 
         # Source level Parameters
         system_name = data_source.extra_options["dataflow_job_config"]["system_name"]
         gcp_project = data_source.gcp_project
-        gcs_bucket = data_source.extra_options["gcs_bucket"]
-        gcs_object = data_source.extra_options["gcs_objects"]
         landing_dataset = data_source.landing_zone_options.landing_zone_dataset
+
+        # Table level parameters
+        dataflow_job_params = data_source.extra_options["dataflow_job_config"]
+        schema_table = dataflow_job_params["bq_schema_table"]
+        dataflow_job_params["table_name"] = table_config.table_name
+        destination_table = f"{gcp_project}:{landing_dataset}.{table_config.landing_zone_table_name_override}"
+        destination_schema_table = f"{gcp_project}.{landing_dataset}.{schema_table}"
+
+        taskgroup = dataflow_taskgroup_builder(
+            query_schema=False,
+            dataflow_job_params=dataflow_job_params,
+            destination_table=destination_table,
+            destination_schema_table=destination_schema_table,
+            table_name=table_config.table_name,
+            system_name=system_name,
+            create_job_params=self.create_job_params,
+            run_dataflow_job=self.run_dataflow_job
+        )
+
+        return taskgroup
     
-        dags = []
-        for table_config in self.config.tables:
-            table_default_task_args = self.default_task_args_for_table(
-                self.config, table_config
-            )
-            logging.info(f"table_default_task_args {table_default_task_args}")
-
-            start_date = table_default_task_args["start_date"]
-
-            with DAG(
-                dag_id=f"{system_name}_to_bq_{table_config.table_name}",
-                description=f"{system_name} to BigQuery load for {table_config.table_name}",
-                schedule_interval="@daily",
-                default_args=table_default_task_args
-            ) as dag:
-
-                # Table level parameters
-                dataflow_job_params = data_source.extra_options["dataflow_job_config"]
-                schema_table = dataflow_job_params["bq_schema_table"]
-                dataflow_job_params["table_name"] = table_config.table_name
-                destination_table = f"{gcp_project}:{landing_dataset}.{table_config.landing_zone_table_name_override}"
-                destination_schema_table = f"{gcp_project}.{landing_dataset}.{schema_table}"
-
-                taskgroup = dataflow_taskgroup_builder(dag,
-                    query_schema=False,
-                    dataflow_job_params=dataflow_job_params,
-                    destination_table=destination_table,
-                    destination_schema_table=destination_schema_table,
-                    table_name=table_config.table_name,
-                    system_name=system_name,
-                    create_job_params=self.create_job_params,
-                    run_dataflow_job=self.run_dataflow_job
-                )
-
-                dags.append(dag)
-
-        sdag = self.get_schema_dag()
-        dags.append(sdag)
-
-        return dags
 
     def get_schema_dag(self):
         """
@@ -107,7 +90,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         ) as schema_dag:
 
             taskgroup = dataflow_taskgroup_builder(
-                schema_dag,
+              #  schema_dag,
                 query_schema=True,
                 dataflow_job_params=dataflow_job_params,
                 destination_table=destination_table,
@@ -117,15 +100,13 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                 create_job_params=self.create_job_params,
                 run_dataflow_job=self.run_dataflow_job
             )
+            taskgroup.dag = schema_dag
 
             return schema_dag
 
     def run_dataflow_job(self, template_path, system_name, table_name, query_schema, **kwargs):
         ti = kwargs['ti']
-        if query_schema:
-            xcom_task_pickup = "dataflow_taskgroup.create_job_parameters_schema"
-        else:
-            xcom_task_pickup = "dataflow_taskgroup.create_job_parameters"
+        xcom_task_pickup = "dataflow_taskgroup.create_job_parameters"
 
         dataflow_default_options = ti.xcom_pull(key='dataflow_default_options', task_ids=xcom_task_pickup)
         parameters = ti.xcom_pull(key='parameters', task_ids=xcom_task_pickup)

@@ -47,9 +47,9 @@ class DagBuilder(ABC):
             start_date = table_default_task_args["start_date"]
 
             with DAG(
-                dag_id=f"gcs_to_bq_{data_source.name}",
-                description=f"BigQuery load for {table_config.table_name}",
-                schedule_interval=None,
+                dag_id=f"{data_source.name}_to_bq_{table_config.table_name}",
+                description=f"{data_source.name} to BigQuery load for {table_config.table_name}",
+                schedule_interval=data_source.ingest_schedule,
                 default_args=table_default_task_args
             ) as dag:    
 
@@ -58,8 +58,9 @@ class DagBuilder(ABC):
 
                 self.get_datastore_ingestion_task(dag, load_to_bq_landing, data_source, table_config)
             
-            dags.append(dag)
-
+                dags.append(dag)
+                
+        dags = dags + self.get_extra_dags()
         return dags
 
     @abstractmethod
@@ -74,6 +75,10 @@ class DagBuilder(ABC):
             preceding_task=preceding_task,
             dag=dag
         )
+
+    def get_extra_dags(self):
+    # Override if non-table ingestion DAGs are needed for the flow: return them here
+        return []
 
     @abstractmethod
     def set_schema_method_type(self):
