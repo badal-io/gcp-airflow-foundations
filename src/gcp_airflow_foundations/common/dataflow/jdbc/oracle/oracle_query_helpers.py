@@ -48,7 +48,7 @@ def get_schema_query(owner):
     cols = ["TABLE_NAME", "COLUMN_NAME", "DATA_TYPE", "COLUMN_ID"]
     cols = ",".join(cols)
 
-    return f"""select {cols} from alL_tab_columns where OWNER = {owner}"""
+    return f"""select {cols} from alL_tab_columns where OWNER = '{owner}'"""
 
 
 def get_table_schema_query(schema_table, source_table_name):
