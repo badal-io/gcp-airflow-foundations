@@ -53,8 +53,7 @@ class DagBuilder(ABC):
                 default_args=table_default_task_args
             ) as dag:    
 
-                load_to_bq_landing = self.get_bq_ingestion_task(table_config)
-                load_to_bq_landing.dag = dag
+                load_to_bq_landing = self.get_bq_ingestion_task(dag, table_config)
 
                 self.get_datastore_ingestion_task(dag, load_to_bq_landing, data_source, table_config)
             

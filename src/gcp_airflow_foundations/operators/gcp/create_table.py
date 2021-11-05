@@ -27,7 +27,7 @@ class CustomBigQueryCreateEmptyTableOperator(BigQueryCreateEmptyTableOperator):
         dataset_id: str,
         table_id: str,
         time_partitioning: Optional[dict] = None,
-        schema_task_id: Optional[str] = "schema_parsing"
+        schema_task_id: Optional[str] = "schema_parsing",
         gcp_conn_id: str = "google_cloud_default",
         **kwargs,
     ) -> None:

@@ -14,6 +14,8 @@ flake8>=3.8.0
 pre-commit>=1.18.3
 croniter>=1.0.15
 
+facebook-business>=6.0.2
+
 apache-airflow-providers-google==6.0.0
 pyopenssl==20.0.1
 google-ads==14.0.0
