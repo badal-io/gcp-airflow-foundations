@@ -8,3 +8,4 @@ class SourceType(Enum):
     BQ = "BQ"
     SALESFORCE = "SALESFORCE"
     ORACLE = "ORACLE"
+    FACEBOOK = "FACEBOOK"
