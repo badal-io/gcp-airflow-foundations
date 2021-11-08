@@ -6,4 +6,8 @@ class SourceType(Enum):
     GCS = "GCS"
     TWILIO = "TWILIO"
     BQ = "BQ"
+<<<<<<< HEAD
     SALESFORCE = "SALESFORCE"
+=======
+    ORACLE = "ORACLE"
+>>>>>>> main
