@@ -92,20 +92,13 @@ class SalesforceToGcsQueryOperator(SalesforceToGcsOperator):
         elif self.fields_to_include:
             # Query specified fields
             fields_to_query = self.fields_to_include
-<<<<<<< HEAD
             logging.info(fields_to_query)
-=======
->>>>>>> 07e642acb5747f577c9dda5f86471ba95b72e454
         else:
             # ingest_all_fields is false, and no other information was provided - throw exception
             raise AirflowException(f"Queryable content for Salesforce object {self.salesforce_object} was malformed")
 
-<<<<<<< HEAD
         query = f"""SELECT {",".join(fields_to_query)} FROM {self.salesforce_object}""".strip()
         logging.info(query)
-=======
-        query = f"""SELECT {",".join(fields_to_query)} FROM {self.salesforce_object}"""
->>>>>>> 07e642acb5747f577c9dda5f86471ba95b72e454
         self.query = query
 
         super().execute(context)
