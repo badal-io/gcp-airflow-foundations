@@ -3,7 +3,10 @@ from urllib.parse import urlparse
 import logging
 
 from airflow.models.dag import DAG
+<<<<<<< HEAD
 from airflow.utils.task_group import TaskGroup
+=======
+>>>>>>> 07e642acb5747f577c9dda5f86471ba95b72e454
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 
