@@ -18,22 +18,36 @@ class TestSchemaMigrationOperator(object):
         self.config = config
 
     def test_should_pick_columns_for_ods_schema_migration(self):
+        source = self.config.source
         for table in self.config.tables:
             ingestion_type = table.ingestion_type
             if table.ods_config:
 
                 if ingestion_type == IngestionType.INCREMENTAL:
                     table_id = f"{table.table_name}_ODS_Incremental"
-                    expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_updated_at`,`af_metadata_primary_key_hash`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_ODS_Incremental`;"
+                    expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_updated_at`,`af_metadata_primary_key_hash`,`af_metadata_row_hash` FROM `airflow_test.customer_data_ODS_Incremental`;"
 
                 elif ingestion_type == IngestionType.FULL:
                     table_id = f"{table.table_name}_ODS_Full"
-                    expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_updated_at`,`af_metadata_row_hash`,`af_metadata_primary_key_hash` FROM `airflow_test.test_customer_data_ODS_Full`;"
+                    expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_inserted_at`,`af_metadata_updated_at`,`af_metadata_row_hash`,`af_metadata_primary_key_hash` FROM `airflow_test.customer_data_ODS_Full`;"
 
-                schema_fields, _ = parse_ods_schema(
-                    gcs_schema_object=table.source_table_schema_object,
-                    schema_fields=None,
-                    column_mapping=table.column_mapping,
+                schema_fields = [
+                    {
+                        "name":"customerID",
+                        "type":"STRING"
+                    },
+                    {
+                        "name":"key_id",
+                        "type":"INTEGER"
+                    },
+                    {
+                        "name":"city_name",
+                        "type":"STRING"
+                    }
+                ]
+
+                schema_fields = parse_ods_schema(
+                    schema_fields=schema_fields,
                     ods_metadata=table.ods_config.ods_metadata
                 )
 
@@ -48,15 +62,28 @@ class TestSchemaMigrationOperator(object):
                 elif table.hds_config.hds_table_type == HdsTableType.SCD2:
                     table_id = f"{table.table_name}_HDS_SCD2"
 
-                schema_fields, _ = parse_hds_schema(
-                    gcs_schema_object=table.source_table_schema_object,
-                    schema_fields=None,
-                    column_mapping=table.column_mapping,            
+                schema_fields = [
+                    {
+                        "name":"customerID",
+                        "type":"STRING"
+                    },
+                    {
+                        "name":"key_id",
+                        "type":"INTEGER"
+                    },
+                    {
+                        "name":"city_name",
+                        "type":"STRING"
+                    }
+                ]
+
+                schema_fields = parse_hds_schema(
+                    schema_fields=schema_fields,        
                     hds_metadata=table.hds_config.hds_metadata,
                     hds_table_type=table.hds_config.hds_table_type
                 )    
 
-                expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_created_at`,`af_metadata_expired_at`,`af_metadata_row_hash` FROM `airflow_test.test_customer_data_HDS_SCD2`;"
+                expected_query = "SELECT `customerID`,`key_id`,`city_name`,`af_metadata_created_at`,`af_metadata_expired_at`,`af_metadata_row_hash` FROM `airflow_test.customer_data_HDS_SCD2`;"
 
                 assert self.get_schema_migration_sql(table_id, schema_fields) == expected_query
 

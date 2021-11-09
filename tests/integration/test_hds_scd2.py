@@ -119,10 +119,8 @@ class TestHdsMergeSCD2(object):
                     sleep(1)
 
     def create_hds(self):
-        hds_schema_fields, _ = parse_hds_schema(
-            gcs_schema_object=None,
+        hds_schema_fields = parse_hds_schema(
             schema_fields=self.schema_fields,
-            column_mapping=self.column_mapping,
             hds_metadata=self.hds_table_config.hds_metadata,
             hds_table_type=self.hds_table_config.hds_table_type
         )

@@ -84,10 +84,8 @@ class TestOdsMerge(object):
             sleep(1)
 
     def create_ods(self):
-        ods_schema_fields, _ = parse_ods_schema(
-            gcs_schema_object=None,
+        ods_schema_fields = parse_ods_schema(
             schema_fields=self.schema_fields,
-            column_mapping=self.column_mapping,
             ods_metadata=self.ods_table_config.ods_metadata
         )
 

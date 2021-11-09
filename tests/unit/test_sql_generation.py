@@ -20,6 +20,36 @@ class TestSqlHelpers(object):
         self.bq_cursor = bq_conn.cursor()
         
     def test_ods_sql_in_bq(self, staging_dataset, target_dataset, config):
+        schema_fields_source = [
+            {
+                "name":"customer_id",
+                "type":"STRING"
+            },
+            {
+                "name":"key",
+                "type":"INTEGER"
+            },
+            {
+                "name":"city",
+                "type":"STRING"
+            }
+        ]
+        
+        schema_fields_target = [
+            {
+                "name":"customerID",
+                "type":"STRING"
+            },
+            {
+                "name":"key_id",
+                "type":"INTEGER"
+            },
+            {
+                "name":"city_name",
+                "type":"STRING"
+            }
+        ]
+
         for table in config.tables:
             ingestion_type = table.ingestion_type
             if table.ods_config:
@@ -30,10 +60,8 @@ class TestSqlHelpers(object):
                 elif ingestion_type == IngestionType.FULL:
                     table_id = f"{table.table_name}_ODS_Full"
 
-                schema_fields, columns = parse_ods_schema(
-                    gcs_schema_object=table.source_table_schema_object,
-                    schema_fields=None,
-                    column_mapping=table.column_mapping,
+                schema_field = parse_ods_schema(
+                    schema_fields=schema_fields_target,
                     ods_metadata=table.ods_config.ods_metadata
                 )
 
@@ -42,7 +70,7 @@ class TestSqlHelpers(object):
                     target_dataset=target_dataset,
                     source=table.table_name,
                     target=table_id,
-                    columns=columns,
+                    columns=[i['name'] for i in schema_fields_source],
                     surrogate_keys=table.surrogate_keys,
                     column_mapping=table.column_mapping,
                     ods_metadata=table.ods_config.ods_metadata
@@ -57,6 +85,36 @@ class TestSqlHelpers(object):
                 assert output is not None, f"Could not execute the ODS merge SQL query in BigQuery: {sql}"
 
     def test_hds_sql_in_bq(self, staging_dataset, target_dataset, config):
+        schema_fields_source = [
+            {
+                "name":"customer_id",
+                "type":"STRING"
+            },
+            {
+                "name":"key",
+                "type":"INTEGER"
+            },
+            {
+                "name":"city",
+                "type":"STRING"
+            }
+        ]
+        
+        schema_fields_target = [
+            {
+                "name":"customerID",
+                "type":"STRING"
+            },
+            {
+                "name":"key_id",
+                "type":"INTEGER"
+            },
+            {
+                "name":"city_name",
+                "type":"STRING"
+            }
+        ]
+
         for table in config.tables:
             ingestion_type = table.ingestion_type
             if table.hds_config:
@@ -69,10 +127,8 @@ class TestSqlHelpers(object):
                     table_id = f"{table.table_name}_HDS_SCD2"
                     time_partitioning = None
 
-                schema_fields, columns = parse_hds_schema(
-                    gcs_schema_object=table.source_table_schema_object,
-                    schema_fields=None,
-                    column_mapping=table.column_mapping,            
+                schema_fields = parse_hds_schema(
+                    schema_fields=schema_fields_target,        
                     hds_metadata=table.hds_config.hds_metadata,
                     hds_table_type=table.hds_config.hds_table_type
                 )        
@@ -82,7 +138,7 @@ class TestSqlHelpers(object):
                     target_dataset=target_dataset,
                     source=table.table_name,
                     target=table_id,
-                    columns=columns,
+                    columns=[i['name'] for i in schema_fields_source],
                     surrogate_keys=table.surrogate_keys,
                     column_mapping=table.column_mapping,
                     hds_metadata=table.hds_config.hds_metadata,
