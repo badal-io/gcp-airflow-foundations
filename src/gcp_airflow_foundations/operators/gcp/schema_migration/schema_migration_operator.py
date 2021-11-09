@@ -41,6 +41,7 @@ class MigrateSchema(BaseOperator):
         dataset_id,
         table_id,
         project_id, 
+        new_schema_fields=None,
         gcp_conn_id='google_cloud_default',
         delegate_to=None,
         encryption_configuration=None,
@@ -51,6 +52,7 @@ class MigrateSchema(BaseOperator):
         self.project_id = project_id
         self.dataset_id = dataset_id
         self.table_id = table_id
+        self.new_schema_fields = new_schema_fields
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.encryption_configuration = encryption_configuration
@@ -63,7 +65,8 @@ class MigrateSchema(BaseOperator):
         self.cursor = conn.cursor()
 
     def execute(self, context):
-        self.new_schema_fields = self.xcom_pull(context=context, task_ids="schema_parsing")[self.table_id]
+        if not self.new_schema_fields:
+            self.new_schema_fields = self.xcom_pull(context=context, task_ids="schema_parsing")[self.table_id]
 
         query, schema_fields_updates, sql_columns, change_log = self.build_schema_query()
 
