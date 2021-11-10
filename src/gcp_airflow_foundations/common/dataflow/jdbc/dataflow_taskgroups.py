@@ -49,7 +49,7 @@ def dataflow_taskgroup_builder(
     if not query_schema:
         schema_task_sensor = ExternalTaskSensor(
             task_id="check_bq_schema_updated",
-            external_dag_id="update_CSG_schema",
+            external_dag_id=f"{system_name}_upload_schema",
             task_group=taskgroup,
         )
 
