@@ -45,7 +45,7 @@ class SourceConfig:
     gcp_project: str
     dataset_data_name: str
     connection: str
-    extra_options: dict
+    extra_options: Optional[dict]
     landing_zone_options: LandingZoneConfig
     acceptable_delay_minutes: int
     notification_emails: List[str]
