@@ -37,15 +37,6 @@ def dataflow_taskgroup_builder(
         task_group=taskgroup,
     )
 
-    create_table = PythonOperator(
-        task_id="create_table_if_needed",
-        op_kwargs={"destination_table": destination_table,
-        "schema_table": destination_schema_table,
-        "source_table": table_name},
-        python_callable=create_table,
-        task_group=taskgroup,
-    )
-
     trigger_dataflow_job = PythonOperator(
         task_id="run_dataflow_job_to_bq",
         op_kwargs={"template_path": dataflow_job_params["template_path"],
@@ -63,10 +54,17 @@ def dataflow_taskgroup_builder(
             task_group=taskgroup,
         )
 
+        create_table = PythonOperator(
+            task_id="create_table_if_needed",
+            op_kwargs={"destination_table": destination_table,
+            "schema_table": destination_schema_table,
+            "source_table": table_name},
+            python_callable=create_table,
+            task_group=taskgroup,
+        )
+
         schema_task_sensor >> create_job_parameters >> create_table >> trigger_dataflow_job
-        #create_table >> trigger_dataflow_job
     else:
         create_job_parameters >> trigger_dataflow_job
-        #create_table >> trigger_dataflow_job
 
     return taskgroup
