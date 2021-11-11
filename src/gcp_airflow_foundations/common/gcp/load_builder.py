@@ -22,6 +22,7 @@ def load_builder(
     project_id = data_source.gcp_project
     table_id = table_config.table_name
     dataset_id = data_source.dataset_data_name
+    dataset_hds_id = data_source.dataset_hds_override
     landing_zone_dataset = data_source.landing_zone_options.landing_zone_dataset
     landing_zone_table_name_override = table_config.landing_zone_table_name_override
     surrogate_keys = table_config.surrogate_keys
@@ -70,7 +71,7 @@ def load_builder(
         hds_task_group = hds_builder(
             project_id=project_id,
             table_id=hds_table_config.table_id,
-            dataset_id=dataset_id,
+            dataset_id=dataset_hds_id,
             landing_zone_dataset=dataset_id,
             landing_zone_table_name_override=ods_table_config.table_id,
             surrogate_keys=[column_mapping[i] for i in surrogate_keys],
