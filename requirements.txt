@@ -19,6 +19,8 @@ apache-airflow-providers-apache-beam==3.1.0
 google-cloud-bigquery==2.28.1
 pyarrow==4.0.1
 facebook-business>=6.0.2
+apache-airflow-providers-facebook==2.1.0
+pyarrow==4.0.1
 
 apache-airflow-providers-google==6.0.0
 pyopenssl==20.0.1
@@ -29,6 +31,7 @@ google-auth-httplib2==0.1.0
 google-auth==1.35.0
 google-cloud-automl==2.4.2
 google-cloud-bigtable==1.7.0
+google-cloud-bigquery==2.28.1
 google-cloud-build==3.0.0
 google-cloud-container==1.0.1
 google-cloud-datacatalog==3.4.1
