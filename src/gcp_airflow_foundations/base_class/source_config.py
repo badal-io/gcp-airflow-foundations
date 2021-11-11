@@ -46,7 +46,7 @@ class SourceConfig:
     dataset_data_name: str
     dataset_hds_override: Optional[str]
     connection: str
-    extra_options: dict
+    extra_options: Optional[dict]
     landing_zone_options: LandingZoneConfig
     acceptable_delay_minutes: int
     notification_emails: List[str]
