@@ -19,6 +19,7 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.providers.google.cloud.operators.dataflow import DataflowTemplatedJobStartOperator
+from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateEmptyTableOperator
 from airflow.providers.google.cloud.hooks.kms import CloudKMSHook
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.models import Variable
@@ -60,7 +61,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             table_name=table_config.table_name,
             system_name=system_name,
             create_job_params=self.create_job_params,
-            run_dataflow_job=self.run_dataflow_job
+            run_dataflow_job=self.run_dataflow_job,
+            create_table=self.create_table
         )
 
         return taskgroup
@@ -98,7 +100,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                 table_name=schema_table_name,
                 system_name=system_name,
                 create_job_params=self.create_job_params,
-                run_dataflow_job=self.run_dataflow_job
+                run_dataflow_job=self.run_dataflow_job,
+                create_table=self.create_table
             )
             taskgroup.dag = schema_dag
 
@@ -124,7 +127,30 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             parameters=parameters
         )
         trigger_job.execute(context=kwargs)
+    
+    def create_table(self, destination_table, schema_table, source_table, **kwargs):
+        ids = destination_table.split(":")
+        project_id = ids[0]
+        dataset_id = ids[1].split(".")[0]
+        table_id = ids[1].split(".")[1]
 
+        logging.info(ids)
+        bq_hook = BigQueryHook()
+        table_exists = bq_hook.table_exists(dataset_id=dataset_id, table_id=table_id)
+
+        schema_fields = self.get_landing_schema(schema_table, source_table)
+        logging.info(schema_fields)
+
+        if not table_exists:
+            create_table_op = BigQueryCreateEmptyTableOperator(
+                task_id="create_table",
+                project_id=project_id,
+                dataset_id=dataset_id,
+                table_id=table_id,
+                schema_fields=schema_fields
+            )
+            create_table_op.execute(context=kwargs)
+        
     @abstractmethod
     def create_job_params(self, config_params, destination_table, **kwargs):
         """
@@ -155,6 +181,10 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
            query
         """
         pass
+
+    @abstractmethod
+    def get_landing_schema(self, schema_table, source_table):
+        return None
 
     def validate_extra_options(self):
         # try and parse as DataflowJobConfig

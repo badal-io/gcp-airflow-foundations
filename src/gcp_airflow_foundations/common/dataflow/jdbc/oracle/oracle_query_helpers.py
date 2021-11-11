@@ -58,8 +58,9 @@ def get_table_schema_query(schema_table, source_table_name):
 
     return f" select distinct * from (select COLUMN_NAME, DATA_TYPE from `{schema_table}` \
         where TABLE_NAME = '{source_table_name}' order by COLUMN_ID)"
-    
-def get_type_mappings(self):
+
+
+def oracle_mappings():
     return {
         # STRING
         "VARCHAR2": "STRING",
@@ -97,3 +98,13 @@ def get_type_mappings(self):
         "TIMESTAMP WITH TIMEZONE": "TIMESTAMP",
         "TIMESTAMP WITH LOCAL TIME ZONE": "TIMESTAMP"
     }
+
+def oracle_to_bq(
+    dtypes: list
+):
+    mappings = oracle_mappings()
+    # Dicts are not really intended for use in this way, but for a tiny one
+    # this is just easier
+    for i in range(len(dtypes)):
+        dtypes[i] = mappings[dtypes[i]]
+    return dtypes
