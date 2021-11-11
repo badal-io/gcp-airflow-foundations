@@ -43,6 +43,7 @@ class SourceConfig:
     ingest_schedule: str
     gcp_project: str
     dataset_data_name: str
+    dataset_hds_override: Optional[str]
     connection: str
     extra_options: dict
     landing_zone_options: LandingZoneConfig
@@ -94,4 +95,11 @@ class SourceConfig:
             assert values['partition_expiration'] < expiration_options[values['ingest_schedule']], \
                 f"The partition limit should be smaller than {expiration_options[values['ingest_schedule']]} days. It is currently set to {values['partition_expiration']}"
             values['partition_expiration'] = values['partition_expiration']*ms_day
+        return values
+
+    @root_validator(pre=True)
+    def valid_hds_dataset(cls, values):
+        if values['dataset_hds_override'] is None:
+            values['dataset_hds_override'] = values['dataset_data_name']
+
         return values
