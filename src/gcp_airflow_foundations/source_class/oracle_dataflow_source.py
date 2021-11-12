@@ -81,3 +81,26 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
 
         kwargs['ti'].xcom_push(key='dataflow_default_options', value=dataflow_default_options)
         kwargs['ti'].xcom_push(key='parameters', value=parameters)
+
+    def get_landing_schema(self, schema_table, source_table):
+
+        bq_hook = BigQueryHook()
+
+        schema_query = oracle_helpers.get_table_schema_query(schema_table, source_table)
+        schema_df = bq_hook.get_pandas_df(schema_query, dialect="standard")
+        schema_df = schema_df.values.tolist()
+
+        column_names = [x[0] for x in schema_df]
+        dtypes = [x[1] for x in schema_df]
+
+        dtypes = oracle_helpers.oracle_to_bq(dtypes)
+
+        schema_fields = []
+        for i in range(len(dtypes)):
+            schema_fields.append({"name": column_names[i],
+                                "type": dtypes[i],
+                                "mode": "NULLABLE"})
+
+        logging.info(schema_fields)
+
+        return schema_fields
