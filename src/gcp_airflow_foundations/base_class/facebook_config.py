@@ -13,6 +13,8 @@ from facebook_business.adobjects.adsinsights import AdsInsights
 valid_fields = {
     "account_name":AdsInsights.Field.account_name,
     "account_id":AdsInsights.Field.account_id,
+    "attribution_setting":AdsInsights.Field.attribution_setting,
+    "account_currency":AdsInsights.Field.account_currency,
     "campaign_name":AdsInsights.Field.campaign_name,
     "campaign_id":AdsInsights.Field.campaign_id,    
     "ad_id":AdsInsights.Field.ad_id,
@@ -26,6 +28,7 @@ valid_fields = {
     "inline_link_clicks":AdsInsights.Field.inline_link_clicks,
     "inline_link_click_ctr":AdsInsights.Field.inline_link_click_ctr,
     "cost_per_unique_click":AdsInsights.Field.cost_per_unique_click,
+    "cost_per_thruplay":AdsInsights.Field.cost_per_thruplay,
     "video_30_sec_watched_actions":AdsInsights.Field.video_30_sec_watched_actions,
     "video_p25_watched_actions":AdsInsights.Field.video_p25_watched_actions,
     "video_p50_watched_actions":AdsInsights.Field.video_p50_watched_actions,
@@ -35,6 +38,7 @@ valid_fields = {
     "conversion_values":AdsInsights.Field.conversion_values,
     "conversions":AdsInsights.Field.conversions,
     "cost_per_conversion":AdsInsights.Field.cost_per_conversion,
+    "actions":AdsInsights.Field.actions,
     "cost_per_action_type":AdsInsights.Field.cost_per_action_type
 }
 
