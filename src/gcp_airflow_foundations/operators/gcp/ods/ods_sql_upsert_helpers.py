@@ -51,7 +51,7 @@ class SqlHelperODS:
         else:
             for i in columns:
                 if i not in column_mapping:
-                    column_mapping[i] = i
+                    self.column_mapping[i] = i
 
         self.hash_column_name = ods_metadata.hash_column_name
         self.primary_key_hash_column_name = ods_metadata.primary_key_hash_column_name
@@ -60,7 +60,7 @@ class SqlHelperODS:
 
         self.columns_str_source: str = ",".join(["`{}`".format(col) for col in columns])
         self.columns_str_keys: str = ",".join(surrogate_keys)
-        self.columns_str_target: str = ",".join(["`{}`".format(column_mapping[i]) for i in columns])
+        self.columns_str_target: str = ",".join(["`{}`".format(self.column_mapping[i]) for i in columns])
 
     def create_insert_sql(self):
         rows = f"""{self.columns_str_target}, {self.ingestion_time_column_name}, {self.update_time_column_name}, {self.hash_column_name}, {self.primary_key_hash_column_name}"""
