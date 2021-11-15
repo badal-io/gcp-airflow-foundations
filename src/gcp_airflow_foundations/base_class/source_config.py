@@ -42,6 +42,7 @@ class SourceConfig:
     name: str
     source_type: SourceType
     ingest_schedule: str
+    external_dag_id: Optional[str]
     gcp_project: str
     dataset_data_name: str
     connection: str

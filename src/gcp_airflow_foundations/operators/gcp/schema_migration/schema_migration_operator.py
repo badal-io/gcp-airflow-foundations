@@ -185,7 +185,7 @@ class MigrateSchema(BaseOperator):
                 )
 
                 schema_fields_updates.append(
-                    {"name":column_name,"mode":"NULLABLE","type":column_type}
+                   field
                 )
 
         query = f"""SELECT {",".join(sql_columns)} FROM `{self.dataset_id}.{self.table_id}`;"""
@@ -195,7 +195,7 @@ class MigrateSchema(BaseOperator):
 
     def bigQuery_mapping(self, data_type):
         mapping = {
-            "FLOAT":"FLOAT64"
+            "FLOAT":"FLOAT"
         }
 
         if data_type in mapping:
