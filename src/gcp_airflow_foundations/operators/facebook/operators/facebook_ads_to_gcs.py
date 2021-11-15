@@ -3,6 +3,8 @@ import tempfile
 import warnings
 from typing import Any, Dict, List, Optional, Sequence, Union
 import pandas as pd
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 import pyarrow.parquet as pq
 import pyarrow
@@ -10,6 +12,7 @@ import pyarrow
 from airflow.exceptions import AirflowException
 
 from gcp_airflow_foundations.operators.facebook.hooks.ads import CustomFacebookAdsReportingHook
+from gcp_airflow_foundations.enums.facebook import AccountLookupScope
 
 from airflow.models import BaseOperator
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook
@@ -66,11 +69,12 @@ class FacebookAdsReportToBqOperator(BaseOperator):
     def __init__(
         self,
         *,
-        facebook_acc_ids: List[str],
         gcp_project: str,
+        account_lookup_scope: AccountLookupScope,
         destination_project_dataset_table: str,
         fields: List[str],
         parameters: Dict[str, Any] = None,
+        time_range: Dict[str, Any] = None,
         api_version: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         facebook_conn_id: str = "facebook_custom",
@@ -81,38 +85,63 @@ class FacebookAdsReportToBqOperator(BaseOperator):
             **kwargs
         )
 
-        self.facebook_acc_ids = facebook_acc_ids
         self.gcp_project = gcp_project
+        self.account_lookup_scope = account_lookup_scope
         self.destination_project_dataset_table = destination_project_dataset_table
         self.gcp_conn_id = gcp_conn_id
         self.facebook_conn_id = facebook_conn_id
         self.api_version = api_version
         self.fields = fields
         self.parameters = parameters
+        self.time_range = time_range
         self.impersonation_chain = impersonation_chain
 
     def execute(self, context: dict):
         ds = context['ds']
-
-        self.parameters['time_range'] = {'since':ds,'until':ds}
+        interval_start = datetime.strptime(ds, '%Y-%m-%d')
+        interval_end = interval_start + relativedelta(day=31)
+        
+        if not self.time_range:
+            self.parameters['time_range'] = {'since':ds, 'until':ds}
+        else:
+            self.parameters['time_range'] = {'since':self.time_range['since'], 'until':ds}
+        
+        #self.parameters['time_range'] = {'since':'2020-01-01', 'until':ds}
+        #self.parameters['time_range'] = {
+        #    'since':interval_start.strftime('%Y-%m-%d'), 
+        #    'until':interval_end.strftime('%Y-%m-%d')
+        #}
 
         self.log.info("Currently loading data for date range: %s", self.parameters['time_range'])
 
-        converted_rows = []
-        for facebook_acc_id in self.facebook_acc_ids:
-            self.log.info("Currently loading data from Account ID: %s", facebook_acc_id)
+        service = CustomFacebookAdsReportingHook(
+            facebook_conn_id=self.facebook_conn_id, api_version=self.api_version
+        )
 
-            service = CustomFacebookAdsReportingHook(
-                facebook_acc_id=facebook_acc_id, facebook_conn_id=self.facebook_conn_id, api_version=self.api_version
+        if self.account_lookup_scope == AccountLookupScope.ALL:
+            facebook_acc_ids = service.get_all_accounts()
+
+        elif self.account_lookup_scope == AccountLookupScope.ACTIVE:
+            facebook_acc_ids = service.get_active_accounts_from_bq(
+                project_id=self.gcp_project, 
+                table_id="dev-eyereturn-data-warehouse.facebook_dev.accounts_ODS_Full"
             )
-            
-            rows = service.bulk_facebook_report(params=self.parameters, fields=self.fields)
+
+        converted_rows = []
+        for facebook_acc_id in facebook_acc_ids:
+            self.log.info("Currently loading data from Account ID: %s", facebook_acc_id)
+        
+            rows = service.bulk_facebook_report(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
 
             converted_rows.extend(
                 [dict(row) for row in rows]
             )
 
+            self.log.info("Extracting data for account %s completed", facebook_acc_id)
+
         self.log.info("Facebook Returned %s data points", len(converted_rows))
+
+        self.transform_data_types(converted_rows)
 
         df = pd.DataFrame.from_dict(converted_rows)
 
@@ -141,3 +170,24 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         job = client.load_table_from_file(
             reader, self.destination_project_dataset_table, job_config=job_config
         )
+
+    def transform_data_types(self, rows):
+        for i in rows:
+            for j in i:
+                if j.endswith('id'):
+                    continue
+                elif j in ('date_start', 'date_stop'):
+                    i[j] = datetime.strptime(i[j], '%Y-%m-%d').date()
+                elif type(i[j]) == str:
+                    i[j] = self.get_float(i[j])
+                elif type(i[j]) == list:
+                    for k in i[j]:
+                        for w in k:
+                            if (type(k[w]) == str) and (not w.endswith('id')):
+                                k[w] = self.get_float(k[w])
+
+    def get_float(self, element):
+        try:
+            return float(element)
+        except ValueError:
+            return element

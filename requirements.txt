@@ -20,6 +20,9 @@ google-cloud-bigquery==2.28.1
 pyarrow==4.0.1
 facebook-business>=6.0.2
 
+apache-airflow-providers-salesforce==1.0.0
+apache-airflow-providers-apache-beam==3.1.0
+
 apache-airflow-providers-facebook==2.1.0
 pyarrow==4.0.1
 apache-airflow-providers-google==6.0.0

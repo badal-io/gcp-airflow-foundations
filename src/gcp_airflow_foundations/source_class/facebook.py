@@ -8,6 +8,8 @@ from airflow.utils.task_group import TaskGroup
 from gcp_airflow_foundations.operators.facebook.operators.facebook_ads_to_gcs import FacebookAdsReportToBqOperator
 from gcp_airflow_foundations.source_class.source import DagBuilder
 
+from airflow.sensors.external_task import ExternalTaskSensor
+
 
 class FacebooktoBQDagBuilder(DagBuilder):
     """
@@ -20,33 +22,53 @@ class FacebooktoBQDagBuilder(DagBuilder):
 
     def get_bq_ingestion_task(self, dag, table_config):
         data_source = self.config.source
+        
+        task_group = TaskGroup(group_id="ingest_facebook_data")
+
         facebook_options = data_source.facebook_options
 
         GCP_PROJECT_ID = data_source.gcp_project
         
         FIELDS = facebook_options.fields
-        #PARAMETERS = {'level': facebook_options.level.value, 'date_preset': facebook_options.date_preset.value, 'time_increment': facebook_options.time_increment}
         
         PARAMETERS = {
-            'level': facebook_options.level.value, 
-            'time_increment': facebook_options.time_increment
+            "level": facebook_options.level.value, 
+            "time_increment": facebook_options.time_increment,
+            "breakdowns": table_config.breakdowns,
+            "action_breakdowns":table_config.action_breakdowns
         }
-        
-        ACCOUNTS = facebook_options.accounts
 
+        TIME_RANGE = facebook_options.time_range
+        
         run_operator = FacebookAdsReportToBqOperator(
             task_id='fetch_facebook_data_to_bq_staging',
-            facebook_acc_ids=ACCOUNTS,
             gcp_project=GCP_PROJECT_ID,
             destination_project_dataset_table=f"{data_source.landing_zone_options.landing_zone_dataset}.{table_config.landing_zone_table_name_override}",
+            time_range=TIME_RANGE,
             parameters=PARAMETERS,
             fields=FIELDS,
+            account_lookup_scope=facebook_options.account_lookup_scope,
             gcp_conn_id="google_cloud_default",
             api_version="v12.0",
+            task_group=task_group,
             dag=dag
         )
+        
+        if data_source.external_dag_id:
+            sensor_op = ExternalTaskSensor(
+                task_id='wait_for_accounts_ingestion',
+                external_dag_id=data_source.external_dag_id,
+                mode='reschedule',
+                check_existence=True,
+                task_group=task_group,
+                dag=dag
+            )
+            sensor_op >> run_operator
+        
+        else:
+            run_operator
             
-        return run_operator
+        return task_group
 
     def validate_extra_options(self):
         pass

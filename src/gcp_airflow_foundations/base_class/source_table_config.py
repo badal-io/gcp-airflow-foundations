@@ -34,6 +34,8 @@ class SourceTableConfig:
     """
 
     table_name: str
+    breakdowns: Optional[List[str]]
+    action_breakdowns: Optional[List[str]]
     ingestion_type: IngestionType # FULL or INCREMENTAL
     landing_zone_table_name_override: Optional[str]
     dest_table_override: Optional[str]
