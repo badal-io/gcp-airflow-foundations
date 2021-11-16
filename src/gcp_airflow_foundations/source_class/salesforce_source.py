@@ -36,7 +36,7 @@ class SalesforcetoBQDagBuilder(DagBuilder):
         destination_table = f"{gcp_project}:{landing_dataset}.{table_config.landing_zone_table_name_override}"
 
         # Salesforce parameters
-        object_name = table_config.landing_zone_table_name_override
+        object_name = table_config.extra_options.get("sf_config")["api_table_name"]
         gcs_object = f"{object_name}.csv" 
         ingest_all_columns = table_config.extra_options.get("sf_config")["ingest_all_columns"]
         fields_to_omit = table_config.extra_options.get("sf_config")["fields_to_omit"]

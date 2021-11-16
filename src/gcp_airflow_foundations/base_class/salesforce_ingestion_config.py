@@ -15,6 +15,7 @@ class SalesforceIngestionConfig:
         fields_to_omit: a list of object fields to omit from ingestion
         field_names: an explicit list of fields to ingest
     """
+    api_table_name: str
     ingest_all_columns: bool
     fields_to_omit: Optional[List[str]]
     field_names: Optional[List[str]]
