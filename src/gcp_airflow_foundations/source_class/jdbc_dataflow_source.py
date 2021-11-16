@@ -49,8 +49,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         # Table level parameters
         dataflow_job_params = data_source.extra_options["dataflow_job_config"]
         schema_table = dataflow_job_params["bq_schema_table"]
-        dataflow_job_params["table_name"] = table_config.table_name
-        destination_table = f"{gcp_project}:{landing_dataset}.{table_config.landing_zone_table_name_override}"
+        table_name = table_config.landing_zone_table_name_override
+        destination_table = f"{gcp_project}:{landing_dataset}.{table_name}"
         destination_schema_table = f"{gcp_project}.{landing_dataset}.{schema_table}"
 
         taskgroup = dataflow_taskgroup_builder(
@@ -58,7 +58,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             dataflow_job_params=dataflow_job_params,
             destination_table=destination_table,
             destination_schema_table=destination_schema_table,
-            table_name=table_config.table_name,
+            table_name=table_name,
             system_name=system_name,
             create_job_params=self.create_job_params,
             run_dataflow_job=self.run_dataflow_job,
@@ -67,7 +67,6 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
 
         return taskgroup
     
-
     def get_schema_dag(self):
         """
         This method returns a singular dag that runs a Dataflow job to fetch the global schemas from source.

@@ -29,6 +29,7 @@ def dataflow_taskgroup_builder(
     create_job_parameters = PythonOperator(
         task_id="create_job_parameters",
         op_kwargs={"config_params": dataflow_job_params,
+                    "table_name": table_name,
                     "destination_table": destination_table,
                     "destination_schema_table": destination_schema_table,
                     "query_schema": query_schema,
