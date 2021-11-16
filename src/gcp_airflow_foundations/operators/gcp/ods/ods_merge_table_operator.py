@@ -91,6 +91,13 @@ class MergeBigQueryODS(BigQueryOperator):
         self.ingestion_type = ingestion_type
         self.ods_table_config = ods_table_config
 
+        if not column_mapping:
+            self.column_mapping = {i:i for i in columns}
+        else:
+            for i in columns:
+                if i not in column_mapping:
+                    self.column_mapping[i] = i
+
     def pre_execute(self, context) -> None:
         if not self.columns:
             columns = self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']

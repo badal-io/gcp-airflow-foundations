@@ -49,14 +49,6 @@ class SqlHelperHDS:
         self.gcp_conn_id = gcp_conn_id
         self.time_partitioning = time_partitioning
         self.columns = columns
-
-        if not column_mapping:
-            self.column_mapping = {i:i for i in columns}
-        else:
-            for i in columns:
-                if i not in column_mapping:
-                    self.column_mapping[i] = i
-
         self.hash_column_name = hds_metadata.hash_column_name
         self.eff_start_time_column_name = hds_metadata.eff_start_time_column_name
         self.partition_column_name = hds_metadata.partition_time_column_name
@@ -64,7 +56,7 @@ class SqlHelperHDS:
 
         self.columns_str_source: str = ",".join(["`{}`".format(col) for col in columns])
         self.columns_str_keys: str = ",".join(surrogate_keys)
-        self.columns_str_target: str = ",".join(["`{}`".format(self.column_mapping[i]) for i in columns])
+        self.columns_str_target: str = ",".join(["`{}`".format(column_mapping[i]) for i in columns])
 
     def create_scd2_sql_with_hash(self, ingestion_type):
         comma = ","
