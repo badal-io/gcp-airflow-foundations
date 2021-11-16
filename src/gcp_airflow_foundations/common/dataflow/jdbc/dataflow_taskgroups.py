@@ -46,6 +46,7 @@ def dataflow_taskgroup_builder(
                     "query_schema": query_schema},
         python_callable=run_dataflow_job,
         task_group=taskgroup,
+        pool=dataflow_job_params["connection_pool"]
     )
 
     if not query_schema:

@@ -36,3 +36,4 @@ class DataflowJobConfig:
     sql_casts: Optional[dict]
     bq_schema_table: str
     database_owner: str
+    connection_pool: str
