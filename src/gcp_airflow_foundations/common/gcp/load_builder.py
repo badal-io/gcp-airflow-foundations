@@ -74,7 +74,7 @@ def load_builder(
             dataset_id=dataset_hds_id,
             landing_zone_dataset=dataset_id,
             landing_zone_table_name_override=ods_table_config.table_id,
-            surrogate_keys=[column_mapping[i] for i in surrogate_keys],
+            surrogate_keys=surrogate_keys,
             column_mapping=column_mapping,
             ingestion_type=ingestion_type,
             partition_expiration=partition_expiration,
