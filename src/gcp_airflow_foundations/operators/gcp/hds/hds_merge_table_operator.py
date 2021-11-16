@@ -95,19 +95,25 @@ class MergeBigQueryHDS(BigQueryOperator):
         self.ingestion_type = ingestion_type
         self.hds_table_config = hds_table_config
 
-        if not column_mapping:
-            self.column_mapping = {i:i for i in columns}
-        else:
-            for i in columns:
-                if i not in column_mapping:
-                    self.column_mapping[i] = i
-
     def pre_execute(self, context) -> None:
         if not self.columns:
-            columns = self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']
+            staging_columns = self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']
         else:
-            columns= self.columns
-               
+            staging_columns = self.columns
+
+        if self.column_mapping:
+            for i in staging_columns:
+                if i not in self.column_mapping:
+                    self.column_mapping[i] = i
+            
+            self.surrogate_keys  = [self.column_mapping[i] for i in self.surrogate_keys]
+            source_columns = [self.column_mapping[i] for i in staging_columns]
+            self.column_mapping = {self.column_mapping[i]:self.column_mapping[i] for i in self.column_mapping}
+
+        else:
+            source_columns = staging_columns
+            self.column_mapping = {i:i for i in staging_columns}
+                    
         self.log.info(
             f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}"
         )
@@ -119,7 +125,7 @@ class MergeBigQueryHDS(BigQueryOperator):
             target_dataset=self.data_dataset_name,
             source=self.stg_table_name,
             target=self.data_table_name,
-            columns=columns,
+            columns=source_columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             hds_metadata=self.hds_table_config.hds_metadata
