@@ -168,7 +168,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         job_config.write_disposition='WRITE_TRUNCATE'
 
         job = client.load_table_from_file(
-            reader, self.destination_project_dataset_table, job_config=job_config
+            reader, f"{self.destination_project_dataset_table}_{ds}", job_config=job_config
         )
 
     def transform_data_types(self, rows):

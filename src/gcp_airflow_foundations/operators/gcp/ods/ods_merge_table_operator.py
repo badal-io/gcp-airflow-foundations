@@ -90,6 +90,8 @@ class MergeBigQueryODS(BigQueryOperator):
         self.ods_table_config = ods_table_config
 
     def pre_execute(self, context) -> None:
+        ds = context['ds']
+
         columns = self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']
 
         self.log.info(
@@ -101,7 +103,7 @@ class MergeBigQueryODS(BigQueryOperator):
         sql_helper = SqlHelperODS(
             source_dataset=self.stg_dataset_name,
             target_dataset=self.data_dataset_name ,
-            source=self.stg_table_name,
+            source=f"{self.stg_table_name}_{ds}",
             target=self.data_table_name,
             columns=columns,
             surrogate_keys=self.surrogate_keys,
