@@ -79,7 +79,7 @@ class SalesforceToGcsQueryOperator(SalesforceToGcsOperator):
     def execute(self, context: Dict):
         fields_to_query = []
 
-        sf_hook = SalesforceHook(conn_id=self.salesforce_conn_id)
+        sf_hook = SalesforceHook(salesforce_conn_id=self.salesforce_conn_id)
         fields = sf_hook.get_available_fields(obj=self.salesforce_object)
         logging.info(fields)
 

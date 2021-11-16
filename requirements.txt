@@ -14,7 +14,7 @@ flake8>=3.8.0
 pre-commit>=1.18.3
 croniter>=1.0.15
 
-apache-airflow-providers-salesforce==1.0.0
+apache-airflow-providers-salesforce==3.3.0
 apache-airflow-providers-apache-beam==3.1.0
 
 apache-airflow-providers-google==6.0.0
