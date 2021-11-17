@@ -32,13 +32,15 @@ from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
 class JdbcToBQDataflowDagBuilder(DagBuilder):
 
+    source_type = "JDBC"
+
     def get_extra_dags(self):
         return [self.get_schema_dag()]
 
     def set_schema_method_type(self):
         self.schema_source_type = self.config.source.schema_options.schema_source_type     
 
-    def get_bq_ingestion_task(self, table_config):
+    def get_bq_ingestion_task(self, dag, table_config):
         data_source = self.config.source
 
         # Source level Parameters

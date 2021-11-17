@@ -40,12 +40,14 @@ class CustomGCSToBigQueryOperator(GCSToBigQueryOperator):
         self.table_config = table_config
 
     def pre_execute(self, context) -> None:
+        ds = context['ds']
+
         schema_source_config_class = self.schema_config
 
         logging.info(f"Parsing schema for staging table using `{schema_source_config_class.__name__}`")
 
         schema_method = schema_source_config_class().schema_method()
-        schema_method_arguments = schema_source_config_class().schema_method_arguments(self.data_source, self.table_config)
+        schema_method_arguments = schema_source_config_class().schema_method_arguments(self.data_source, self.table_config, ds)
 
         if schema_method and schema_method_arguments:
             self.schema_fields = schema_method(**schema_method_arguments)
