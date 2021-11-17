@@ -39,7 +39,7 @@ class SourceConfig:
         sla_mins : SLA mins
     """
     name: str
-    source_type: SourceType
+    source_type: str
     ingest_schedule: str
     gcp_project: str
     dataset_data_name: str

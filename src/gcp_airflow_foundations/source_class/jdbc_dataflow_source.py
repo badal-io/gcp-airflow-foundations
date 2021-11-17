@@ -32,6 +32,8 @@ from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
 class JdbcToBQDataflowDagBuilder(DagBuilder):
 
+    source_type = "JDBC"
+
     def get_extra_dags(self):
         return [self.get_schema_dag()]
 
