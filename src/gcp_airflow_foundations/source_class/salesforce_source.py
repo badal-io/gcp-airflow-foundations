@@ -24,7 +24,7 @@ class SalesforcetoBQDagBuilder(DagBuilder):
     def set_schema_method_type(self):
         self.schema_source_type = self.config.source.schema_options.schema_source_type     
 
-    def get_bq_ingestion_task(self, table_config):
+    def get_bq_ingestion_task(self, dag, table_config):
         data_source = self.config.source
 
         # GCP Parameters
