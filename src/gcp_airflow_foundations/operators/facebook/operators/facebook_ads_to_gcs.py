@@ -128,16 +128,22 @@ class FacebookAdsReportToBqOperator(BaseOperator):
             )
 
         converted_rows = []
+        failed_accounts = []
         for facebook_acc_id in facebook_acc_ids:
             self.log.info("Currently loading data from Account ID: %s", facebook_acc_id)
         
-            rows = service.bulk_facebook_report(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
+            try:
+                rows = service.bulk_facebook_report(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
 
-            converted_rows.extend(
-                [dict(row) for row in rows]
-            )
+                converted_rows.extend(
+                    [dict(row) for row in rows]
+                )
 
-            self.log.info("Extracting data for account %s completed", facebook_acc_id)
+                self.log.info("Extracting data for account %s completed", facebook_acc_id)
+            except:
+                self.log.info("Failed to extract data for account %s", facebook_acc_id)
+                failed_accounts.append({'execution_date':ds, 'account_id':facebook_acc_id})
+                continue
 
         self.log.info("Facebook Returned %s data points", len(converted_rows))
 
@@ -170,6 +176,23 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         job = client.load_table_from_file(
             reader, f"{self.destination_project_dataset_table}_{ds}", job_config=job_config
         )
+
+        if len(failed_accounts) > 0:
+            df_failed = pd.DataFrame.from_dict(failed_accounts)
+
+            writer_failed = pyarrow.BufferOutputStream()
+            pq.write_table(
+                pyarrow.Table.from_pandas(df_failed),
+                writer_failed,
+                use_compliant_nested_type=True
+            )
+            reader_failed = pyarrow.BufferReader(writer_failed.getvalue())
+
+            job_config.write_disposition='WRITE_APPEND'
+
+            job_failed = client.load_table_from_file(
+                reader_failed, "dev-eyereturn-data-warehouse.facebook_dev.failed_accounts", job_config=job_config
+            )
 
     def transform_data_types(self, rows):
         for i in rows:
