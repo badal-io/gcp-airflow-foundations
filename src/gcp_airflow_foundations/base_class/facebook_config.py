@@ -14,7 +14,8 @@ valid_fields = {
     "attribution_setting":AdsInsights.Field.attribution_setting,
     "account_currency":AdsInsights.Field.account_currency,
     "campaign_name":AdsInsights.Field.campaign_name,
-    "campaign_id":AdsInsights.Field.campaign_id,    
+    "campaign_id":AdsInsights.Field.campaign_id,  
+    "ad_name":AdsInsights.Field.ad_name,
     "ad_id":AdsInsights.Field.ad_id,
     "impressions":AdsInsights.Field.impressions,
     "spend":AdsInsights.Field.spend,
@@ -53,6 +54,8 @@ class FacebookConfig:
     account_lookup_scope: AccountLookupScope
     time_increment: Optional[str]
     time_range: Optional[dict]
+    use_account_attribution_setting: Optional[bool] = False
+    use_unified_attribution_setting: Optional[bool] = False
 
     @validator("fields")
     def valid_fields(cls, v):

@@ -35,7 +35,9 @@ class FacebooktoBQDagBuilder(DagBuilder):
             "level": facebook_options.level.value, 
             "time_increment": facebook_options.time_increment,
             "breakdowns": table_config.breakdowns,
-            "action_breakdowns":table_config.action_breakdowns
+            "action_breakdowns":table_config.action_breakdowns,
+            "use_account_attribution_setting": facebook_options.use_account_attribution_setting,
+            "use_unified_attribution_setting": facebook_options.use_unified_attribution_setting
         }
 
         TIME_RANGE = facebook_options.time_range
