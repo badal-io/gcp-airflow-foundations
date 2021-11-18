@@ -31,8 +31,6 @@ class BigQueryDeleteStagingTableOperator(BigQueryDeleteTableOperator):
             **kwargs
         )
 
-        self.deletion_dataset_table = deletion_dataset_table
-
     def pre_execute(self, context) -> None:
         ds = context['ds']
         self.deletion_dataset_table = f"{self.deletion_dataset_table}_{ds}"
