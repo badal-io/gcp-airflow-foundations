@@ -44,10 +44,11 @@ class ParseSchema(BaseOperator):
         self.hds_table_config = table_config.hds_config
 
     def execute(self, context):
+        ds = context['ds']
 
         schema_source_config_class = self.schema_config
         schema_method = schema_source_config_class().schema_method()
-        schema_method_arguments = schema_source_config_class().schema_method_arguments(self.data_source, self.table_config)
+        schema_method_arguments = schema_source_config_class().schema_method_arguments(self.data_source, self.table_config, ds=ds)
 
         source_schema_fields = schema_method(**schema_method_arguments)
         logging.info(f"Parsed schema using: {schema_method}")
