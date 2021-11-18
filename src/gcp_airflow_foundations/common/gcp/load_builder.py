@@ -4,7 +4,7 @@ from gcp_airflow_foundations.operators.gcp.ods.load_ods_taskgroup import ods_bui
 from gcp_airflow_foundations.operators.gcp.schema_parsing.schema_parsing_operator import ParseSchema
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
-
+from gcp_airflow_foundations.operators.gcp.delete_staging_table import BigQueryDeleteStagingTableOperator
 import logging
 
 
@@ -82,7 +82,15 @@ def load_builder(
             dag=dag
         )
 
+    delete_staging_table = BigQueryDeleteStagingTableOperator(
+        task_id="delete_staging_table",
+        project_id=project_id,
+        dataset_id=landing_zone_dataset,
+        table_id=landing_zone_table_name_override,
+        dag=dag
+    )
+
     if hds_task_group:
-        preceding_task >> parse_schema >> ods_task_group >> hds_task_group
+        preceding_task >> parse_schema >> ods_task_group >> hds_task_group >> delete_staging_table
     else:
-        preceding_task >> parse_schema >> ods_task_group
+        preceding_task >> parse_schema >> ods_task_group >> delete_staging_table
