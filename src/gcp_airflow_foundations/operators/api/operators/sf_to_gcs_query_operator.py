@@ -88,7 +88,7 @@ class SalesforceToGcsQueryOperator(SalesforceToGcsOperator):
             fields_to_query = fields
         elif self.fields_to_omit:
             # Query all fields except [x_1,....x_n]
-            fields_to_query = list(set(fields) - set(self.fields_to_omit))
+            fields_to_query = list(set(fields_to_query) - set(self.fields))
         elif self.fields_to_include:
             # Query specified fields
             fields_to_query = self.fields_to_include
