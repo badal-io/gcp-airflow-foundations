@@ -88,17 +88,16 @@ class SalesforceToGcsQueryOperator(SalesforceToGcsOperator):
             fields_to_query = fields
         elif self.fields_to_omit:
             # Query all fields except [x_1,....x_n]
-            fields_to_query = list(set(fields_to_query) - set(self.fields))
+            fields_to_query = list(set(fields) - set(self.fields_to_omit))
         elif self.fields_to_include:
             # Query specified fields
             fields_to_query = self.fields_to_include
             if not set(fields_to_query).issubset(set(fields)):
-                extra_fields = list(set(fields) - set(self.fields_to_omit))
+                extra_fields = list(set(fields_to_query) - set(self.fields))
                 raise AirflowException(f"Queryable content for Salesforce object {self.salesforce_object} included fields not present in the object's schema: {extra_fields}")
         else:
             # ingest_all_fields is false, and no other information was provided - throw exception
             raise AirflowException(f"Queryable content for Salesforce object {self.salesforce_object} was malformed")
-
         query = f"""SELECT {",".join(fields_to_query)} FROM {self.salesforce_object}""".strip()
         logging.info(query)
         self.query = query
