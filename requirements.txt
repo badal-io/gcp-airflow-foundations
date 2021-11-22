@@ -13,6 +13,7 @@ pyclean>=2.0.0
 flake8>=3.8.0
 pre-commit>=1.18.3
 croniter>=1.0.15
+facebook-business>=6.0.2
 
 apache-airflow-providers-salesforce==3.3.0
 apache-airflow-providers-apache-beam==3.1.0

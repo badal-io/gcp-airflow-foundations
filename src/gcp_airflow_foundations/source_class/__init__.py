@@ -5,6 +5,7 @@ from gcp_airflow_foundations.source_class.twilio_source import TwilioToBQDagBuil
 from gcp_airflow_foundations.source_class.salesforce_source import SalesforcetoBQDagBuilder
 from gcp_airflow_foundations.source_class.oracle_dataflow_source import OracleToBQDataflowDagBuilder
 from gcp_airflow_foundations.source_class.facebook import FacebooktoBQDagBuilder
+
 from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
 
 import logging
