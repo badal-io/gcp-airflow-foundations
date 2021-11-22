@@ -198,7 +198,7 @@ class MigrateSchema(BaseOperator):
 
     def bigQuery_mapping(self, data_type):
         mapping = {
-            "FLOAT":"FLOAT64"
+            "FLOAT":"FLOAT"
         }
 
         if data_type in mapping:
