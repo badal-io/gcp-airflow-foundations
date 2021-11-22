@@ -50,7 +50,8 @@ class DagBuilder(ABC):
                 dag_id=f"{data_source.name}_to_bq_{table_config.table_name}",
                 description=f"{data_source.name} to BigQuery load for {table_config.table_name}",
                 schedule_interval=data_source.ingest_schedule,
-                default_args=table_default_task_args
+                default_args=table_default_task_args,
+                render_template_as_native_obj=True
             ) as dag:    
 
                 load_to_bq_landing = self.get_bq_ingestion_task(dag, table_config)
