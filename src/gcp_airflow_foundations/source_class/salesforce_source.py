@@ -63,20 +63,32 @@ class SalesforcetoBQDagBuilder(DagBuilder):
         )
 
         # 2 Load CSV to BQ Landing Zone with auto-detect
-        load_to_bq_landing = GCSToBigQueryOperator(
-            task_id='import_csv_to_bq_landing',
-            bucket=gcs_bucket,
-            source_objects=[gcs_object],
-            destination_project_dataset_table=destination_table,
-            write_disposition='WRITE_TRUNCATE',
-            create_disposition='CREATE_IF_NEEDED',
-            skip_leading_rows=1,
+        load_to_bq_landing = PythonOperator(
+            task_id='import_gcs_to_bq_landing',
+            op_kwargs={"gcs_bucket": gcs_bucket,
+                       "gcs_object": gcs_object,
+                       "destination_table": destination_table},
+            python_callable=self.gcs_to_bq,
             task_group=taskgroup
         )
 
         gcs_upload_task >> load_to_bq_landing
 
         return taskgroup
+
+    def gcs_to_bq(self, gcs_bucket, gcs_object, destination_table, **kwargs):
+        ds = kwargs["ds"]
+
+        load_to_bq = GCSToBigQueryOperator(
+            task_id='import_csv_to_bq_landing',
+            bucket=gcs_bucket,
+            source_objects=[gcs_object],
+            destination_project_dataset_table=destination_table + f"_{ds}",
+            write_disposition='WRITE_TRUNCATE',
+            create_disposition='CREATE_IF_NEEDED',
+            skip_leading_rows=1,
+        )
+        load_to_bq.execute(context=kwargs)
 
     def validate_extra_options(self):
         tables = self.config.tables
