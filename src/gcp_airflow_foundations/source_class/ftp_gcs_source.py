@@ -194,17 +194,17 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
             templated_file_name = templated_file_name.replace("{{ TABLE_NAME }}", table_config.landing_zone_table_name_override)
             file_list = [templated_file_name]
 
-        # support replacing files with current date
+        # support replacing files with current dates
         ds = kwargs["ds"]
         file_list[:] = [file.replace("{{ ds }}", ds) if "{{ ds }}" in file else file for file in file_list]
 
-        if self.config.source.extra_options.get("file_prefix_filtering"):
-            for file in file_list:
-                matching_gcs_files = self.gcs_hook.list(bucket_name=bucket, prefix=file) 
-                logging.info(matching_gcs_files)
+        if self.config.source.extra_options["gcs_source_config"]["file_prefix_filtering"]:
+            logging.info("HELLO")
+            for i in range(len(file_list)):
+                matching_gcs_files = self.gcs_hook.list(bucket_name=bucket, prefix=file_list[i]) 
                 if len(matching_gcs_files) > 1:
-                    raise AirflowException(f"There is more than one matching file with the prefix {file} in the bucket {bucket}")
-                file = matching_gcs_files[0]
+                    raise AirflowException(f"There is more than one matching file with the prefix {file_list[i]} in the bucket {bucket}")
+                file_list[i] = matching_gcs_files[0]
         
         logging.info(file_list)
 
