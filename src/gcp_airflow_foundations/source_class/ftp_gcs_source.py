@@ -212,15 +212,20 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
                     file_list.append(line.strip())
         else:
             templated_file_name = self.config.source.extra_options["gcs_source_config"]["templated_file_name"]
-            templated_file_name = templated_file_name.replace("{{ TABLE_NAME }}", table_config.landing_zone_table_name_override)
+            templated_file_name = templated_file_name.replace("{{ TABLE_NAME }}", table_config.table_name)
             file_list = [templated_file_name]
 
         # support replacing files with current dates
         ds = kwargs["ds"]
-        logging.info(ds)
         ds = datetime.strptime(ds, "%Y-%m-%d").strftime(self.config.source.extra_options["gcs_source_config"]["date_format"])
-        logging.info(ds)
         file_list[:] = [file.replace("{{ ds }}", ds) if "{{ ds }}" in file else file for file in file_list]
+
+        # add dir prefix to files
+        x = "directory_prefix" in self.config.source.extra_options["gcs_source_config"]
+        logging.info(x)
+        if "directory_prefix" in self.config.source.extra_options["gcs_source_config"]:
+            dir_prefix = self.config.source.extra_options["gcs_source_config"]["directory_prefix"]
+            file_list[:] = [dir_prefix + file for file in file_list]
         logging.info(file_list)
 
         kwargs['ti'].xcom_push(key='file_list', value=file_list)
