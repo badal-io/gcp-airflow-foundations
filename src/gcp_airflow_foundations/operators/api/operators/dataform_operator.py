@@ -1,16 +1,11 @@
 from airflow.models.baseoperator import BaseOperator
+from dataform_hook import DataformHook
+from airflow.utils.decorators import apply_defaults
 from typing import Any, Optional
-
-from airflow.exceptions import AirflowException
-
-import requests
-import time
-import json
-import logging
 
 class DataformOperator(BaseOperator):
     '''
-    This operator will POST to Dataform's ApiService_RunCreate to initiate a new dataform run.
+    This operator will use the custom DataformHook to POST to Dataform's ApiService_RunCreate to initiate a new dataform run.
     If no tags are provided, Dataform will run all.
     Once a run is created, it will use ApiService_RunGet to return information about the run every 10 seconds until the status is no longer RUNNING.
 
@@ -42,44 +37,20 @@ class DataformOperator(BaseOperator):
 
     ** Note: Schedules must be on the master branch. In Dataform, you'll have to create a branch first and then merge changes into master.
     '''
-
-    def __init__(self, *, project_id: str, api_key: str, environment: str, schedule: str, tags: Optional[str] = [], **kwargs: Any) -> None:
+    @apply_defaults
+    def __init__(self, *, dataform_conn_id: str = 'dataform_default', project_id: str, environment: str, schedule: str, tags: Optional[str] = [], **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self.dataform_conn_id = dataform_conn_id
         self.project_id = project_id
-        self.api_key = api_key
         self.environment = environment
         self.schedule = schedule
         self.tags = tags
 
     def execute(self, context) -> str:
-        base_url = f'https://api.dataform.co/v1/project/{self.project_id}/run'
-        headers = {'Authorization': f'Bearer {self.api_key}'}
-        run_create_request = {
-            "environmentName": self.environment,
-            "scheduleName": self.schedule,
-            "runConfig": {
-                "tags": self.tags
-            }
-        }
-
-        # ApiService_RunCreate: Initiates new dataform runs within the project, and returns the ID of any created runs.
-        response = requests.post(base_url, data=json.dumps(run_create_request), headers=headers)
-
-        try:
-            # ApiService_RunGet: Returns information about a specific run
-            run_url = base_url + '/' + response.json()['id']
-        except Exception:
-            raise AirflowException(f"Dataform ApiService Error: {response.json()}")
-
-        response = requests.get(run_url, headers=headers)
-
-        while response.json()['status'] == 'RUNNING':
-            time.sleep(10)
-            # retry after 10 seconds
-            response = requests.get(run_url, headers=headers)
-            logging.info(response.json())
-
-        if response.json()['status'] == 'SUCCESSFUL':
-            return f"Dataform run completed: SUCCESSFUL see run logs at {response.json()['runLogUrl']}"
-        else:
-            raise AirflowException(f"Dataform run {response.json()['status']} for {response.json()['id']}: see run logs at {response.json()['runLogUrl']}")
+        dataform_hook = DataformHook(dataform_conn_id=self.dataform_conn_id)
+        dataform_hook.run_job(
+            project_id=self.project_id,
+            environment=self.environment,
+            schedule=self.schedule,
+            tags=self.tags
+        )
