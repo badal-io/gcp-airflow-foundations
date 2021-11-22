@@ -13,3 +13,4 @@ class GCSSourceConfig:
     """
     template_file_name: Optional[str]
     file_prefix_filtering: bool
+    date_format: str

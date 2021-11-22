@@ -7,6 +7,7 @@ import json
 import pandas as pd
 from dacite import from_dict
 from dataclasses import dataclass
+from datetime import datetime
 
 from airflow.models.dag import DAG
 from airflow.utils.task_group import TaskGroup
@@ -21,6 +22,7 @@ from gcp_airflow_foundations.base_class.gcs_table_config import GCSTableConfig
 from gcp_airflow_foundations.base_class.gcs_source_config import GCSSourceConfig
 from gcp_airflow_foundations.operators.api.operators.sf_to_gcs_query_operator import SalesforceToGcsQueryOperator
 from gcp_airflow_foundations.operators.api.sensors.gcs_sensor import GCSObjectListExistenceSensor
+from gcp_airflow_foundations.operators.api.sensors.gcs_prefix_sensor import GCSObjectPrefixListExistenceSensor
 from gcp_airflow_foundations.source_class.ftp_source import FTPtoBQDagBuilder
 from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
 from gcp_airflow_foundations.source_class.source import DagBuilder
@@ -113,12 +115,20 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         bucket = self.config.source.extra_options["gcs_bucket"]
         files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
 
-        return GCSObjectListExistenceSensor(
-            task_id="wait_for_files_to_ingest",
-            bucket=bucket,
-            objects=files_to_wait_for,
-            task_group=taskgroup
-        )
+        if self.config.source.extra_options["gcs_source_config"]["file_prefix_filtering"]:
+            return GCSObjectPrefixListExistenceSensor(
+                task_id="wait_for_files_to_ingest",
+                bucket=bucket,
+                prefixes=files_to_wait_for,
+                task_group=taskgroup
+            )
+        else:
+            return GCSObjectListExistenceSensor(
+                task_id="wait_for_files_to_ingest",
+                bucket=bucket,
+                objects=files_to_wait_for,
+                task_group=taskgroup
+            )
 
     def load_to_landing_task(self, table_config, taskgroup):
         return PythonOperator(
@@ -130,11 +140,22 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
 
     def load_to_landing_py_op_task(self, table_config, **kwargs):
         data_source = self.config.source
+        bucket = self.config.source.extra_options["gcs_bucket"]
 
         ti = kwargs['ti']
         ds = kwargs['ds']
 
         files_to_load = ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list')
+        logging.info(files_to_load)
+
+        if self.config.source.extra_options["gcs_source_config"]["file_prefix_filtering"]:
+            logging.info("HELLO")
+            for i in range(len(files_to_load)):
+                matching_gcs_files = self.gcs_hook.list(bucket_name=bucket, prefix=files_to_load[i]) 
+                if len(matching_gcs_files) > 1:
+                    raise AirflowException(f"There is more than one matching file with the prefix {files_to_load[i]} in the bucket {bucket}")
+                files_to_load[i] = matching_gcs_files[0]
+
         logging.info(files_to_load)
 
         # Parameters
@@ -196,16 +217,10 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
 
         # support replacing files with current dates
         ds = kwargs["ds"]
+        logging.info(ds)
+        ds = datetime.strptime(ds, "%Y-%m-%d").strftime(self.config.source.extra_options["gcs_source_config"]["date_format"])
+        logging.info(ds)
         file_list[:] = [file.replace("{{ ds }}", ds) if "{{ ds }}" in file else file for file in file_list]
-
-        if self.config.source.extra_options["gcs_source_config"]["file_prefix_filtering"]:
-            logging.info("HELLO")
-            for i in range(len(file_list)):
-                matching_gcs_files = self.gcs_hook.list(bucket_name=bucket, prefix=file_list[i]) 
-                if len(matching_gcs_files) > 1:
-                    raise AirflowException(f"There is more than one matching file with the prefix {file_list[i]} in the bucket {bucket}")
-                file_list[i] = matching_gcs_files[0]
-        
         logging.info(file_list)
 
         kwargs['ti'].xcom_push(key='file_list', value=file_list)
