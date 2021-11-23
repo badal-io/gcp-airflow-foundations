@@ -169,6 +169,10 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         if "schema_file" in table_config.extra_options.get("gcs_table_config"):
             schema_file_name = table_config.extra_options.get("gcs_table_config")["schema_file"]
 
+        field_delimeter = ","
+        if "field_delimeter" in table_config.extra_options.get("gcs_table_config"):
+            field_delimeter = table_config.extra_options.get("gcs_table_config")[field_delimeter]
+
         # Get files to load from metadata file
         if schema_file_name:
             schema_file = self.gcs_hook.download(bucket_name=bucket, object_name=schema_file_name)
@@ -182,6 +186,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
                 source_objects=files_to_load,
                 source_format=source_format,
                 schema_fields=schema_fields,
+                field_delimeter=field_delimeter,
                 destination_project_dataset_table=destination_table,
                 write_disposition='WRITE_TRUNCATE',
                 create_disposition='CREATE_IF_NEEDED',
@@ -193,6 +198,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
                 bucket=bucket,
                 source_objects=files_to_load,
                 source_format=source_format,
+                field_delimiter=field_delimeter,
                 destination_project_dataset_table=destination_table,
                 write_disposition='WRITE_TRUNCATE',
                 create_disposition='CREATE_IF_NEEDED',

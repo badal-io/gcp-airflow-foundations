@@ -13,4 +13,5 @@ class GCSTableConfig:
     """
     metadata_file: Optional[str]
     schema_file: Optional[str]
+    delimeter: Optional[str]
     source_format: str
