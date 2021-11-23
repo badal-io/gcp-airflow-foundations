@@ -7,6 +7,7 @@ import time
 import json
 import logging
 
+
 class DataformHook(BaseHook):
     '''
     Airflow Hook to connect to Dataform's API and run Dataform jobs.
@@ -15,10 +16,6 @@ class DataformHook(BaseHook):
     Once a run is created, it will use ApiService_RunGet to return information about the run every 10 seconds until the status is no longer RUNNING.
 
     Attributes:
-    :param project_id: Dataform's project ID
-    :type project_id: str
-    :param api_key: Dataform's API key
-    :type api_key: str
     :param environment: name of the environment, e.g. production, development...
     :type environment: str
     :param schedule: the name of the schedule that will be triggered by airflow
@@ -37,6 +34,8 @@ class DataformHook(BaseHook):
     3. generate API token:
         project settings >> API keys >> GENERATE NEW API KEY
 
+
+
     - Dataform documentation on using REST API: https://docs.dataform.co/dataform-web/api
     - Helpful Medium tutorial: https://medium.com/google-cloud/cloud-composer-apache-airflow-dataform-bigquery-de6e3eaabeb3
 
@@ -45,10 +44,11 @@ class DataformHook(BaseHook):
 
     def __init__(self, dataform_conn_id='datafrom_default') -> None:
         self.conn = self.get_connection(dataform_conn_id)
+        self.project_id = self.conn.login
         self.api_key = self.conn.password
 
-    def run_job(self, project_id: str, environment: str, schedule: str, tags: Optional[str] = []) -> str:
-        base_url = f'https://api.dataform.co/v1/project/{project_id}/run'
+    def run_job(self, environment: str, schedule: str, tags: Optional[str] = []) -> str:
+        base_url = f'https://api.dataform.co/v1/project/{self.project_id}/run'
         headers = {'Authorization': f'Bearer {self.api_key}'}
         run_create_request = {
             "environmentName": environment,
@@ -78,4 +78,5 @@ class DataformHook(BaseHook):
         if response.json()['status'] == 'SUCCESSFUL':
             return f"Dataform run completed: SUCCESSFUL see run logs at {response.json()['runLogUrl']}"
         else:
-            raise AirflowException(f"Dataform run {response.json()['status']} for {response.json()['id']}: see run logs at {response.json()['runLogUrl']}")
+            raise AirflowException(
+                f"Dataform run {response.json()['status']} for {response.json()['id']}: see run logs at {response.json()['runLogUrl']}")

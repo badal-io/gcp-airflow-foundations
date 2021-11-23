@@ -10,10 +10,6 @@ class DataformOperator(BaseOperator):
     Once a run is created, it will use ApiService_RunGet to return information about the run every 10 seconds until the status is no longer RUNNING.
 
     Attributes:
-    :param project_id: Dataform's project ID
-    :type project_id: str
-    :param api_key: Dataform's API key
-    :type api_key: str
     :param environment: name of the environment, e.g. production, development...
     :type environment: str
     :param schedule: the name of the schedule that will be triggered by airflow
@@ -38,10 +34,9 @@ class DataformOperator(BaseOperator):
     ** Note: Schedules must be on the master branch. In Dataform, you'll have to create a branch first and then merge changes into master.
     '''
     @apply_defaults
-    def __init__(self, *, dataform_conn_id: str = 'dataform_default', project_id: str, environment: str, schedule: str, tags: Optional[str] = [], **kwargs: Any) -> None:
+    def __init__(self, *, dataform_conn_id: str = 'dataform_default', environment: str, schedule: str, tags: Optional[str] = [], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.dataform_conn_id = dataform_conn_id
-        self.project_id = project_id
         self.environment = environment
         self.schedule = schedule
         self.tags = tags
@@ -49,7 +44,6 @@ class DataformOperator(BaseOperator):
     def execute(self, context) -> str:
         dataform_hook = DataformHook(dataform_conn_id=self.dataform_conn_id)
         dataform_hook.run_job(
-            project_id=self.project_id,
             environment=self.environment,
             schedule=self.schedule,
             tags=self.tags
