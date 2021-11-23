@@ -6,7 +6,7 @@ from pydantic.dataclasses import dataclass
 
 from facebook_business.adobjects.adsinsights import AdsInsights
 
-from gcp_airflow_foundations.enums.facebook import Level, DatePreset, AccountLookupScope
+from gcp_airflow_foundations.enums.facebook import Level, DatePreset, AccountLookupScope, ApiObject
 
 valid_fields = {
     "account_name":AdsInsights.Field.account_name,
@@ -15,6 +15,8 @@ valid_fields = {
     "account_currency":AdsInsights.Field.account_currency,
     "campaign_name":AdsInsights.Field.campaign_name,
     "campaign_id":AdsInsights.Field.campaign_id,  
+    "adset_name":AdsInsights.Field.ad_name,
+    "adset_id":AdsInsights.Field.ad_id,
     "ad_name":AdsInsights.Field.ad_name,
     "ad_id":AdsInsights.Field.ad_id,
     "impressions":AdsInsights.Field.impressions,
@@ -49,9 +51,10 @@ valid_fields = {
 
 @dataclass
 class FacebookConfig:
-    fields: List[str]
-    level: Level
+    fields: Optional[List[str]]
+    level: Optional[Level]
     account_lookup_scope: AccountLookupScope
+    accounts_bq_table: Optional[str]
     time_increment: Optional[str]
     time_range: Optional[dict]
     use_account_attribution_setting: Optional[bool] = False
@@ -59,7 +62,9 @@ class FacebookConfig:
 
     @validator("fields")
     def valid_fields(cls, v):
-        for field in v:
-            assert field in valid_fields, f"`{field}` is not a valid field for the Facebook API"
-
-        return [valid_fields[field] for field in v]
+        if v is not None:
+            for field in v:
+                assert field in valid_fields, f"`{field}` is not a valid field for the Facebook API"
+            return [valid_fields[field] for field in v]
+        else:
+            return []   

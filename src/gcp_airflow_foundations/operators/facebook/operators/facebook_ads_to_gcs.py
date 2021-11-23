@@ -1,6 +1,7 @@
 import csv
 import tempfile
 import warnings
+import time
 from typing import Any, Dict, List, Optional, Sequence, Union
 import pandas as pd
 from datetime import datetime
@@ -12,7 +13,7 @@ import pyarrow
 from airflow.exceptions import AirflowException
 
 from gcp_airflow_foundations.operators.facebook.hooks.ads import CustomFacebookAdsReportingHook
-from gcp_airflow_foundations.enums.facebook import AccountLookupScope
+from gcp_airflow_foundations.enums.facebook import AccountLookupScope, ApiObject
 
 from airflow.models import BaseOperator
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook
@@ -69,9 +70,11 @@ class FacebookAdsReportToBqOperator(BaseOperator):
     def __init__(
         self,
         *,
+        api_object: ApiObject,
         gcp_project: str,
         account_lookup_scope: AccountLookupScope,
         destination_project_dataset_table: str,
+        accounts_bq_table: str,
         fields: List[str],
         parameters: Dict[str, Any] = None,
         time_range: Dict[str, Any] = None,
@@ -85,9 +88,11 @@ class FacebookAdsReportToBqOperator(BaseOperator):
             **kwargs
         )
 
+        self.api_object = api_object
         self.gcp_project = gcp_project
         self.account_lookup_scope = account_lookup_scope
         self.destination_project_dataset_table = destination_project_dataset_table
+        self.accounts_bq_table = accounts_bq_table
         self.gcp_conn_id = gcp_conn_id
         self.facebook_conn_id = facebook_conn_id
         self.api_version = api_version
@@ -105,12 +110,6 @@ class FacebookAdsReportToBqOperator(BaseOperator):
             self.parameters['time_range'] = {'since':ds, 'until':ds}
         else:
             self.parameters['time_range'] = {'since':self.time_range['since'], 'until':ds}
-        
-        #self.parameters['time_range'] = {'since':'2020-01-01', 'until':ds}
-        #self.parameters['time_range'] = {
-        #    'since':interval_start.strftime('%Y-%m-%d'), 
-        #    'until':interval_end.strftime('%Y-%m-%d')
-        #}
 
         self.log.info("Currently loading data for date range: %s", self.parameters['time_range'])
 
@@ -124,26 +123,32 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         elif self.account_lookup_scope == AccountLookupScope.ACTIVE:
             facebook_acc_ids = service.get_active_accounts_from_bq(
                 project_id=self.gcp_project, 
-                table_id="dev-eyereturn-data-warehouse.facebook_dev.accounts_ODS_Full"
+                table_id=self.accounts_bq_table
             )
 
         converted_rows = []
-        failed_accounts = []
         for facebook_acc_id in facebook_acc_ids:
             self.log.info("Currently loading data from Account ID: %s", facebook_acc_id)
         
             try:
-                rows = service.bulk_facebook_report(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
 
-                converted_rows.extend(
-                    [dict(row) for row in rows]
-                )
+                if self.api_object == ApiObject.INSIGHTS:
+                    rows = service.bulk_facebook_report(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
+
+                elif self.api_object == ApiObject.CAMPAIGNS:
+                    rows = service.get_campaigns(facebook_acc_id=facebook_acc_id, params=self.parameters)
+
+                elif self.api_object == ApiObject.ADSETS:
+                    rows = service.get_adsets(facebook_acc_id=facebook_acc_id, params=self.parameters)
+
+                converted_rows.extend(rows)
 
                 self.log.info("Extracting data for account %s completed", facebook_acc_id)
+
             except:
-                self.log.info("Failed to extract data for account %s", facebook_acc_id)
-                failed_accounts.append({'execution_date':ds, 'account_id':facebook_acc_id})
-                continue
+                self.log.info("Extracting data for account %s failed", facebook_acc_id)
+                
+            time.sleep(3)
 
         self.log.info("Facebook Returned %s data points", len(converted_rows))
 
@@ -176,23 +181,6 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         job = client.load_table_from_file(
             reader, f"{self.destination_project_dataset_table}_{ds}", job_config=job_config
         )
-
-        if len(failed_accounts) > 0:
-            df_failed = pd.DataFrame.from_dict(failed_accounts)
-
-            writer_failed = pyarrow.BufferOutputStream()
-            pq.write_table(
-                pyarrow.Table.from_pandas(df_failed),
-                writer_failed,
-                use_compliant_nested_type=True
-            )
-            reader_failed = pyarrow.BufferReader(writer_failed.getvalue())
-
-            job_config.write_disposition='WRITE_APPEND'
-
-            job_failed = client.load_table_from_file(
-                reader_failed, "dev-eyereturn-data-warehouse.facebook_dev.failed_accounts", job_config=job_config
-            )
 
     def transform_data_types(self, rows):
         for i in rows:

@@ -22,3 +22,10 @@ class DatePreset(Enum):
 class AccountLookupScope(Enum):
     ALL = "all"
     ACTIVE = "active"
+
+
+@unique
+class ApiObject(Enum):
+    INSIGHTS = "INSIGHTS"
+    CAMPAIGNS = "CAMPAIGNS"
+    ADSETS = "ADSETS"

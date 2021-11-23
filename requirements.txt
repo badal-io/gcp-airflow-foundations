@@ -15,8 +15,6 @@ pre-commit>=1.18.3
 croniter>=1.0.15
 facebook-business>=6.0.2
 
-apache-airflow-providers-salesforce==3.3.0
-apache-airflow-providers-apache-beam==3.1.0
 google-cloud-bigquery==2.28.1
 pyarrow==4.0.1
 facebook-business>=6.0.2

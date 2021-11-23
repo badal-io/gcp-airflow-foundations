@@ -12,9 +12,11 @@ from gcp_airflow_foundations.base_class.ods_metadata_config import OdsTableMetad
 from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetadataConfig
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
+from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
 
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
+from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTableConfig
 
 @dataclass
 class SourceTableConfig:
@@ -34,16 +36,15 @@ class SourceTableConfig:
     """
 
     table_name: str
-    breakdowns: Optional[List[str]]
-    action_breakdowns: Optional[List[str]]
     ingestion_type: IngestionType # FULL or INCREMENTAL
     landing_zone_table_name_override: Optional[str]
     dest_table_override: Optional[str]
     surrogate_keys: List[str]
     column_mapping: Optional[dict]
-    ods_config: Optional[OdsTableConfig]
     hds_config: Optional[HdsTableConfig]
+    facebook_table_config: Optional[FacebookTableConfig]
     extra_options: dict = field(default_factory=dict)
+    ods_config: Optional[OdsTableConfig] = OdsTableConfig(ods_metadata=OdsTableMetadataConfig())
     version: int = 1
     catchup: bool = True
 

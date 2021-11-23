@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict, List, Optional
 from enum import Enum
-
+from datetime import datetime
 import requests
 import json
 
@@ -133,8 +133,79 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         api = self._get_service(facebook_acc_id=facebook_acc_id)
         ad_account = AdAccount(api.get_default_account_id(), api=api)
         insights = ad_account.get_insights(params=params, fields=fields, is_async=False)
+        rows = list(insights)
 
-        return list(insights)
+        return [dict(row) for row in rows]
+
+    def get_campaigns(
+        self,
+        facebook_acc_id: str,
+        params: Dict[str, Any]
+    ) -> List[dict]:
+
+        api = self._get_service(facebook_acc_id=facebook_acc_id)
+        ad_account = AdAccount(api.get_default_account_id(), api=api)
+
+        campaigns = ad_account.get_campaigns(
+            params={'limit':'20000','time_range':params['time_range']},
+            fields=[
+            'account_id',
+            #'name', TO-DO: troubleshoot why pyarrow fails to convert the `name` column
+            'daily_budget',
+            'effective_status',
+            'lifetime_budget',
+            'start_time',
+            'stop_time'
+            ]
+        )
+
+        rows = []
+        for row in campaigns:
+            converted_row = row._data
+            if 'name' in converted_row:
+                converted_row['name'] = str(converted_row['name'])
+            if 'start_time' in converted_row:
+                converted_row['start_time'] = datetime.strptime(converted_row['start_time'],'%Y-%m-%dT%H:%M:%S%z')
+            if 'stop_time' in row:
+                converted_row['stop_time'] = datetime.strptime(converted_row['stop_time'],'%Y-%m-%dT%H:%M:%S%z')
+            rows.append(converted_row)
+
+        return rows
+
+    def get_adsets(
+        self,
+        facebook_acc_id: str,
+        params: Dict[str, Any]
+    ) -> List[dict]:
+
+        api = self._get_service(facebook_acc_id=facebook_acc_id)
+        ad_account = AdAccount(api.get_default_account_id(), api=api)
+
+        adsets = ad_account.get_ad_sets(
+            params={'limit':'20000','time_range':params['time_range']},
+            fields=[
+                'account_id',
+                'name',
+                'daily_budget',
+                'effective_status',
+                'lifetime_budget',
+                'created_time',
+                'end_time'
+            ]
+        )
+
+        rows = []
+        for row in adsets:
+            converted_row = row._data
+            if 'name' in converted_row:
+                converted_row['name'] = str(converted_row['name'])
+            if 'created_time' in converted_row:
+                converted_row['created_time'] = datetime.strptime(converted_row['created_time'],'%Y-%m-%dT%H:%M:%S%z')
+            if 'end_time' in row:
+                converted_row['end_time'] = datetime.strptime(converted_row['end_time'],'%Y-%m-%dT%H:%M:%S%z')
+            rows.append(converted_row)
+
+        return rows
 
     def get_active_accounts_from_bq(self, project_id, table_id) -> List[str]:
         sql = f"SELECT account_id FROM `{table_id}`"
