@@ -112,7 +112,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         ti = kwargs['ti']
         xcom_task_pickup = "dataflow_taskgroup.create_job_parameters"
 
-        dataflow_default_options = ti.xcom_pull(key='dataflow_default_options', task_ids=xcom_task_pickup)
+        dataflow_default_options = ti.xcom_pull(key='dataflow_default_options', task_ids="get_file_list")
         parameters = ti.xcom_pull(key='parameters', task_ids=xcom_task_pickup)
         job_name = f"{system_name.lower()}-upload-{table_name.lower()}-to-bq".replace("_", "-")
 
@@ -130,10 +130,11 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         trigger_job.execute(context=kwargs)
     
     def create_table(self, destination_table, schema_table, source_table, **kwargs):
+        ds = kwargs["ds"]
         ids = destination_table.split(":")
         project_id = ids[0]
         dataset_id = ids[1].split(".")[0]
-        table_id = ids[1].split(".")[1]
+        table_id = ids[1].split(".")[1] + f"_{ds}"
 
         logging.info(ids)
         bq_hook = BigQueryHook()
@@ -159,7 +160,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         config_params:
             dictionary corresponding to a DataflowJobConfig
         destination_table:
-            Bigquery table in form {gcp_project}.{bq_dataset}.{table_name}\
+            Bigquery table in form {gcp_project}.{bq_dataset}.{table_name}
         query_schema:
             boolean - whether to query the schema or not
 
