@@ -160,7 +160,8 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
 
         # Parameters
         bucket = self.config.source.extra_options["gcs_bucket"]
-        source_format = table_config.extra_options.get("gcs_table_config")["source_format"]
+        source_format = self.config.source.extra_options["gcs_source_config"]["source_format"]
+        field_delimeter = self.config.source.extra_options["gcs_source_config"]["delimeter"]
         gcp_project = data_source.gcp_project
         landing_dataset = data_source.landing_zone_options.landing_zone_dataset 
         destination_table = f"{gcp_project}:{landing_dataset}.{table_config.landing_zone_table_name_override}" + f"_{ds}"
@@ -168,10 +169,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         schema_file_name = None
         if "schema_file" in table_config.extra_options.get("gcs_table_config"):
             schema_file_name = table_config.extra_options.get("gcs_table_config")["schema_file"]
-
-        field_delimeter = ","
-        if "field_delimeter" in table_config.extra_options.get("gcs_table_config"):
-            field_delimeter = table_config.extra_options.get("gcs_table_config")[field_delimeter]
+        logging.info(field_delimeter)
 
         # Get files to load from metadata file
         if schema_file_name:
@@ -237,7 +235,8 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         kwargs['ti'].xcom_push(key='file_list', value=file_list)
 
     def validate_extra_options(self):
-        gcs_source_cfg = from_dict(data_class=GCSSourceConfig, data=self.config.source.extra_options["gcs_source_config"])
-        tables = self.config.tables
-        for table in tables:
-            gcs_table_cfg = from_dict(data_class=GCSTableConfig, data=table.extra_options.get("gcs_table_config"))
+        pass
+        #gcs_source_cfg = from_dict(data_class=GCSSourceConfig, data=self.config.source.extra_options["gcs_source_config"])
+        #tables = self.config.tables
+        #for table in tables:
+        #    gcs_table_cfg = from_dict(data_class=GCSTableConfig, data=table.extra_options.get("gcs_table_config"))

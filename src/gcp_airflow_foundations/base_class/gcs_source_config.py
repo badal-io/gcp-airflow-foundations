@@ -3,6 +3,8 @@ from pydantic.dataclasses import dataclass
 
 from typing import List, Optional
 
+from pydantic.networks import stricturl
+
 @dataclass
 class GCSSourceConfig:
     """
@@ -15,3 +17,5 @@ class GCSSourceConfig:
     directory_prefix: Optional[str]
     file_prefix_filtering: bool
     date_format: str
+    delimeter: str
+    source_format: str
