@@ -24,6 +24,7 @@ def ods_builder(
     surrogate_keys,
     ingestion_type,
     ods_table_config,
+    location,
     dag,
     time_partitioning=None,
     labels=None,
@@ -67,6 +68,7 @@ def ods_builder(
         column_mapping=column_mapping,
         ingestion_type=ingestion_type,
         ods_table_config=ods_table_config,
+        location=location,
         task_group=taskgroup,
         dag=dag
     )

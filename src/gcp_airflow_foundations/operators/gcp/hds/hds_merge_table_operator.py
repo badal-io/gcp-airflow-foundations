@@ -46,6 +46,8 @@ class MergeBigQueryHDS(BigQueryOperator):
     :type ingestion_type: IngestionType
     :param hds_table_config: User-provided HDS configuration options
     :type hds_table_config: HdsTableConfig
+    :param location: The geographic location of the job. 
+    :type location: str
     """
     
     template_fields = (
@@ -70,6 +72,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         column_mapping: dict,
         ingestion_type: IngestionType,
         hds_table_config: HdsTableConfig,
+        location: Optional[str] = None,
         **kwargs,
     ) -> None:
         super(MergeBigQueryHDS, self).__init__(
@@ -79,6 +82,7 @@ class MergeBigQueryHDS(BigQueryOperator):
             write_disposition="WRITE_APPEND",
             create_disposition="CREATE_NEVER",
             destination_dataset_table=None,
+            location=location,
             sql="",
             **kwargs,
         )
