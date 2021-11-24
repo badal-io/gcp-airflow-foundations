@@ -31,6 +31,7 @@ def load_builder(
     partition_expiration = data_source.partition_expiration
     ods_table_config = table_config.ods_config
     hds_table_config = table_config.hds_config
+    location = data_source.location
 
     if ingestion_type == IngestionType.INCREMENTAL:
         ods_table_config.table_id = f"{table_id}_ODS_Incremental"
@@ -57,6 +58,7 @@ def load_builder(
         column_mapping=column_mapping,
         ingestion_type=ingestion_type,
         ods_table_config=ods_table_config,
+        location=location,
         dag=dag
     )
     
@@ -79,6 +81,7 @@ def load_builder(
             ingestion_type=ingestion_type,
             partition_expiration=partition_expiration,
             hds_table_config=hds_table_config,
+            location=location,
             dag=dag
         )
 

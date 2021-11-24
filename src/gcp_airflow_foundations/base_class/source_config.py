@@ -33,6 +33,7 @@ class SourceConfig:
         notification_emails : Email address for notification emails
         owner : Airflow user owning the DAG
         partition_expiration: Expiration time for HDS Snapshot partitions in days.
+        location: BigQuery job location.
         start_date : Start date for DAG
         start_date_tz : Timezone
         version : The Dag version. Can be incremented if logic changes
@@ -52,6 +53,7 @@ class SourceConfig:
     owner: str
     partition_expiration: Optional[int]
     schema_options: SchemaOptionsConfig
+    location: str
     start_date: str
     start_date_tz: str = "EST"
     version: int = 1
