@@ -45,12 +45,25 @@ valid_fields = {
     "conversions":AdsInsights.Field.conversions,
     "cost_per_conversion":AdsInsights.Field.cost_per_conversion,
     "actions":AdsInsights.Field.actions,
+    "action_values":AdsInsights.Field.action_values,
     "cost_per_action_type":AdsInsights.Field.cost_per_action_type
 }
 
 
 @dataclass
 class FacebookConfig:
+    """
+    Attributes:
+        fields: A list of dimensions and metrics for the Facebook Graph API. For more information see: https://developers.facebook.com/docs/marketing-api/insights/parameters/v12.0
+        level: Represents the level of result {ad, adset, campaign, account}
+        account_lookup_scope: Whether to query all accounts managed by the user or only the active ones
+        account_bq_table: A BigQuery table with the account_id's
+        time_increment: The time dimension of the results 
+        time_range: The time range used to query the Graph API
+        use_account_attribution_setting: When this parameter is set to true, your ads results will be shown using the attribution settings defined for the ad account.
+        use_unified_attribution_setting: When this parameter is set to true, your ads results will be shown using unified attribution settings defined at ad set level and parameter
+    """
+
     fields: Optional[List[str]]
     level: Optional[Level]
     account_lookup_scope: AccountLookupScope

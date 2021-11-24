@@ -23,14 +23,22 @@ from google.cloud import bigquery
 
 class FacebookAdsReportToBqOperator(BaseOperator):
     """
-    Fetches the results from the Facebook Ads API as desired in the params
-    Converts and saves the data as a temporary JSON file
-    Uploads the JSON to Google Cloud Storage
+    Fetches the results from the Facebook Ads API as desired in the params and fields
+    Converts to parquet format and loads to directly BigQuery maintaining the native nested
+    representation of the data.
 
-    :param bucket_name: The GCS bucket to upload to
-    :type bucket_name: str
-    :param object_name: GCS path to save the object. Must be the full file path (ex. `path/to/file.txt`)
-    :type object_name: str
+    :param api_object: The API Object to query from
+    :type api_object: ApiObject
+    :param gcp_project: The Google Cloud Platform project ID
+    :type gcp_project: str
+    :param account_lookup_scope: Whether to query all or only the active accounts managed by the user.
+    :type account_lookup_scope: AccountLookupScope
+    :param destination_project_dataset_table: BigQuery staging zone table. String in dotted (<project>.)<dataset>.<table> format.
+    :type destination_project_dataset_table: str
+    :param accounts_bq_table: BigQuery table with the Facebook Account IDs to query data from. String in dotted (<project>.)<dataset>.<table> format.
+    :type accounts_bq_table: str
+    :param time_range: Time range used in the Graph API query.
+    :type time_range: Dict[str, Any] 
     :param gcp_conn_id: Airflow Google Cloud connection ID
     :type gcp_conn_id: str
     :param facebook_conn_id: Airflow Facebook Ads connection ID
@@ -41,15 +49,9 @@ class FacebookAdsReportToBqOperator(BaseOperator):
     :param fields: List of fields that is obtained from Facebook. Found in AdsInsights.Field class.
         https://developers.facebook.com/docs/marketing-api/insights/parameters/v6.0
     :type fields: List[str]
-    :param params: Parameters that determine the query for Facebook. This keyword is deprecated,
-        please use `parameters` keyword to pass the parameters.
-        https://developers.facebook.com/docs/marketing-api/insights/parameters/v6.0
-    :type params: Dict[str, Any]
     :param parameters: Parameters that determine the query for Facebook
         https://developers.facebook.com/docs/marketing-api/insights/parameters/v6.0
     :type parameters: Dict[str, Any]
-    :param gzip: Option to compress local file or file data for upload
-    :type gzip: bool
     :param impersonation_chain: Optional service account to impersonate using short-term
         credentials, or chained list of accounts required to get the access_token
         of the last account in the list, which will be impersonated in the request.
@@ -148,7 +150,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
             except:
                 self.log.info("Extracting data for account %s failed", facebook_acc_id)
                 
-            time.sleep(3)
+            time.sleep(2)
 
         self.log.info("Facebook Returned %s data points", len(converted_rows))
 
@@ -184,11 +186,11 @@ class FacebookAdsReportToBqOperator(BaseOperator):
 
     def transform_data_types(self, rows):
         for i in rows:
+            i.pop('date_stop')
+            i['date_start'] = datetime.strptime(i['date_start'], '%Y-%m-%d').date()
             for j in i:
                 if j.endswith('id'):
                     continue
-                elif j in ('date_start', 'date_stop'):
-                    i[j] = datetime.strptime(i[j], '%Y-%m-%d').date()
                 elif type(i[j]) == str:
                     i[j] = self.get_float(i[j])
                 elif type(i[j]) == list:
