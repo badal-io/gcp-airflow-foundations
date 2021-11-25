@@ -16,7 +16,7 @@ from airflow.exceptions import AirflowException
 from gcp_airflow_foundations.operators.facebook.hooks.ads import CustomFacebookAdsReportingHook
 from gcp_airflow_foundations.enums.facebook import AccountLookupScope, ApiObject
 
-from airflow.models import BaseOperator
+from airflow.models import BaseOperator, Variable
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 from google.cloud import bigquery
@@ -109,7 +109,9 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         context: dict
     ):
 
+        dag_id = context['dag'].dag_id
         ds = context['ds']
+
         interval_start = datetime.strptime(ds, '%Y-%m-%d')
         interval_end = interval_start + relativedelta(day=31)
         
@@ -138,11 +140,15 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         converted_rows = []
         while True:
             for facebook_acc_id in facebook_acc_ids:
+
                 self.log.info("Currently loading data from Account ID: %s", facebook_acc_id)
             
                 try:
                     if self.api_object == ApiObject.INSIGHTS:
                         rows = service.bulk_facebook_report_async(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
+                        if not rows:
+                            self.log.info("Rate Limit for Account %s has reached 60%. Moving on to the next account. Will retry later", facebook_acc_id)
+                            continue
 
                     elif self.api_object == ApiObject.CAMPAIGNS:
                         rows = service.get_campaigns(facebook_acc_id=facebook_acc_id, params=self.parameters)

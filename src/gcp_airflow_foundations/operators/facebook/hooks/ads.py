@@ -114,11 +114,19 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         report_object = AdReportRun(report_run_id, api=api)
         insights = report_object.get_insights()
 
+        max_current_usage = self.usage_throttle(insights)
+
+        if max_current_usage >= 60:
+            return
+
         self.log.info("Extracting data from returned Facebook Ads Iterators")
 
         rows = []
         while True:
-            self.usage_throttle(insights)
+            max_current_usage = self.usage_throttle(insights)
+            if max_current_usage >= 75:
+                self.log.info('75% Rate Limit Reached. Cooling Time 5 Minutes.')
+                time.sleep(300)
             try:
                 rows.append( next(insights) )
             except StopIteration:
@@ -297,15 +305,11 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
     def usage_throttle(
         self, 
         insights
-    ):
+    ) -> int:
         """
         Queries the 'x-business-use-case-usage' header of the Cursor object returned by the Facebook API.
-        Puts to sleep if the 75% rate limit threshold is met.
         """
         
         usage_header = json.loads(insights._headers['x-business-use-case-usage'])
         values = list(usage_header.values())[0][0]
-        max_current_usage = max(values['call_count'], values['total_cputime'], values['total_time'])
-        if max_current_usage >= 75:
-            self.log.info('75% Rate Limit Reached. Cooling Time 5 Minutes.')
-            time.sleep(300)
+        return max(values['call_count'], values['total_cputime'], values['total_time'])
