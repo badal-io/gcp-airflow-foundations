@@ -29,14 +29,13 @@ class JobStatus(Enum):
 
 class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
     """
-    Hook for the Facebook Ads API
+    Custom Hook for the Facebook Ads API. It extends the default FacebookAdsReportingHook.
 
     :param facebook_conn_id: Airflow Facebook Ads connection ID
     :type facebook_conn_id: str
     :param api_version: The version of Facebook API. Default to None. If it is None,
         it will use the Facebook business SDK default version.
     :type api_version: Optional[str]
-
     """
 
     conn_name_attr = 'facebook_conn_id'
@@ -59,8 +58,12 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         self.client_required_fields = ["app_id", "app_secret", "access_token"]
         self.config = self.facebook_ads_config      
 
-    def _get_service(self, facebook_acc_id) -> FacebookAdsApi:
+    def _get_service(
+        self, 
+        facebook_acc_id
+    ) -> FacebookAdsApi:
         """Returns Facebook Ads Client using a service account"""
+
         return FacebookAdsApi.init(
             app_id=self.config["app_id"],
             app_secret=self.config["app_secret"],
@@ -77,7 +80,9 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         sleep_time: int = 5,
     ) -> List[AdsInsights]:
         """
-        Pulls data from the Facebook Ads API
+        Pulls data from the Facebook Ads API using async calls.
+        :param facebook_acc_id: The Facebook account ID to pull data from.
+        :type facebook_acc_id: str
         :param fields: List of fields that is obtained from Facebook. Found in AdsInsights.Field class.
             https://developers.facebook.com/docs/marketing-api/insights/parameters/v6.0
         :type fields: List[str]
@@ -86,9 +91,10 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         :type fields: Dict[str, Any]
         :param sleep_time: Time to sleep when async call is happening
         :type sleep_time: int
-        :return: Facebook Ads API response, converted to Facebook Ads Row objects
-        :rtype: List[AdsInsights]
+        :return: Facebook Ads API response, converted to rows.
+        :rtype: List[dict]
         """
+
         api = self._get_service(facebook_acc_id=facebook_acc_id)
         ad_account = AdAccount(api.get_default_account_id(), api=api)
         _async = ad_account.get_insights(params=params, fields=fields, is_async=True)
@@ -107,8 +113,18 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         report_run_id = _async.api_get()["report_run_id"]
         report_object = AdReportRun(report_run_id, api=api)
         insights = report_object.get_insights()
+
         self.log.info("Extracting data from returned Facebook Ads Iterators")
-        return list(insights)
+
+        rows = []
+        while True:
+            self.usage_throttle(insights)
+            try:
+                rows.append( next(insights) )
+            except StopIteration:
+                break
+
+        return [dict(row) for row in rows]
 
     def bulk_facebook_report(
         self,
@@ -118,22 +134,25 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         sleep_time: int = 5,
     ) -> List[AdsInsights]:
         """
-        Pulls data from the Facebook Ads API
+        Pulls data from the Facebook Ads API using sync calls.
+        :param facebook_acc_id: The Facebook account ID to pull data from.
+        :type facebook_acc_id: str
         :param fields: List of fields that is obtained from Facebook. Found in AdsInsights.Field class.
             https://developers.facebook.com/docs/marketing-api/insights/parameters/v6.0
         :type fields: List[str]
         :param params: Parameters that determine the query for Facebook
             https://developers.facebook.com/docs/marketing-api/insights/parameters/v6.0
         :type fields: Dict[str, Any]
-        :param sleep_time: Time to sleep when async call is happening
-        :type sleep_time: int
-        :return: Facebook Ads API response, converted to Facebook Ads Row objects
-        :rtype: List[AdsInsights]
+        :return: Facebook Ads API response, converted to rows.
+        :rtype: List[dict]
         """
+
         api = self._get_service(facebook_acc_id=facebook_acc_id)
         ad_account = AdAccount(api.get_default_account_id(), api=api)
         insights = ad_account.get_insights(params=params, fields=fields, is_async=False)
         rows = list(insights)
+
+        self.usage_throttle(insights)
 
         return [dict(row) for row in rows]
 
@@ -142,6 +161,16 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         facebook_acc_id: str,
         params: Dict[str, Any]
     ) -> List[dict]:
+        """
+        Pulls campaign data from the Facebook Ads API using sync calls.
+        :param facebook_acc_id: The Facebook account ID to pull data from.
+        :type facebook_acc_id: str
+        :param params: Parameters that determine the query for Facebook
+            https://developers.facebook.com/docs/marketing-api/insights/parameters/v6.0
+        :type params: Dict[str, Any]
+        :return: Facebook Ads API response, converted to rows.
+        :rtype: List[dict]
+        """
 
         api = self._get_service(facebook_acc_id=facebook_acc_id)
         ad_account = AdAccount(api.get_default_account_id(), api=api)
@@ -177,6 +206,16 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         facebook_acc_id: str,
         params: Dict[str, Any]
     ) -> List[dict]:
+        """
+        Pulls adset data from the Facebook Ads API using sync calls.
+        :param facebook_acc_id: The Facebook account ID to pull data from.
+        :type facebook_acc_id: str
+        :param params: Parameters that determine the query for Facebook
+            https://developers.facebook.com/docs/marketing-api/insights/parameters/v6.0
+        :type fields: Dict[str, Any]
+        :return: Facebook Ads API response, converted to rows.
+        :rtype: List[dict]
+        """
 
         api = self._get_service(facebook_acc_id=facebook_acc_id)
         ad_account = AdAccount(api.get_default_account_id(), api=api)
@@ -207,7 +246,21 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
 
         return rows
 
-    def get_active_accounts_from_bq(self, project_id, table_id) -> List[str]:
+    def get_active_accounts_from_bq(
+        self, 
+        project_id, 
+        table_id
+     ) -> List[str]:
+        """
+        Pulls a list of Facebook account IDs from a BigQuery table.
+        :param project_id: The Google Cloud Platform project ID.
+        :type project_id: str
+        :param table_id: Name of BigQuery table that contains the Facebook account IDS.
+        :type table_id: str
+        :return: A list with the Facebook account IDs.
+        :rtype: List[str]
+        """
+
         sql = f"SELECT account_id FROM `{table_id}`"
 
         query_config = bigquery.QueryJobConfig(use_legacy_sql=False)
@@ -218,7 +271,15 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
 
         return [f"act_{i}" for i in df.account_id]
 
-    def get_all_accounts(self) -> List[str]:
+    def get_all_accounts(
+        self
+    ) -> List[str]:
+        """
+        Pulls a list of Facebook account IDs from the Facebook API.
+        :return: A list with the Facebook account IDs.
+        :rtype: List[str]
+        """
+
         self.log.info("Extracting all accounts")
 
         user_id = self.config["user_id"]
@@ -232,3 +293,19 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         accounts = requests.get(URL, params=params).json()['data']
 
         return [i['id'] for i in accounts]
+
+    def usage_throttle(
+        self, 
+        insights
+    ):
+        """
+        Queries the 'x-business-use-case-usage' header of the Cursor object returned by the Facebook API.
+        Puts to sleep if the 75% rate limit threshold is met.
+        """
+        
+        usage_header = json.loads(insights._headers['x-business-use-case-usage'])
+        values = list(usage_header.values())[0][0]
+        max_current_usage = max(values['call_count'], values['total_cputime'], values['total_time'])
+        if max_current_usage >= 75:
+            self.log.info('75% Rate Limit Reached. Cooling Time 5 Minutes.')
+            time.sleep(300)

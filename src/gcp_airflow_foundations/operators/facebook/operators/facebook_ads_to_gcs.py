@@ -3,6 +3,7 @@ import tempfile
 import warnings
 import time
 from typing import Any, Dict, List, Optional, Sequence, Union
+from random import shuffle
 import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -103,7 +104,11 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         self.time_range = time_range
         self.impersonation_chain = impersonation_chain
 
-    def execute(self, context: dict):
+    def execute(
+        self, 
+        context: dict
+    ):
+
         ds = context['ds']
         interval_start = datetime.strptime(ds, '%Y-%m-%d')
         interval_end = interval_start + relativedelta(day=31)
@@ -128,29 +133,33 @@ class FacebookAdsReportToBqOperator(BaseOperator):
                 table_id=self.accounts_bq_table
             )
 
+        shuffle(facebook_acc_ids)
+
         converted_rows = []
-        for facebook_acc_id in facebook_acc_ids:
-            self.log.info("Currently loading data from Account ID: %s", facebook_acc_id)
-        
-            try:
+        while True:
+            for facebook_acc_id in facebook_acc_ids:
+                self.log.info("Currently loading data from Account ID: %s", facebook_acc_id)
+            
+                try:
+                    if self.api_object == ApiObject.INSIGHTS:
+                        rows = service.bulk_facebook_report_async(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
 
-                if self.api_object == ApiObject.INSIGHTS:
-                    rows = service.bulk_facebook_report(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
+                    elif self.api_object == ApiObject.CAMPAIGNS:
+                        rows = service.get_campaigns(facebook_acc_id=facebook_acc_id, params=self.parameters)
 
-                elif self.api_object == ApiObject.CAMPAIGNS:
-                    rows = service.get_campaigns(facebook_acc_id=facebook_acc_id, params=self.parameters)
+                    elif self.api_object == ApiObject.ADSETS:
+                        rows = service.get_adsets(facebook_acc_id=facebook_acc_id, params=self.parameters)
 
-                elif self.api_object == ApiObject.ADSETS:
-                    rows = service.get_adsets(facebook_acc_id=facebook_acc_id, params=self.parameters)
+                    converted_rows.extend(rows)
 
-                converted_rows.extend(rows)
+                    facebook_acc_ids.remove(facebook_acc_id)
 
-                self.log.info("Extracting data for account %s completed", facebook_acc_id)
-
-            except:
-                self.log.info("Extracting data for account %s failed", facebook_acc_id)
+                    self.log.info("Extracting data for account %s completed", facebook_acc_id)
+                except:
+                    self.log.info("Extracting data for account %s failed. Will retry later.", facebook_acc_id)
                 
-            time.sleep(2)
+            if len(facebook_acc_ids) == 0:
+                break
 
         self.log.info("Facebook Returned %s data points", len(converted_rows))
 
@@ -184,7 +193,16 @@ class FacebookAdsReportToBqOperator(BaseOperator):
             reader, f"{self.destination_project_dataset_table}_{ds}", job_config=job_config
         )
 
-    def transform_data_types(self, rows):
+    def transform_data_types(
+        self, 
+        rows
+    ):
+        """
+        Transforms the fields returned by the Facebook API to float or date data types as appropriate.
+
+        :param rows: List of dictionary rows returned by the Facebook API.
+        :type rows: List[dict]
+        """
         for i in rows:
             i.pop('date_stop')
             i['date_start'] = datetime.strptime(i['date_start'], '%Y-%m-%d').date()
@@ -199,7 +217,16 @@ class FacebookAdsReportToBqOperator(BaseOperator):
                             if (type(k[w]) == str) and (not w.endswith('id')):
                                 k[w] = self.get_float(k[w])
 
-    def get_float(self, element):
+    def get_float(
+        self, 
+        element
+    ):
+        """
+        Attempts to case a string object into float.
+
+        :param element: Value to be converted to floar.
+        :type element: str
+        """
         try:
             return float(element)
         except ValueError:

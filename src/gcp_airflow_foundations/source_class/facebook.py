@@ -13,7 +13,7 @@ from airflow.sensors.external_task import ExternalTaskSensor
 
 class FacebooktoBQDagBuilder(DagBuilder):
     """
-    Builds DAGs to load Facebook Ads data to GCS and then to a staging BigQuery Table.
+    Builds DAGs to load Facebook Ads data to a staging BigQuery table.
     """
     source_type = "FACEBOOK"
 
