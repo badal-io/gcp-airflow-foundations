@@ -138,9 +138,9 @@ class MergeBigQueryHDS(BigQueryOperator):
         if self.hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
             partitioning_dimension = self.hds_table_config.hds_table_time_partitioning.value
             sql_helper.time_partitioning = partitioning_dimension
-            sql = sql_helper.create_snapshot_sql_with_hash()
-
-            now = datetime.now()
+        
+            ts = context['ts']
+            now = datetime.strptime(ts, '%Y-%m-%dT%H:%M:%S%z')
             if partitioning_dimension == "HOUR":
                 partition_id = now.strftime("%Y%m%d%H")
             elif partitioning_dimension == "DAY":
@@ -149,6 +149,8 @@ class MergeBigQueryHDS(BigQueryOperator):
                 partition_id = now.strftime("%Y%m")
             else:
                 raise AirflowException(f"Could not determine partition ID format from `{partitioning_dimension}`")
+
+            sql = sql_helper.create_snapshot_sql_with_hash(partition_timestamp=ts)
 
             self.write_disposition = "WRITE_TRUNCATE"
             self.create_disposition = "CREATE_IF_NEEDED"
