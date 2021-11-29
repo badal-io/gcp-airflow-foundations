@@ -1,6 +1,7 @@
 import datetime
 import os
 from typing import Any, Callable, FrozenSet, Iterable, Optional, Union
+import re
 
 from sqlalchemy import func
 
@@ -18,8 +19,8 @@ class TableIngestionSensor(BaseSensorOperator):
     Waits for table ingestion DAGs to complete for a
     specific execution_date
 
-    :param external_source_tables: A map whose keys are the sourcs you 
-        want to wait for and the values are a list of the tables for each source
+    :param external_source_tables: A map whose keys are the sources 
+        to wait for and the values are a list of the tables for each source
     :type external_source_tables: dict
     :param allowed_states: Iterable of allowed states, default is ``['success']``
     :type allowed_states: Iterable
@@ -68,7 +69,7 @@ class TableIngestionSensor(BaseSensorOperator):
         else:
             dttm = context['execution_date']
 
-        dttm_filter = dttm if isinstance(dttm, list) else [dttm]
+        dttm_filter = [dttm]
         serialized_dttm_filter = ','.join(dt.isoformat() for dt in dttm_filter)
 
         count_allowed = self.get_count(dttm_filter, session, self.allowed_states)
@@ -78,9 +79,9 @@ class TableIngestionSensor(BaseSensorOperator):
             count_failed = self.get_count(dttm_filter, session, self.failed_states)
 
         if count_failed == len(dttm_filter):
-            pass
+            pass # TO-DO: define behaviour if any of the dependent DAGs have failed. Maybe provide list of essential tables?
 
-        return count_allowed == len(dttm_filter)
+        return count_allowed == 1
 
     def get_count(self, dttm_filter, session, states) -> int:
         """
@@ -110,7 +111,7 @@ class TableIngestionSensor(BaseSensorOperator):
         self.log.info(
             'Current count of completed tasks is %s. The expected DAG count is %s',
             count,
-            expected_count,
+            expected_count
         )
             
         return count / expected_count
@@ -123,35 +124,38 @@ class TableIngestionSensor(BaseSensorOperator):
         schedule_interval = context['dag'].schedule_interval
 
         external_dag_ids = []
-        sources = [i for i in self.external_source_tables]
 
+        # Query all active dags
         query = session.query(DagModel).filter(DagModel.is_active==True).all()
-        active_dags = [i.dag_id for i in query]
-        schedule_map = {i.dag_id:i.schedule_interval for i in query}
 
-        if not active_dags:
+        if len(query) == 0:
             raise AirflowException(f'No active dags found')
 
-        for source in sources:
-            tables = self.external_source_tables[source]
-            source_dags = [i for i in active_dags if source in i]
+        schedule_map = {}
+        source_dag_map = {}
+        for dag in query:
+            dag_id = dag.dag_id
+            schedule_map[dag_id] = dag.schedule_interval
+            source = dag_id.split('_')[0]
+            if source in source_dag_map:
+                source_dag_map[source] = source_dag_map[source].append(dag_id)
+            else:
+                source_dag_map[source] = [dag_id]
             
+        for source, tables in self.external_source_tables.items():
+            source_dags = source_dag_map[source]
+
             if not source_dags:
                 raise AirflowException(f'No active dags found for source {source}')
+            
+            for regex in tables:
+                table_dags = [
+                    dag for dag in source_dags if re.match(regex, dag.split('_')[1]) and schedule_interval == schedule_map[dag]
+                ]
 
-            if tables = []:
-                external_dag_ids.extend(source_dags)
-            else:
-                for table in tables:
-                    table_dags = [i for i in source_dags if table in i]
+                if not table_dags:
+                        raise AirflowException(f'No active dags found for source {source} and table {table}')
 
-                    if not table_dags:
-                        raise AirflowException(f'No active dagσ found for source {source} and table {table}')
-
-                    external_dag_ids.extent(table_dags)
-
-        for dag in external_dag_ids:
-            if schedule_interval != schedule_map[dag]:
-                raise AirflowException(f'No matching schedule with DAG {dag}. The schedule of the current DAG must match that of the external DAGs')
-
+                external_dag_ids.extend(set(table_dags))
+                        
         return external_dag_ids
