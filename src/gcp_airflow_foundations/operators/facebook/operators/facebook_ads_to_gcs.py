@@ -146,8 +146,8 @@ class FacebookAdsReportToBqOperator(BaseOperator):
                 try:
                     if self.api_object == ApiObject.INSIGHTS:
                         rows = service.bulk_facebook_report_async(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
-                        if not rows:
-                            self.log.info("Rate Limit for Account %s has reached 60%. Moving on to the next account. Will retry later", facebook_acc_id)
+                        if rows == -1:
+                            self.log.info("Rate Limit has reached 75%. Moving on to the next account. Will retry later")
                             continue
 
                     elif self.api_object == ApiObject.CAMPAIGNS:
@@ -213,7 +213,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
             i.pop('date_stop')
             i['date_start'] = datetime.strptime(i['date_start'], '%Y-%m-%d').date()
             for j in i:
-                if j.endswith('id'):
+                if j.endswith('id') or j.endswith('name'):
                     continue
                 elif type(i[j]) == str:
                     i[j] = self.get_float(i[j])
@@ -228,9 +228,9 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         element
     ):
         """
-        Attempts to case a string object into float.
+        Attempts to cast a string object into float.
 
-        :param element: Value to be converted to floar.
+        :param element: Value to be converted to float.
         :type element: str
         """
         try:

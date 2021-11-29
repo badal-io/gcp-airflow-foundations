@@ -116,8 +116,8 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
 
         max_current_usage = self.usage_throttle(insights)
 
-        if max_current_usage >= 60:
-            return
+        if max_current_usage >= 75:
+            return -1
 
         self.log.info("Extracting data from returned Facebook Ads Iterators")
 
