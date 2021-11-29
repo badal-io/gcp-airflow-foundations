@@ -112,7 +112,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         ti = kwargs['ti']
         xcom_task_pickup = "dataflow_taskgroup.create_job_parameters"
 
-        dataflow_default_options = ti.xcom_pull(key='dataflow_default_options', task_ids="get_file_list")
+        dataflow_default_options = ti.xcom_pull(key='dataflow_default_options', task_ids=xcom_task_pickup)
         parameters = ti.xcom_pull(key='parameters', task_ids=xcom_task_pickup)
         job_name = f"{system_name.lower()}-upload-{table_name.lower()}-to-bq".replace("_", "-")
 
