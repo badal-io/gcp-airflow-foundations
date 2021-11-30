@@ -33,11 +33,7 @@ def load_builder(
     hds_table_config = table_config.hds_config
     location = data_source.location
 
-    if ingestion_type == IngestionType.INCREMENTAL:
-        ods_table_config.table_id = f"{landing_zone_table_name_override}_ODS_Incremental"
-
-    elif ingestion_type == IngestionType.FULL:
-        ods_table_config.table_id = f"{landing_zone_table_name_override}_ODS_Full"
+    ods_table_config.table_id = f"{landing_zone_table_name_override}_ODS"
 
     parse_schema = ParseSchema(
         task_id="schema_parsing",
