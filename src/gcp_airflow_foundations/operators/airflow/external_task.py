@@ -23,7 +23,18 @@ class TableIngestionSensor(BaseSensorOperator):
     specific execution_date
 
     :param external_source_tables: A map whose keys are the sources 
-        to wait for and the values are a list of the tables for each source
+        to wait for and the values are a list of regex expressions for each source.
+        The regex expressions will be used to find matching DAGs. For example:
+
+        external_source_tables = {
+            "SourceX" : ["^ABC.*"], # table name starts with ABC followed by any character
+            "SourceY" : [".*ABC$"], # table name ends with ABC preceded by any character
+            "SourceZ" : [".*"], # wildcard for matching all tables for the given source
+            "SourceK" : ["(.*)([^ABC]$)"], # wildcard for matching all tables for the given source AND don't end with ABC
+            "SourceW" : ["ABC"], # table name must match exactly ABC
+            "SourceM" : ["^ABC.*", "YXZ"] # table name starts with ABC followed by any character OR table name matches YX
+        }
+
     :type external_source_tables: dict
     :param allowed_states: Iterable of allowed states, default is ``['success']``
     :type allowed_states: Iterable
@@ -130,7 +141,7 @@ class TableIngestionSensor(BaseSensorOperator):
         external_dag_ids = []
 
         # Query all active dags
-        query = session.query(DagModel).all()
+        query = session.query(DagModel).filter(DagModel.is_active==True).all()
 
         if len(query) == 0:
             raise AirflowException(f'No active dags found.')
@@ -142,7 +153,7 @@ class TableIngestionSensor(BaseSensorOperator):
             schedule_map[dag_id] = dag.schedule_interval
 
             if len(dag_id.split(DELIMITER)) != 2:
-                raise AirflowException(f'DAG \"{dag_id}\" is not using a dot delimiter.')
+                raise AirflowException(f'Table ingestion DAG \"{dag_id}\" is not using a dot delimiter.')
 
             source = dag_id.split(DELIMITER)[0]
             
