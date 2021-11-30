@@ -340,7 +340,7 @@ class TestTableIngestionSensor(unittest.TestCase):
             run_task(task=op, execution_date=DEFAULT_DATE)
         assert str(ctx.value) == f'No active dags found for source {SOURCE} using regex: \"{REGEX}\".'
 
-    def test_catch_no_matching_dags_error(self):
+    def test_catch_incompatible_schedules_error(self):
         clear_db_dags()
 
         schedule_interval = '@daily'
@@ -383,4 +383,4 @@ class TestTableIngestionSensor(unittest.TestCase):
 
         with pytest.raises(AirflowException) as ctx:
             run_task(task=op, execution_date=DEFAULT_DATE)
-        assert str(ctx.value) == f'DAG \"{ingestion_dag.dag_id}\" is not using a dot delimiter.'
+        assert str(ctx.value) == f'Table ingestion DAG \"{ingestion_dag.dag_id}\" is not using a dot delimiter.'

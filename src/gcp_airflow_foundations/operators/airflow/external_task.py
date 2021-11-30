@@ -178,7 +178,7 @@ class TableIngestionSensor(BaseSensorOperator):
                     raise AirflowException(f'The regex expression \'{regex}\' is invalid.')
 
                 if not table_dags:
-                    raise AirflowException(f'No active dags found for source {source} using regex: \"{regex}\". DAGs {dags}')
+                    raise AirflowException(f'No active dags found for source {source} using regex: \"{regex}\".')
 
                 if not all([schedule_interval == schedule_map[dag] for dag in table_dags]):
                     raise AirflowException(f'Incompatible schedule intervals with that of the main DAG: {schedule_interval}.')
