@@ -20,6 +20,8 @@ class DataflowJobConfig:
         kms_key_path: the KMS key path for encrypting/decrypting JDBC credentials
         sql_casts: a dictionary of sql casts to use when querying the source DB
         database_owner: owner of the tables to query (query scope)
+        connection_pool: name of the connection pool to use in Airflow for dataflow
+        ingest_metadata: whether to query metadata from the source DB: if False, then a table must be manually created in BQ
     """
     system_name: str
     project: str
@@ -37,3 +39,4 @@ class DataflowJobConfig:
     bq_schema_table: str
     database_owner: str
     connection_pool: str
+    ingest_metadata: bool

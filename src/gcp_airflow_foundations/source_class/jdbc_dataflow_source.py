@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod, abstractproperty
 import logging
 from re import A
 import re
+from airflow.operators.dummy import DummyOperator
 from dacite import from_dict
 from dataclasses import dataclass
 
@@ -23,6 +24,8 @@ from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateEmpt
 from airflow.providers.google.cloud.hooks.kms import CloudKMSHook
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.models import Variable
+from airflow.operators.subdag import SubDagOperator
+
 from gcp_airflow_foundations.common.dataflow.jdbc.dataflow_taskgroups import dataflow_taskgroup_builder
 
 from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
@@ -35,7 +38,11 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
     source_type = "JDBC"
 
     def get_extra_dags(self):
-        return [self.get_schema_dag()]
+        schema_dag = self.get_schema_dag()
+        if schema_dag:
+            return [schema_dag]
+        else:
+            return schema_dag
 
     def set_schema_method_type(self):
         self.schema_source_type = self.config.source.schema_options.schema_source_type     
@@ -51,6 +58,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         # Table level parameters
         dataflow_job_params = data_source.extra_options["dataflow_job_config"]
         schema_table = dataflow_job_params["bq_schema_table"]
+        ingest_metadata = dataflow_job_params["ingest_metadata"]
         table_name = table_config.landing_zone_table_name_override
         destination_table = f"{gcp_project}:{landing_dataset}.{table_name}"
         destination_schema_table = f"{gcp_project}.{landing_dataset}.{schema_table}"
@@ -64,7 +72,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             system_name=system_name,
             create_job_params=self.create_job_params,
             run_dataflow_job=self.run_dataflow_job,
-            create_table=self.create_table
+            create_table=self.create_table,
+            ingest_metadata=ingest_metadata
         )
 
         return taskgroup
@@ -78,35 +87,39 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         landing_dataset = data_source.landing_zone_options.landing_zone_dataset
 
         dataflow_job_params = data_source.extra_options["dataflow_job_config"]
-
+        ingest_metadata = dataflow_job_params["ingest_metadata"]
         schema_table_name = dataflow_job_params["bq_schema_table"]
         destination_table = f"{gcp_project}:{landing_dataset}.{schema_table_name}"
         system_name = dataflow_job_params["system_name"]
 
-        with DAG(
-            dag_id=f"{system_name}_upload_schema",
-            description=f"Upload source schemas for all tables to BQ",
-            schedule_interval="@daily",
-            default_args=self.default_task_args_for_table(
-                self.config, self.config.tables[0]
-            )
-        ) as schema_dag:
+        if ingest_metadata:
+            with DAG(
+                dag_id=f"{system_name}_upload_schema",
+                description=f"Upload source schemas for all tables to BQ",
+                schedule_interval="@daily",
+                default_args=self.default_task_args_for_table(
+                    self.config, self.config.tables[0]
+                )
+            ) as schema_dag:
 
-            taskgroup = dataflow_taskgroup_builder(
-              #  schema_dag,
-                query_schema=True,
-                dataflow_job_params=dataflow_job_params,
-                destination_table=destination_table,
-                destination_schema_table=f"{gcp_project}.{landing_dataset}.{schema_table_name}",
-                table_name=schema_table_name,
-                system_name=system_name,
-                create_job_params=self.create_job_params,
-                run_dataflow_job=self.run_dataflow_job,
-                create_table=self.create_table
-            )
-            taskgroup.dag = schema_dag
+                taskgroup = dataflow_taskgroup_builder(
+                #  schema_dag,
+                    query_schema=True,
+                    dataflow_job_params=dataflow_job_params,
+                    destination_table=destination_table,
+                    destination_schema_table=f"{gcp_project}.{landing_dataset}.{schema_table_name}",
+                    table_name=schema_table_name,
+                    system_name=system_name,
+                    create_job_params=self.create_job_params,
+                    run_dataflow_job=self.run_dataflow_job,
+                    create_table=self.create_table,
+                    ingest_metadata=ingest_metadata
+                )
+                taskgroup.dag = schema_dag
 
-            return schema_dag
+                return schema_dag
+        else:
+            return
 
     def run_dataflow_job(self, template_path, system_name, table_name, query_schema, **kwargs):
         ti = kwargs['ti']

@@ -60,7 +60,9 @@ class DagBuilder(ABC):
             
                 dags.append(dag)
                 
-        dags = dags + self.get_extra_dags()
+        extra_dags = self.get_extra_dags()
+        if extra_dags is not None and not extra_dags == []:
+            dags = dags + self.get_extra_dags()
         return dags
 
     @abstractmethod
