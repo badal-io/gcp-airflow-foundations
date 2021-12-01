@@ -66,11 +66,13 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
         }
         logging.info(dataflow_default_options)
 
+        ds = kwargs["ds"]
+
         parameters = {
             "driverClassName": config_params["jdbc_driver_class"],
             "driverJars": config_params["jdbc_jar_path"],
             "KMSEncryptionKey": kms_key,
-            "outputTable": destination_table,
+            "outputTable": destination_table + f"_{ds}",
             "bigQueryLoadingTemporaryDirectory": config_params["bq_load_temp_directory"],
             "connectionURL": enc_url,
             "username": enc_user,

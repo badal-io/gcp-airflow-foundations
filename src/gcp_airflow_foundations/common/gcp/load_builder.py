@@ -31,12 +31,9 @@ def load_builder(
     partition_expiration = data_source.partition_expiration
     ods_table_config = table_config.ods_config
     hds_table_config = table_config.hds_config
+    location = data_source.location
 
-    if ingestion_type == IngestionType.INCREMENTAL:
-        ods_table_config.table_id = f"{table_id}_ODS_Incremental"
-
-    elif ingestion_type == IngestionType.FULL:
-        ods_table_config.table_id = f"{table_id}_ODS_Full"
+    ods_table_config.table_id = f"{landing_zone_table_name_override}_ODS"
 
     parse_schema = ParseSchema(
         task_id="schema_parsing",
@@ -57,16 +54,17 @@ def load_builder(
         column_mapping=column_mapping,
         ingestion_type=ingestion_type,
         ods_table_config=ods_table_config,
+        location=location,
         dag=dag
     )
     
     hds_task_group = None
     if hds_table_config:
         if hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
-            hds_table_config.table_id = f"{table_id}_HDS_Snapshot"
+            hds_table_config.table_id = f"{landing_zone_table_name_override}_HDS_Snapshot"
         
         elif hds_table_config.hds_table_type == HdsTableType.SCD2:
-            hds_table_config.table_id = f"{table_id}_HDS_SCD2"
+            hds_table_config.table_id = f"{landing_zone_table_name_override}_HDS_SCD2"
 
         hds_task_group = hds_builder(
             project_id=project_id,
@@ -79,6 +77,7 @@ def load_builder(
             ingestion_type=ingestion_type,
             partition_expiration=partition_expiration,
             hds_table_config=hds_table_config,
+            location=location,
             dag=dag
         )
 

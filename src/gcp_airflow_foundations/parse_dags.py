@@ -5,6 +5,14 @@ from airflow.models import Variable
 from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
 from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.source_class import get_dag_builder
+from gcp_airflow_foundations.source_class import (
+    ftp_source,
+    ftp_gcs_source,
+    jdbc_dataflow_source,
+    oracle_dataflow_source,
+    salesforce_source,
+    twilio_source
+)
 
 import logging
 

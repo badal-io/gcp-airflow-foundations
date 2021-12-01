@@ -26,6 +26,7 @@ def hds_builder(
     ingestion_type,
     hds_table_config,
     partition_expiration,
+    location,
     dag,
     time_partitioning=None,
     labels=None,
@@ -81,6 +82,7 @@ def hds_builder(
         column_mapping=column_mapping,
         ingestion_type=ingestion_type,
         hds_table_config=hds_table_config,
+        location=location,
         task_group=taskgroup,
         dag=dag
     )

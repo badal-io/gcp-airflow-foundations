@@ -43,6 +43,8 @@ class MergeBigQueryODS(BigQueryOperator):
     :type ingestion_type: IngestionType
     :param ods_table_config: User-provided ODS configuration options
     :type ods_table_config: OdsTableConfig
+    :param location: The geographic location of the job. 
+    :type location: str
     """
 
     template_fields = (
@@ -67,6 +69,7 @@ class MergeBigQueryODS(BigQueryOperator):
         column_mapping: dict,
         ingestion_type: IngestionType,
         ods_table_config: OdsTableConfig,
+        location: Optional[str] = None,
         **kwargs,
     ) -> None:
         super(MergeBigQueryODS, self).__init__(
@@ -75,6 +78,7 @@ class MergeBigQueryODS(BigQueryOperator):
             use_legacy_sql=False,
             write_disposition="WRITE_APPEND",
             create_disposition="CREATE_NEVER",
+            location=location,
             sql="",
             **kwargs,
         )

@@ -46,6 +46,8 @@ class MergeBigQueryHDS(BigQueryOperator):
     :type ingestion_type: IngestionType
     :param hds_table_config: User-provided HDS configuration options
     :type hds_table_config: HdsTableConfig
+    :param location: The geographic location of the job. 
+    :type location: str
     """
     
     template_fields = (
@@ -70,6 +72,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         column_mapping: dict,
         ingestion_type: IngestionType,
         hds_table_config: HdsTableConfig,
+        location: Optional[str] = None,
         **kwargs,
     ) -> None:
         super(MergeBigQueryHDS, self).__init__(
@@ -79,6 +82,7 @@ class MergeBigQueryHDS(BigQueryOperator):
             write_disposition="WRITE_APPEND",
             create_disposition="CREATE_NEVER",
             destination_dataset_table=None,
+            location=location,
             sql="",
             **kwargs,
         )
@@ -134,9 +138,9 @@ class MergeBigQueryHDS(BigQueryOperator):
         if self.hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
             partitioning_dimension = self.hds_table_config.hds_table_time_partitioning.value
             sql_helper.time_partitioning = partitioning_dimension
-            sql = sql_helper.create_snapshot_sql_with_hash()
-
-            now = datetime.now()
+        
+            ts = context['ts']
+            now = datetime.strptime(ts, '%Y-%m-%dT%H:%M:%S%z')
             if partitioning_dimension == "HOUR":
                 partition_id = now.strftime("%Y%m%d%H")
             elif partitioning_dimension == "DAY":
@@ -145,6 +149,8 @@ class MergeBigQueryHDS(BigQueryOperator):
                 partition_id = now.strftime("%Y%m")
             else:
                 raise AirflowException(f"Could not determine partition ID format from `{partitioning_dimension}`")
+
+            sql = sql_helper.create_snapshot_sql_with_hash(partition_timestamp=ts)
 
             self.write_disposition = "WRITE_TRUNCATE"
             self.create_disposition = "CREATE_IF_NEEDED"
