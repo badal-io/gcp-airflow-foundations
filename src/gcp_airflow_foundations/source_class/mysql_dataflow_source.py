@@ -20,7 +20,7 @@ class MySQLToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
     """
     Builds DAGs to load a CSV file from GCS to a BigQuery Table.
     """
-    source_type = "ORACLE"
+    source_type = "MYSQL"
 
     def create_job_params(self, config_params, destination_table, table_name, destination_schema_table, query_schema, owner, **kwargs):
         #   1.  Generate SQL Query

@@ -11,7 +11,8 @@ from gcp_airflow_foundations.source_class import (
     jdbc_dataflow_source,
     oracle_dataflow_source,
     salesforce_source,
-    twilio_source
+    twilio_source,
+    mysql_dataflow_source
 )
 
 import logging
