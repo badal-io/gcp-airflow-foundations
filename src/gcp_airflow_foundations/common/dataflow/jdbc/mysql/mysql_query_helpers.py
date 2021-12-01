@@ -55,41 +55,27 @@ def get_table_schema_query(schema_table, source_table_name):
 
 def mysql_mappings():
     return {
-        # STRING
-        "VARCHAR2": "STRING",
-        "NVARCHAR2": "STRING",
+        "TINYINT": "INT64",
+        "SMALLINT": "INT64",
+        "MEDIUMINT": "INT64",
+        "INT": "INT64",
+        "BIGINT": "INT64",
+        "DECIMAL": "NUMERIC",
+        "FLOAT": "FLOAT64",
+        "DOUBLE": "FLOAT64",
+        "BIT": "BOOL",
         "CHAR": "STRING",
-        "NCHAR": "STRING",
-        "CLOB": "STRING",
-        "NCLOB": "STRING",
-        "INTERVAL YEAR TO MONTH": "STRING",
-        "INTERVAL DAY TO SECOND": "STRING",
-        "BFILE": "STRING",
-        "ROWID": "STRING",
-        # INT64
-        "INTEGER": "INT64",
-        "SHORTINTEGER": "INT64",
-        "LONGINTEGER": "INT64",
-        "NUMBER(x, -y)": "INT64",
-        "NUMBER(x)": "INT64",
-        # NUMERIC
-        "NUMBER": "NUMERIC",
-        "FLOAT": "NUMERIC",
-        "BINARY_DOUBLE": "NUMERIC",
-        "BINARY_FLOAT": "NUMERIC",
-        "NUMBER(*, x)": "NUMERIC",
-        # BYTES
-        "LONG": "BYTES",
-        "BLOB": "BYTES",
-        "RAW": "BYTES",
-        "LONG RAW": "BYTES",
-        # DATE
+        "VARCHAR": "STRING",
+        "TINYTEXT": "STRING",
+        "TEXT": "STRING",
+        "MEDIUMTEXT": "STRING",
+        "LONGTEXT": "STRING",
+        "BINARY": "BYTES",
+        "VARBINARY": "BYTES",
         "DATE": "DATE",
-        # TIMESTAMP
+        "TIME": "TIME",
+        "DATETIME": "DATETIME",
         "TIMESTAMP": "TIMESTAMP",
-        "TIMESTAMP()": "TIMESTAMP",
-        "TIMESTAMP WITH TIMEZONE": "TIMESTAMP",
-        "TIMESTAMP WITH LOCAL TIME ZONE": "TIMESTAMP"
     }
 
 def mysql_to_bq(
