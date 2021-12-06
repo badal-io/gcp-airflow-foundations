@@ -24,7 +24,6 @@ class SourceTableConfig:
         ingestion_type: FULL or INCREMENTAL
         landing_zone_table_name_override: Optional staging zone table name.
         dest_table_override: Optional target table name. If None, use table_name instead
-        source_table_schema_object: GCS schema object URI
         surrogate_keys : Keys used to identify unique records when merging into ODS
         column_mapping : Mapping used to rename columns
         ods_config : See OdsTableConfig
@@ -38,11 +37,11 @@ class SourceTableConfig:
     ingestion_type: IngestionType # FULL or INCREMENTAL
     landing_zone_table_name_override: Optional[str]
     dest_table_override: Optional[str]
-    source_table_schema_object: Optional[str]
     surrogate_keys: List[str]
     column_mapping: Optional[dict]
     ods_config: Optional[OdsTableConfig]
     hds_config: Optional[HdsTableConfig]
+    extra_options: dict = field(default_factory=dict)
     version: int = 1
     catchup: bool = True
 
@@ -51,6 +50,9 @@ class SourceTableConfig:
     def __post_init__(self):
         if self.landing_zone_table_name_override is None:
             self.landing_zone_table_name_override = self.table_name
+        if self.extra_options is None:
+            self.extra_options = {}
+            
 
     @validator("table_name")
     def valid_source_table(cls, v):

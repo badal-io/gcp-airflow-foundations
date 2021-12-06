@@ -3,8 +3,16 @@ import datetime
 from airflow.models.dag import DAG
 from airflow.models import Variable
 from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
-
+from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.source_class import get_dag_builder
+from gcp_airflow_foundations.source_class import (
+    ftp_source,
+    ftp_gcs_source,
+    jdbc_dataflow_source,
+    oracle_dataflow_source,
+    salesforce_source,
+    twilio_source
+)
 
 import logging
 
@@ -37,26 +45,28 @@ class DagParser:
                 "depends_on_past": False
             }
 
+            """
             # Old way of adding DAGs
             builder = get_dag_builder(config.source.source_type, default_task_args, config)
             dags = builder.build_dags()
 
             for dag in dags:
                 parsed_dags[f"dags:source:{config.source.name}.{dag.dag_id}"] = dag
-
             """
+
             # new way
             builder = None
+            dags = []
             for dag_builder in DagBuilder.sources:
                 # if matching subclass of DagBuilder exists, then use it
                 if config.source.source_type == dag_builder.source_type:
                     source_name = dag_builder.__class__.__name__
                     # pick out the right source
-                    builder = globals()[source_name](default_task_args, config)
+                    builder = dag_builder(default_task_args, config)
                     dags = builder.build_dags()
             
-            if dags:
+            for dag in dags:
                 parsed_dags[f"dags:source:{config.source.name}.{dag.dag_id}"] = dag
-            """
+
             
         return parsed_dags

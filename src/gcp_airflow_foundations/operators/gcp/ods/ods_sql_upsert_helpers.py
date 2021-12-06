@@ -45,14 +45,6 @@ class SqlHelperODS:
         self.ods_metadata = ods_metadata
         self.gcp_conn_id = gcp_conn_id
         self.columns = columns
-
-        if not column_mapping:
-            self.column_mapping = {i:i for i in columns}
-        else:
-            for i in columns:
-                if i not in column_mapping:
-                    column_mapping[i] = i
-
         self.hash_column_name = ods_metadata.hash_column_name
         self.primary_key_hash_column_name = ods_metadata.primary_key_hash_column_name
         self.ingestion_time_column_name = ods_metadata.ingestion_time_column_name

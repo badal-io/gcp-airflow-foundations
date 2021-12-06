@@ -13,6 +13,7 @@ from airflow.providers.google.cloud.operators.bigquery import (
 from gcp_airflow_foundations.operators.gcp.hds.hds_merge_table_operator import MergeBigQueryHDS
 from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
 
+from gcp_airflow_foundations.operators.gcp.create_table import CustomBigQueryCreateEmptyTableOperator
 
 def hds_builder(
     project_id,
@@ -21,12 +22,11 @@ def hds_builder(
     landing_zone_dataset,
     landing_zone_table_name_override,
     column_mapping,
-    columns,
-    schema_fields,
     surrogate_keys,
     ingestion_type,
     hds_table_config,
     partition_expiration,
+    location,
     dag,
     time_partitioning=None,
     labels=None,
@@ -39,35 +39,23 @@ def hds_builder(
     taskgroup = TaskGroup(group_id="create_hds_merge_taskgroup")
 
     if hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
-        table_id = f"{table_id}_HDS_Snapshot"
-
         time_partitioning = {
             "type":hds_table_config.hds_table_time_partitioning.value,
             "field":hds_table_config.hds_metadata.partition_time_column_name,
             "expirationMs":partition_expiration
         }
-
     elif hds_table_config.hds_table_type == HdsTableType.SCD2:
-        table_id = f"{table_id}_HDS_SCD2"
-
         time_partitioning = None
-        
     else:
         raise AirflowException("Invalid HDS table type", hds_table_config.hds_table_type)
         
-    #1 Check if HDS table exists and if not create it using the provided schema file
-    create_table = BigQueryCreateEmptyTableOperator(
+    #1 Check if HDS table exists and if not create an empty table
+    create_table = CustomBigQueryCreateEmptyTableOperator(
         task_id="create_hds_table",
         project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
-        table_resource={
-                "schema":{'fields': schema_fields},
-                "timePartitioning":time_partitioning,
-                "encryptionConfiguration":encryption_configuration,
-                "labels":labels
-        },
-        exists_ok=True,
+        time_partitioning=time_partitioning,
         task_group=taskgroup,
         dag=dag
     )
@@ -78,7 +66,6 @@ def hds_builder(
         project_id=project_id,
         table_id=table_id,
         dataset_id=dataset_id, 
-        new_schema_fields=schema_fields,
         task_group=taskgroup,
         dag=dag
     )
@@ -93,9 +80,9 @@ def hds_builder(
         data_table_name=table_id,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
-        columns=columns,
         ingestion_type=ingestion_type,
         hds_table_config=hds_table_config,
+        location=location,
         task_group=taskgroup,
         dag=dag
     )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-VERSION = (0, 2, 0)
-TAG = "v{}.{}.{}".format(0, 2, 0)
+VERSION = (0, 2, 5)
+TAG = "v{}.{}.{}".format(0, 2, 5)
 PRERELEASE = None
 REVISION = None
 

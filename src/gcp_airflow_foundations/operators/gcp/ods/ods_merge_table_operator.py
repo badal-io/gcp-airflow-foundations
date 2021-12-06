@@ -43,6 +43,8 @@ class MergeBigQueryODS(BigQueryOperator):
     :type ingestion_type: IngestionType
     :param ods_table_config: User-provided ODS configuration options
     :type ods_table_config: OdsTableConfig
+    :param location: The geographic location of the job. 
+    :type location: str
     """
 
     template_fields = (
@@ -61,12 +63,13 @@ class MergeBigQueryODS(BigQueryOperator):
         stg_dataset_name: str,
         data_dataset_name: str,
         surrogate_keys: [str],
+        columns: Optional[list] = None,
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
-        columns: list,
         ingestion_type: IngestionType,
         ods_table_config: OdsTableConfig,
+        location: Optional[str] = None,
         **kwargs,
     ) -> None:
         super(MergeBigQueryODS, self).__init__(
@@ -75,6 +78,7 @@ class MergeBigQueryODS(BigQueryOperator):
             use_legacy_sql=False,
             write_disposition="WRITE_APPEND",
             create_disposition="CREATE_NEVER",
+            location=location,
             sql="",
             **kwargs,
         )
@@ -84,14 +88,31 @@ class MergeBigQueryODS(BigQueryOperator):
         self.stg_dataset_name = stg_dataset_name
         self.data_dataset_name = data_dataset_name
         self.surrogate_keys = surrogate_keys
+        self.columns = columns
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
-        self.columns = columns
         self.ingestion_type = ingestion_type
         self.ods_table_config = ods_table_config
 
     def pre_execute(self, context) -> None:
+        ds = context['ds']
+
+        if not self.columns:
+            staging_columns = self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']
+        else:
+            staging_columns = self.columns
+
+        if self.column_mapping:
+            for i in staging_columns:
+                if i not in self.column_mapping:
+                    self.column_mapping[i] = i
+            
+        else:
+            self.column_mapping = {i:i for i in staging_columns}
+            
+        source_columns = staging_columns
+
         self.log.info(
             f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}"
         )
@@ -101,9 +122,9 @@ class MergeBigQueryODS(BigQueryOperator):
         sql_helper = SqlHelperODS(
             source_dataset=self.stg_dataset_name,
             target_dataset=self.data_dataset_name ,
-            source=self.stg_table_name,
+            source=f"{self.stg_table_name}_{ds}",
             target=self.data_table_name,
-            columns=self.columns,
+            columns=source_columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             ods_metadata=self.ods_table_config.ods_metadata

@@ -18,13 +18,6 @@ class TestTaskGroupBuilder(object):
 
         for table in config.tables:
             if table.ods_config:
-                schema_fields, columns = parse_ods_schema(
-                    gcs_schema_object=table.source_table_schema_object,
-                    schema_fields=None,
-                    column_mapping=table.column_mapping,
-                    ods_metadata=table.ods_config.ods_metadata
-                )
-
                 with test_dag as dag:
 
                     ods_task_group = ods_builder(
@@ -35,8 +28,6 @@ class TestTaskGroupBuilder(object):
                         landing_zone_table_name_override=table.table_name,
                         surrogate_keys=table.surrogate_keys,
                         column_mapping=table.column_mapping,
-                        columns=columns,
-                        schema_fields=schema_fields,
                         ingestion_type=IngestionType.INCREMENTAL,
                         ods_table_config=table.ods_config,
                         dag=dag
@@ -49,14 +40,6 @@ class TestTaskGroupBuilder(object):
 
         for table in config.tables:
             if table.hds_config:
-                schema_fields, columns = parse_hds_schema(
-                    gcs_schema_object=table.source_table_schema_object,
-                    schema_fields=None,
-                    column_mapping=table.column_mapping,
-                    hds_metadata=table.hds_config.hds_metadata,
-                    hds_table_type=table.hds_config.hds_table_type
-                )
-
                 with test_dag as dag:
 
                     hds_task_group = hds_builder(
@@ -67,8 +50,6 @@ class TestTaskGroupBuilder(object):
                         landing_zone_table_name_override=table.table_name,
                         surrogate_keys=table.surrogate_keys,
                         column_mapping=table.column_mapping,
-                        columns=columns,
-                        schema_fields=schema_fields,
                         ingestion_type=IngestionType.INCREMENTAL,
                         partition_expiration=None,
                         hds_table_config=table.hds_config,
