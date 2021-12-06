@@ -36,6 +36,8 @@ class TableIngestionSensor(BaseSensorOperator):
         }
 
     :type external_source_tables: dict
+    :param mode: How the sensor operates.
+    :type mode: str
     :param allowed_states: Iterable of allowed states, default is ``['success']``
     :type allowed_states: Iterable
     :param failed_states: Iterable of failed or dis-allowed states, default is ``None``
@@ -55,6 +57,7 @@ class TableIngestionSensor(BaseSensorOperator):
         self,
         *,
         external_source_tables: dict,
+        mode: Optional[str] = 'reschedule',
         allowed_states: Optional[Iterable[str]] = None,
         failed_states: Optional[Iterable[str]] = None,
         execution_delta: Optional[datetime.timedelta] = None,
@@ -125,7 +128,7 @@ class TableIngestionSensor(BaseSensorOperator):
         )
 
         self.log.info(
-            'Current count of completed tasks is %s. The expected DAG count is %s',
+            'Current count of completed DAGs is %s. The expected DAG count is %s',
             count,
             expected_count
         )
@@ -153,7 +156,7 @@ class TableIngestionSensor(BaseSensorOperator):
             schedule_map[dag_id] = dag.schedule_interval
 
             if len(dag_id.split(DELIMITER)) != 2:
-                raise AirflowException(f'Table ingestion DAG \"{dag_id}\" is not using a dot delimiter.')
+                continue
 
             source = dag_id.split(DELIMITER)[0]
             
@@ -161,7 +164,10 @@ class TableIngestionSensor(BaseSensorOperator):
                 source_dag_map[source].append(dag_id)
             else:
                 source_dag_map[source] = [dag_id]
-            
+        
+        if len(source_dag_map) == 0:
+            raise AirflowException(f'Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly.')
+
         for source, tables in self.external_source_tables.items():
             source_dags = source_dag_map.get(source, None)
 
