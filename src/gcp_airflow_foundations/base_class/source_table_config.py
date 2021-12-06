@@ -57,4 +57,5 @@ class SourceTableConfig:
     @validator("table_name")
     def valid_source_table(cls, v):
         assert v, "Source table name must not be empty"
+        assert "." not in v, "Source table name cannot contain the period character"
         return v

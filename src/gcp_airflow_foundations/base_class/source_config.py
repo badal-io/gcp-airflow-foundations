@@ -61,7 +61,8 @@ class SourceConfig:
 
     @validator("name")
     def valid_name(cls, v):
-        assert v, "Name must not be empty"
+        assert v, "Source name must not be empty"
+        assert "." not in v, "Source Name cannot contain the period character"
         return v
 
     @validator("source_type")
