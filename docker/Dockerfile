@@ -17,6 +17,7 @@ RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
 #RUN pip install --no-cache-dir -r requirements-composer.txt
 #RUN pip install build wheel
 
+COPY gcp-airflow-foundations .
 RUN ls
 #RUN python3 gcp-airflow-foundations/setup.py sdist
 
