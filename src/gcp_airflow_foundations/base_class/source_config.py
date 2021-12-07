@@ -7,6 +7,7 @@ from pydantic.dataclasses import dataclass
 from gcp_airflow_foundations.enums.source_type import SourceType
 from gcp_airflow_foundations.base_class.landing_zone_config import LandingZoneConfig
 from gcp_airflow_foundations.base_class.schema_options_config import SchemaOptionsConfig
+from gcp_airflow_foundations.base_class.facebook_config import FacebookConfig
 
 partition_limit = 4000
 ms_day = 86400000
@@ -42,17 +43,19 @@ class SourceConfig:
     name: str
     source_type: str
     ingest_schedule: str
+    external_dag_id: Optional[str]
     gcp_project: str
     dataset_data_name: str
     dataset_hds_override: Optional[str]
     connection: str
-    extra_options: dict
+    extra_options: Optional[dict]
     landing_zone_options: LandingZoneConfig
     acceptable_delay_minutes: int
     notification_emails: List[str]
     owner: str
     partition_expiration: Optional[int]
     schema_options: SchemaOptionsConfig
+    facebook_options: Optional[FacebookConfig]
     location: str
     start_date: str
     start_date_tz: str = "EST"

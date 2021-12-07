@@ -19,9 +19,10 @@ class HdsTableConfig:
         hds_table_time_partitioning: Partitioning for BigQuery table. One of DAY, HOUR, or MONTH
         hds_metadata : See HdsTableMetadataConfig class 
     """
-    hds_table_type: HdsTableType # SNAPSHOT OR SCD2
-    hds_table_time_partitioning: Optional[TimePartitioning] # DAY, HOUR, or MONTH
+
     hds_metadata: HdsTableMetadataConfig
+    hds_table_time_partitioning: Optional[TimePartitioning] # DAY, HOUR, or MONTH
+    hds_table_type: HdsTableType = HdsTableType.SCD2 # SNAPSHOT OR SCD2
 
     @validator('hds_table_time_partitioning')
     def check_value(cls, v, values):

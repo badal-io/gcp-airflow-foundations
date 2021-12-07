@@ -188,7 +188,7 @@ class MigrateSchema(BaseOperator):
                 )
 
                 schema_fields_updates.append(
-                    {"name":column_name,"mode":"NULLABLE","type":column_type}
+                   field
                 )
 
         query = f"""SELECT {",".join(sql_columns)} FROM `{self.dataset_id}.{self.table_id}`;"""
