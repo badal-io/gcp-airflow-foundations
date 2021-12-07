@@ -27,6 +27,8 @@ from tests.unit.conftest import run_task
 from airflow.models.serialized_dag import SerializedDagModel
 from airflow.settings import Session
 
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+
 DEFAULT_DATE = datetime(2015, 1, 1)
 TEST_DAG_ID = 'unit_test_dag'
 DEV_NULL = '/dev/null'
@@ -60,13 +62,20 @@ class TestUnit(unittest.TestCase):
 
         hello_operator = PythonOperator(task_id='hello_task', python_callable=print_hello, dag=self.dag)
 
-        #run_task(task=hello_operator, execution_date=DEFAULT_DATE)
         hello_operator.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
         run_task(task=hello_operator, execution_date=DEFAULT_DATE)
-        
+
         session = Session()
 
         r = session.query(DagModel).all()
 
         assert len(r) == 1
         assert r[0].dag_id == 'TestSource1.TestTable1'
+
+    def test_dataset(self):
+        bq_hook = BigQueryHook()
+
+        bq_hook.create_empty_dataset(
+            dataset_id='test',
+            project_id='airflow-framework'
+        )
