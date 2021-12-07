@@ -1,0 +1,22 @@
+# - Airflow Env variables.
+substitutions:
+  _GCP_PROJECT_ID: airflow-framework
+  _PYTHON_VERSION: '3.8'
+
+steps:
+# - Build a new Airflow2 image.
+  # [START build-airflow2]
+  - name: 'gcr.io/cloud-builders/docker'
+    waitFor: ['pull-airflow2']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        docker build -t gcr.io/${PROJECT_ID}/${_COMPOSER_BUILD_IMG_NAME} \
+        --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
+        -f docker/Dockerfile
+    #env:
+    #  - 'FOO=$_BAR'
+    dir: '.'
+    id: 'build-airflow2'
+  # [END build-airflow2]
