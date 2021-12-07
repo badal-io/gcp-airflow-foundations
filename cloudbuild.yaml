@@ -21,7 +21,6 @@ steps:
     args: 
       - '-c' 
       - |
-        cd gcp-airflow-foundations 
         python3 setup.py sdist
     id: setup-framework
   # [END setup-framework]
