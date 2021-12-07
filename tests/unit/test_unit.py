@@ -21,7 +21,7 @@ from airflow.utils.state import State
 from airflow.utils.timezone import datetime
 from airflow.utils.session import create_session
 
-#from gcp_airflow_foundations.parse_dags import DagParser
+from gcp_airflow_foundations.parse_dags import DagParser
 from tests.unit.conftest import run_task
 
 from airflow.models.serialized_dag import SerializedDagModel
@@ -60,7 +60,7 @@ class TestUnit(unittest.TestCase):
 
         hello_operator = PythonOperator(task_id='hello_task', python_callable=print_hello, dag=self.dag)
 
-        run_task(task=hello_operator, execution_date=DEFAULT_DATE)
+        #run_task(task=hello_operator, execution_date=DEFAULT_DATE)
         
         session = Session()
 
