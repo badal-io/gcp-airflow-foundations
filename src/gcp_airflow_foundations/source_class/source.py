@@ -47,7 +47,7 @@ class DagBuilder(ABC):
             start_date = table_default_task_args["start_date"]
 
             with DAG(
-                dag_id=f"{data_source.name}_to_bq_{table_config.table_name}",
+                dag_id=f"{data_source.name}.{table_config.table_name}",
                 description=f"{data_source.name} to BigQuery load for {table_config.table_name}",
                 schedule_interval=data_source.ingest_schedule,
                 default_args=table_default_task_args,
