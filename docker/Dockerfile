@@ -17,9 +17,10 @@ COPY docker/requirements-composer.txt .
 RUN pip install --no-cache-dir -r requirements-composer.txt
 RUN pip install build wheel
 
-RUN python3 setup.py sdist
+RUN echo $PWD
+#RUN python3 setup.py sdist
 
-RUN pip install dist/gcp-airflow-foundations-0.2.5.tar.gz
+#RUN pip install dist/gcp-airflow-foundations-0.2.5.tar.gz
 
 # Initiaize Airflow DB
-RUN airflow db init
+#RUN airflow db init
