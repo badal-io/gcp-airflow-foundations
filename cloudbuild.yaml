@@ -37,7 +37,7 @@ steps:
 
 # - Unit tests.
   # [START unit-test]
-  - name: 'gcr.io/${PROJECT_ID}/${_COMPOSER_BUILD_IMG_NAME}'
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: 'bash'
     args:
