@@ -7,7 +7,7 @@ steps:
 # - Build a new Airflow2 image.
   # [START build-airflow2]
   - name: 'gcr.io/cloud-builders/docker'
-    waitFor: ['pull-airflow2']
+    waitFor: ['-']
     entrypoint: 'bash'
     args:
       - '-c'
