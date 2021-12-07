@@ -13,7 +13,7 @@ steps:
     args:
       - '-c'
       - |
-        docker build -t gcr.io/${PROJECT_ID}/${_COMPOSER_BUILD_IMG_NAME} \
+        docker build -t gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
         --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
         -f docker/Dockerfile-CI .
     #env:
@@ -24,4 +24,4 @@ steps:
 
 timeout: 3600s
 images:
-  - 'gcr.io/${PROJECT_ID}/${_COMPOSER_BUILD_IMG_NAME}'
+  - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
