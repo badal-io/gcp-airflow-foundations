@@ -61,6 +61,8 @@ class TestUnit(unittest.TestCase):
         hello_operator = PythonOperator(task_id='hello_task', python_callable=print_hello, dag=self.dag)
 
         #run_task(task=hello_operator, execution_date=DEFAULT_DATE)
+        hello_operator.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+        run_task(task=hello_operator, execution_date=DEFAULT_DATE)
         
         session = Session()
 
