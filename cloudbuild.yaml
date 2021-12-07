@@ -46,4 +46,3 @@ steps:
 timeout: 3600s
 images:
   - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-  - 'python'
