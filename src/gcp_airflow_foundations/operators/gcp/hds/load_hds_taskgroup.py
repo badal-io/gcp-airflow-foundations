@@ -72,7 +72,7 @@ def hds_builder(
 
     #3 Load staging table to HDS table
     insert = MergeBigQueryHDS(
-        task_id="insert_into_hds_table",
+        task_id=f"upsert_{table_id}",
         project_id=project_id,
         stg_dataset_name=landing_zone_dataset,
         data_dataset_name=dataset_id,
