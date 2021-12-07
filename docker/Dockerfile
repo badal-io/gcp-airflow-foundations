@@ -18,7 +18,7 @@ RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
 #RUN pip install build wheel
 
 COPY ./* ./gcp-airflow-foundations/
-RUN bash -c "ls && cd gcp-airflow-foundations && python3 setup.py sdist"
+RUN bash -c "ls && cd gcp-airflow-foundations/src/gcp_airflow_foundations && ls && cd /gcp-airflow-foundations && python3 setup.py sdist"
 
 #RUN pip install dist/gcp-airflow-foundations-0.2.5.tar.gz
 
