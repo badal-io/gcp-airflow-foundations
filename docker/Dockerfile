@@ -1,14 +1,20 @@
-ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
+ARG PYTHON_VERSION
 
-FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
+FROM python:$PYTHON_VERSION
 
-# - Install GCP util
-RUN curl -sSL https://sdk.cloud.google.com | bash
-ENV PATH $PATH:/home/airflow/google-cloud-sdk/bin
+# Environment variabls
+ENV AIRFLOW_VER='2.1.1'
+ENV AIRFLOW_HOME=/opt/airflow
 
-# - Install dependencies
-COPY requirements-airflow.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
 
-# - Copy a custom airflow config file
-#COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+# Install Airflow and dependencies
+COPY helpers/scripts/airflow-ci.sh .
+RUN chmod +x ./airflow-ci.sh
+RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
+
+# Install Py packages
+COPY docker/requirements-composer.txt .
+RUN pip install --no-cache-dir -r requirements-composer.txt
+
+# Initiaize Airflow DB
+RUN airflow db init
