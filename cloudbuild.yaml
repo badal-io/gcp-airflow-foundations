@@ -5,10 +5,31 @@ substitutions:
   _BUILD_IMG_NAME: airflow2_cicd:latest
 
 steps:
+# - Setup Python.
+  # [START setup-python]
+  - name: python
+    entrypoint: pip
+    args: ["install", "build", "wheel"]
+    id: setup-python
+  # [END setup-python]
+
+# - Setup framework.
+  # [START setup-framework]
+  - name: python
+    waitFor: ['setup-python']
+    entrypoint: 'bash'
+    args: 
+      - '-c' 
+      - |
+        cd gcp-airflow-foundations 
+        python3 setup.py sdist
+    id: setup-framework
+  # [END setup-framework]
+
 # - Build a new Airflow2 image.
   # [START build-airflow2]
   - name: 'gcr.io/cloud-builders/docker'
-    waitFor: ['-']
+    waitFor: ['setup-framework']
     entrypoint: 'bash'
     args:
       - '-c'
@@ -25,3 +46,4 @@ steps:
 timeout: 3600s
 images:
   - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+  - 'python'
