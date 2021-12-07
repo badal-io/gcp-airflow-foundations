@@ -5,22 +5,15 @@ substitutions:
   _BUILD_IMG_NAME: airflow2_cicd:latest
 
 steps:
-# - Setup Python.
-  # [START setup-python]
-  - name: python
-    entrypoint: pip
-    args: ["install", "build", "wheel"]
-    id: setup-python
-  # [END setup-python]
-
 # - Setup framework.
   # [START setup-framework]
   - name: python
-    waitFor: ['setup-python']
+    waitFor: ['-']
     entrypoint: 'bash'
     args: 
       - '-c' 
       - |
+        pip install build wheel
         python3 setup.py sdist
     id: setup-framework
   # [END setup-framework]
@@ -41,6 +34,18 @@ steps:
     dir: '.'
     id: 'build-airflow2'
   # [END build-airflow2]
+
+# - Unit tests.
+  # [START unit-test]
+  - name: 'gcr.io/${PROJECT_ID}/${_COMPOSER_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+          pytest tests/unit/test_unit.py -v
+    id: "unit-test"
+  # [END unit-test]
 
 timeout: 3600s
 images:

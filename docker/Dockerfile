@@ -13,15 +13,11 @@ RUN chmod +x ./airflow-ci.sh
 RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
 
 # Install Py packages
-#COPY docker/requirements-composer.txt .
-#RUN pip install --no-cache-dir -r requirements-composer.txt
-#RUN pip install build wheel
+COPY docker/requirements-composer.txt .
+RUN pip install --no-cache-dir -r requirements-composer.txt
 
 COPY ./dist/gcp-airflow-foundations-0.2.5.tar.gz .
-RUN ls
-#RUN bash -c "ls && cd gcp-airflow-foundations && ls"
-
-#RUN pip install dist/gcp-airflow-foundations-0.2.5.tar.gz
+RUN pip install gcp-airflow-foundations-0.2.5.tar.gz
 
 # Initiaize Airflow DB
-#RUN airflow db init
+RUN airflow db init
