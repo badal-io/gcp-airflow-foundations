@@ -15,6 +15,11 @@ RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
 # Install Py packages
 COPY docker/requirements-composer.txt .
 RUN pip install --no-cache-dir -r requirements-composer.txt
+RUN pip install build wheel
+
+RUN python3 setup.py sdist
+
+RUN pip install dist/gcp-airflow-foundations-0.2.5.tar.gz
 
 # Initiaize Airflow DB
 RUN airflow db init
