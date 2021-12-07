@@ -15,7 +15,7 @@ steps:
       - |
         docker build -t gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
         --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
-        -f docker/Dockerfile-CI .
+        -f docker/Dockerfile .
     #env:
     #  - 'FOO=$_BAR'
     dir: '.'
