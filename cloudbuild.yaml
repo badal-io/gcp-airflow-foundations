@@ -2,6 +2,7 @@
 substitutions:
   _GCP_PROJECT_ID: airflow-framework
   _PYTHON_VERSION: '3.8'
+  _BUILD_IMG_NAME: airflow2_cicd:latest
 
 steps:
 # - Build a new Airflow2 image.
@@ -14,9 +15,13 @@ steps:
       - |
         docker build -t gcr.io/${PROJECT_ID}/${_COMPOSER_BUILD_IMG_NAME} \
         --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
-        -f docker/Dockerfile
+        -f docker/Dockerfile-CI .
     #env:
     #  - 'FOO=$_BAR'
     dir: '.'
     id: 'build-airflow2'
   # [END build-airflow2]
+
+timeout: 3600s
+images:
+  - 'gcr.io/${PROJECT_ID}/${_COMPOSER_BUILD_IMG_NAME}'
