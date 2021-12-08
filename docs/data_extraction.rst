@@ -1,8 +1,19 @@
 ********************
 Extracting Data
 ********************
-.. overview:
-Overview
+.. Data Extraction Tasks
+The building blocks of the data ingestion DAG are pre-defined in GCP Airflow Foundations, such that the user only needs to configure the parameters of the data ingestion.
+The first step in the ingestion pipeline is to extract the data from a third-party API and load them to a staging table in BigQuery. Then, the schema of the staging stable
+is parsed and compared with the schema of the destination tables. If any schema changes are detected, these are migrated to the destination table. Finally,
+the data are upserted to the destination tables. 
+
+This can be visualized in the tree diagram bellow:
+
+.. image:: ./_static/sample_dag.png
+    :width: 300
+
+.. dag_generation:
+Opinionated DAG Generation
 ========================
 GCP Airflow Foundations support the dynamic generation of ETL/ELT DAGs from simple, user-provided configuation files written in YAML.
 At minimum, the user declares in the configuration file the derised ingestion mode and the type of the data source, along with the required source tables to be ingested.
@@ -21,8 +32,6 @@ An example of a simple configuration file to extract marketing data from Faceboo
         dataset_data_name: facebook
         landing_zone_options:
             landing_zone_dataset: staging_zone
-        schema_options:
-            schema_source_type: AUTO 
         facebook_options:
             account_lookup_scope: full
             fields: [
@@ -41,16 +50,12 @@ An example of a simple configuration file to extract marketing data from Faceboo
             facebook_table_config:
                 breakdowns: null
                 action_breakdowns: ["action_type"]
-                column_mapping:
-                    date_start: date
         - table_name: campaign_insights_platform_placement
             surrogate_keys: ["account_id", "campaign_id", "date_start", "publisher_platform", "platform_position"]
             ingestion_type: INCREMENTAL
             facebook_table_config:
                 breakdowns:  ["publisher_platform", "platform_position"]
                 action_breakdowns: ["action_type"]
-                column_mapping:
-                    date_start: date
 
 .. schedule:
 Replication Scheduling
@@ -167,4 +172,36 @@ To configure an HDS ingestion, the user has to declare the HDS type in under eac
                     
 Note that the ``hds_metadata`` field is optional. If not provided the default column names will be used. 
 Also note that the ``hds_table_time_partitioning`` is only needed for snapshot-type HDS tables,
-in which case it must much the ingestion schedule.
+in which case it must match the ingestion schedule.
+
+.. dataset:
+Dataset Selection
+========================
+The ingested data will first be stored in a temporary, staging table in BigQuery.
+The dataset name of the staging tables must be provided in the ``landing_zone_options.landing_zone_dataset`` field.
+From the staging dataset, the data are upserted in the destination tables. The destination dataset can be selected in the 
+``dataset_data_name``. 
+
+.. mapping:
+Column Mapping
+========================
+Both ODS and HDS ingestions support column mapping and schema migration. 
+When a data field in the data source is desired to have a different name in the destination table,
+then, the ``column_mapping`` field can be declared. This is a map-type field, whose keys are the names of columns as they
+appear in the data source, and the keys are the corresponding names that these columns should have in the destination table.
+
+For example:
+
+.. code-block:: yaml
+
+    tables:
+        - table_name: campaign_insights
+            surrogate_keys: ["account_id", "campaign_id", "date_start"]
+            ingestion_type: INCREMENTAL
+            facebook_table_config:
+                breakdowns: null
+                action_breakdowns: ["action_type"]
+                column_mapping:
+                    date_start: date
+
+In this example, the ``date_start`` field extracted from Facebook's API will be mapped to the ``date`` field in the destination tables.
