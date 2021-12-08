@@ -1,7 +1,10 @@
 ********************
 Extracting Data
 ********************
-.. Data Extraction Tasks
+
+.. overview:
+Overview
+========================
 The building blocks of the data ingestion DAG are pre-defined in GCP Airflow Foundations, such that the user only needs to configure the parameters of the data ingestion.
 The first step in the ingestion pipeline is to extract the data from a third-party API and load them to a staging table in BigQuery. Then, the schema of the staging stable
 is parsed and compared with the schema of the destination tables. If any schema changes are detected, these are migrated to the destination table. Finally,

@@ -21,7 +21,7 @@ extensions = [
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),
-    "airflow": ("https://airflow.apache.org/", None),
+    "airflow": ("https://airflow.apache.org/", None)
 }
 
 intersphinx_disabled_domains = ['std']
