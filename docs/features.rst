@@ -2,14 +2,14 @@
 Features
 ********************
 
-GCP Airflow Foundations offer a suite of additional features that respond to commong data ingestion pitfalls.
+GCP Airflow Foundations offer a suite of additional features that respond to common data ingestion pitfalls.
 
 .. schema_migration:
 Schema Migration
 ------------------
-When ingesting from relational databases and - to a lesser extend - from third party APIs, the source schema might evolve over time.
+When ingesting from relational database tables and - to a lesser extend - from third party APIs, the source schema might evolve over time.
 GCP Airflow Foundations will detect such changes after loading the data in a staging table, and update the destination table's schema accordingly.
-Mmost schema modifications that are currently supported by `BigQuery <https://cloud.google.com/bigquery/docs/manually-changing-schemas>`_ are also supported here, including:
+Most schema modifications that are currently supported by `BigQuery <https://cloud.google.com/bigquery/docs/manually-changing-schemas>`_ are also supported here, including:
 
 - Changing a column's data type using the `current conversion rules in Standard SQL <https://cloud.google.com/bigquery/docs/reference/standard-sql/conversion_rules#comparison_chart>`_.
 - Relaxing a column's mode from `REQUIRED` to `NULLABLE`
@@ -22,7 +22,7 @@ and the type of schema change that was performed.
 Post-ingestion Task Dependencies
 ------------------
 The data that are ingested are often needed in downstream analytic workflows. These can be orchestrated in the same Airflow instance by 
-utilizing :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor`. From the Python module of the DAG that depends
+utilizing :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor`. From your Python module with the DAG that depends
 on a table ingestion, you can create a task that waits for the completion of the ingestion. For example:
 
 .. code-block:: python
@@ -40,5 +40,5 @@ on a table ingestion, you can create a task that waits for the completion of the
     )
 
 The ``external_source_tables`` argument of :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor` is a dictionary.
-Each key of the dictionary is a data source and the value is a list. The elements of the list are regex expressions that will be matched
+Each key of the dictionary is a data source and the value is a list, whose elements are regex expressions that will be matched
 to the tables under that source.
