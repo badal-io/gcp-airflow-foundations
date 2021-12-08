@@ -13,7 +13,7 @@ the data are upserted to the destination tables.
 This can be visualized in the tree diagram bellow:
 
 .. image:: ./_static/sample_dag.png
-    :width: 500
+    :width: 600
 
 .. dag_generation:
 Opinionated DAG Generation
