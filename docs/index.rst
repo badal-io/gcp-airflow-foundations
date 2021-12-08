@@ -33,3 +33,4 @@ Contents
    installation
    data_plugins
    data_extraction
+   features

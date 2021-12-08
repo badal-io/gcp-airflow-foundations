@@ -39,6 +39,6 @@ on a table ingestion, you can create a task that waits for the completion of the
         dag=dag
     )
 
-The ``external_source_tables`` of the :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor` is dictionary.
+The ``external_source_tables`` of the :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor` is a dictionary.
 Each key of the dictionary is a data source and the value is a list. The elements of the list can be regex expressions that will be matched
 with the tables under that source.
