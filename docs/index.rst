@@ -6,7 +6,7 @@ Learning curve: Airflow requires python knowledge and has some gotchas that take
 Datalake and data pipelines design best practices: Airflow only provides the building blocks, users are still required to understand and implement the nuances of building a proper ingestion pipelines for the data lake/data warehouse platform they are using 
 Core reusability and best practice enforcement across the enterprise: Usually each team maintains its own Airflow source code and deployment
 
-We have written an opinionated yet flexible ingestion framework for building an ingestion pipeline into data warehouse in BigQuery that supports the following features
+We have written an opinionated yet flexible ingestion framework for building an ingestion pipeline into data warehouse in BigQuery that supports the following features:
 
 Zero-code, config file based ingestion - anybody can start ingesting from the growing number of sources by just providing a simple configuration file. Zero python or Airflow knowledge is required 
 Modular and extendable - The core of the framework is a lightweight library. Ingestion sources are added as plugins. Adding a new source can be done by extending the provided base classes
