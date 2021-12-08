@@ -12,7 +12,7 @@ GCP Airflow Foundations will detect such changes after loading the data in a sta
 Mmost schema modifications that are currently supported by `BigQuery <https://cloud.google.com/bigquery/docs/manually-changing-schemas>`_ are also supported here, including:
 
 - Changing a column's data type using the `current conversion rules in Standard SQL <https://cloud.google.com/bigquery/docs/reference/standard-sql/conversion_rules#comparison_chart>`_.
-- Relaxing a column's mode from REQUIRED to NULLABLE
+- Relaxing a column's mode from `REQUIRED` to `NULLABLE`
 
 Furthermore, a table is also created in BigQuery to log all the schema migration operations for auditing purposes. 
 The audit table stores information on the table and dataset name, the timestamp of the schema migration, the columns affected, 
@@ -22,7 +22,7 @@ and the type of schema change that was performed.
 Post-ingestion Task Dependencies
 ------------------
 The data that are ingested are often needed in downstream analytic workflows. These can be orchestrated in the same Airflow instance by 
-utilizing the :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor`. From the Python module of the DAG that depends
+utilizing :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor <https://github.com/badal-io/gcp-airflow-foundations/blob/main/src/gcp_airflow_foundations/operators/airflow/external_task.py>`_. From the Python module of the DAG that depends
 on a table ingestion, you can create a task that waits for the completion of the ingestion. For example:
 
 .. code-block:: python
@@ -39,6 +39,6 @@ on a table ingestion, you can create a task that waits for the completion of the
         dag=dag
     )
 
-The ``external_source_tables`` of the :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor` is a dictionary.
-Each key of the dictionary is a data source and the value is a list. The elements of the list can be regex expressions that will be matched
-with the tables under that source.
+The ``external_source_tables`` argument of :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor <https://github.com/badal-io/gcp-airflow-foundations/blob/main/src/gcp_airflow_foundations/operators/airflow/external_task.py>`_ is a dictionary.
+Each key of the dictionary is a data source and the value is a list. The elements of the list are regex expressions that will be matched
+to the tables under that source.
