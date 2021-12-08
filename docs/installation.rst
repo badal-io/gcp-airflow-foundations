@@ -13,7 +13,7 @@ Generating DAGs
 --------------------------
 In the Airflow's ``dags_folder`` create a new Python module (e.g. ``parse_dags.py``), which would parse the DAGs from the configuration files:
  
-.. code-block:: python
+::
     
     
     from gcp_airflow_foundations.parse_dags import DagParser
