@@ -18,6 +18,11 @@ We have written an opinionated yet flexible ingestion framework for building an 
 - Integration with GCP data services such as DLP and Data Catalog [work in progress].
 - Well tested - We maintain a rich suite of both unit and integration tests.
 
+
+.. contents:
+Contents
+========================
+
 .. toctree::
    :maxdepth: 2
 
