@@ -10,7 +10,7 @@ the data are upserted to the destination tables.
 This can be visualized in the tree diagram bellow:
 
 .. image:: ./_static/sample_dag.png
-    :width: 300
+    :width: 500
 
 .. dag_generation:
 Opinionated DAG Generation
@@ -141,11 +141,11 @@ Therefore, the target table comprises a collection of dimension snapshots where 
 Comparison of SCD2 and Snapshotting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - Even though the SCD2 approach is more computationally efficient, it is also more difficult to maintain and reproduce. Snapshot tables, on the other hand, do not require complex transformations.
-- Snapshot tables result in significantly larger tables (since all data is replicated every day) which can result in higher storage costs.  However using properly partitioned BigQuery tables mitigates this - partitioned older than 90 days (if they have not been edited) are automatically moved to Big Query long term storage
+- Snapshot tables result in significantly larger tables (since all data is replicated every day) which can result in higher storage costs.  However using properly partitioned BigQuery tables mitigates this - partitioned older than 90 days (if they have not been edited) are automatically moved to Big Query long term storage.
 - Querying data from a specific day or time ranges is cheaper when using properly partitioned snapshot tables since BigQuery will scan the data only in the appropriate partitions. While doing the same query on SCD2 tables will result in a  full table scan. 
-- Snapshot tables are more intuitive to work with - querying data from a specific date can use the exact same SQL queries used for ODS with the simple addition of filter cluse for that day. While SCD2 requires more complex logic using the created_at and expired_at columns
+- Snapshot tables are more intuitive to work with - querying data from a specific date can use the exact same SQL queries used for ODS with the simple addition of filter cluse for that day. While SCD2 requires more complex logic using the created_at and expired_at columns.
 - Snapshot tables follow the  “functional data engineering ” principle. Most importantly operations are idempotent such that re-running ingestion for the same day will not result in data duplicates or corrupt data. 
-- Expiring old data is easier with snapshot tables
+- Expiring old data is easier with snapshot tables.
 
 Ingesting Data to an HDS Table
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

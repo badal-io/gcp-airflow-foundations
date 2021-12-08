@@ -5,6 +5,9 @@ Data Sources and Sinks
 .. sources:
 Data Sources
 ========================
+
+Currently Available Sources
+-----------------------------
 The gcp-airflow-foundations supports ingesting data from the following sources:
 
 - Google Cloud Storage (including loading from Parquet)
@@ -13,7 +16,8 @@ The gcp-airflow-foundations supports ingesting data from the following sources:
 - Salesforce
 - Facebook Ads
 
-Data sources in the making:
+Sources in the Making
+-----------------------------
 
 - Google Ads
 - Snapchat
