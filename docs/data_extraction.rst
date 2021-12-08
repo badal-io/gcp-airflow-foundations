@@ -55,7 +55,7 @@ An example of a simple configuration file to extract marketing data from Faceboo
 .. schedule:
 Replication Scheduling
 ========================
-In the `ingest_schedule` field you can select the ingestion schedule for Airflow. 
+In the ``ingest_schedule`` field you can select the ingestion schedule for Airflow. 
 GCP Airflow Foundations currently support hourly, daily, weekly, and monthly intervals.
 
 .. source_selection:
@@ -72,13 +72,13 @@ credentials.
 Table Selection
 ========================
 
-The next step after having selected a data source, is to select the individual tables you need to extract data from. The `tables` field is a list-type field, whose entries
-are single tables. Start by giving an alias in the `table_name` field. Next, in the `surrogate_keys` field you need to set the columns that will be used as a key to select unique records.
+The next step after having selected a data source, is to select the individual tables you need to extract data from. The ``tables`` field is a list-type field, whose entries
+are single tables. Start by giving an alias in the ``table_name`` field. Next, in the ``surrogate_keys`` field you need to set the columns that will be used as a key to select unique records.
 These are usually record identifier fields, as well as breakdown dimension fields (e.g. date, geography fields, etc.). 
 
 GCP Airflow Foundations support both full and incremental ingestions. In the former, the lifetime range of data is extracted from the data source at every ingestion
 and the destination table is truncated with the new records. In the latter, the declared ingestion schedule is used as a time range to query the source data available within
-that time interval and the records are used to update the destination table. The ingestion type must be declared in the `ingestion_type` field for each table.
+that time interval and the records are used to update the destination table. The ingestion type must be declared in the ``ingestion_type`` field for each table.
 Note that you can select a different ingestion type for each table.
 
 .. ods:
@@ -95,7 +95,7 @@ The ODS table will include four metadata columns for each row. The columns store
 - The ingestion time
 - The update time
 
-Optionally, the user can override the default metadata column names for each table by providing the `ods_config.ods_metadata` field. For example:
+Optionally, the user can override the default metadata column names for each table by providing the ``ods_config.ods_metadata`` field. For example:
 
 
 .. code-block:: yaml
@@ -121,7 +121,7 @@ Configuring a Historical Data Store (HDS)
 -----------------------------------------------
 
 In addition to an ODS destination table, the data can also be ingested in a Historical Data Store (HDS) table. 
-To implement an HDS table, the user can select between a Slowly Changing Diemension Type 2 (SCD2) and a `snapshot dimension https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a`_.
+To implement an HDS table, the user can select between a Slowly Changing Diemension Type 2 (SCD2) and a `snapshot dimension <https://maximebeauchemin.medium.com/functional-data-engineering-a-modern-paradigm-for-batch-data-processing-2327ec32c42a>`_.
 
 Slowly Changing Diemension Type 2 (SCD2)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -165,6 +165,6 @@ To configure an HDS ingestion, the user has to declare the HDS type in under eac
                     eff_end_time_column_name: af_metadata_expired_at
                     hash_column_name: af_metadata_row_hash
                     
-Note that the `hds_metadata` field is optional. If not provided the default column names will be used. 
-Also note that the `hds_table_time_partitioning` is only needed for snapshot-type HDS tables,
+Note that the ``hds_metadata`` field is optional. If not provided the default column names will be used. 
+Also note that the ``hds_table_time_partitioning`` is only needed for snapshot-type HDS tables,
 in which case it must much the ingestion schedule.
