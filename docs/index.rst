@@ -19,6 +19,5 @@ We have written an opinionated yet flexible ingestion framework for building an 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    installation
