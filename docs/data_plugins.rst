@@ -8,7 +8,7 @@ Data Sources
 
 Currently Available Sources
 -----------------------------
-The gcp-airflow-foundations supports ingesting data from the following sources:
+gcp-airflow-foundations supports ingesting data from the following sources:
 
 - Google Cloud Storage (including loading from Parquet)
 - SFTP
@@ -33,14 +33,14 @@ Sources in the Making
 .. sinks:
 Data Sinks
 ========================
-The gcp-airflow-foundations library currently supports ingesting data only to BigQuery.
+gcp-airflow-foundations currently supports ingesting data only to BigQuery.
 
 .. transformation:
 Data Transformation
 ========================
-In addition to data sources and sinks, GCP Airflow Framework also supports ingegration with popular Google Cloud and third-party
+In addition to data sources and sinks, gcp-airflow-foundations also supports ingegration with popular Google Cloud and third-party
 data transformation platforms:
 
-- `Dataflow <https://cloud.google.com/dataflow/docs>`_
-- `Dataform <https://dataform.co/>`_
-- `dbt <https://www.getdbt.com/>`_  (work in progress)
+- Dataflow
+- Dataform
+- dbt (work in progress)

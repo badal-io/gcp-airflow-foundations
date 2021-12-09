@@ -42,3 +42,46 @@ on a table ingestion, you can create a task that waits for the completion of the
 The ``external_source_tables`` argument of :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor` is a dictionary.
 Each key of the dictionary is a data source and the value is a list, whose elements are regex expressions that will be matched
 to the tables under that source.
+
+.. dataform:
+SQL Workflows with Dataform
+------------------
+
+`Dataform <https://docs.dataform.co/>`_ is a framework used to manage data transformation workflows and SQL stored procedures in BigQuery.
+GCP Airflow Foundations provides a Dataform Operator, such that Dataform runs can be orchestrated in Airflow. The Dataform Operator can be
+used alongside the post-ingestion Operator in your downstream DAG for cases when the data transformation is dependent on the table ingestion DAGs.
+For example:
+
+.. code-block:: python
+
+    from gcp_airflow_foundations.operators.airflow.external_task import TableIngestionSensor
+    from gcp_airflow_foundations.operators.api.operators.dataform_operator import DataformOperator
+
+    from airflow.models.dag import DAG
+
+    EXTERNAL_SOURCE_TABLES = {
+        'data_source':['table_to_wait_for']
+    }
+
+    with DAG(
+        dag_id="dataform",
+        schedule_interval="@daily"
+    ) as dag:
+
+        sensor = TableIngestionSensor(
+            task_id='table_ingestion_sensor',
+            external_source_tables=EXTERNAL_SOURCE_TABLES,
+            dag=dag
+        )   
+
+        dataform = DataformOperator(
+            task_id='dataform_transformation',
+            environment='production',
+            schedule='dataform_schedule_name'
+        )
+
+        sensor >> dataform
+
+
+
+
