@@ -12,7 +12,6 @@ API Reference
     operators.airflow.external_task.TableIngestionSensor
 
 .. autoclass:: operators.airflow.external_task.TableIngestionSensor
-    :members:
+
 
 .. autoclass:: operators.airflow.external_task
-    :members:
