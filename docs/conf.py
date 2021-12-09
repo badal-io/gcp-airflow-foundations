@@ -23,7 +23,6 @@ version = '0.2.6'
 # -- General configuration
 
 extensions = [
-    'sphinx.ext.duration',
     'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
