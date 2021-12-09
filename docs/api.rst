@@ -1,4 +1,4 @@
-.. currentmodule:: gcp_airflow_foundations
+.. py:currentmodule:: gcp_airflow_foundations
 
 .. _api:
 
