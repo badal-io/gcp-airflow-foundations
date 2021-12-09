@@ -23,6 +23,9 @@ At minimum, the user declares in the configuration file the derised ingestion mo
 Optionally, additional parameters can be provided, such us metadata naming and column mapping between the source and destination tables, among others.
 GCP Airflow Foundations will parse the information declared in the YAML file to generate the building blocks necessary for generating the DAGs for the desired data ingestion.
 
+For a detailed description and data type of each configuration field, please refer to :class:`gcp_airflow_foundations.base_class.source_config.SourceConfig` 
+and :class:`gcp_airflow_foundations.base_class.source_table_config.SourceTableConfig` for the ingestion source and tables respectively.
+
 An example of a simple configuration file to extract marketing data from Facebook:
 
 .. code-block:: yaml

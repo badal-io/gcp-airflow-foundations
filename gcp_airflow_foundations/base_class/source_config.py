@@ -21,8 +21,8 @@ expiration_options = {
 @dataclass
 class SourceConfig:
     """
-    Source class configuration data class.
-    
+    Source configuration data class.
+
     Attributes:
         name : Name of source
         source_type : Source type selection. See SourceType class
