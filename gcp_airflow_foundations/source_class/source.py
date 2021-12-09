@@ -11,11 +11,14 @@ from gcp_airflow_foundations.source_class.schema_source_config import AutoSchema
 import logging
 
 class DagBuilder(ABC):
-    """
-    A base DAG builder for creating a list of DAGs for a given source.
-    Attributes:
-        sources:              List of initialized subclasses of this class (dynamically updated during runtime)
-        config:               DataSourceTablesConfig object for DAG configuration
+    """A base DAG builder for creating a list of DAGs for a given source.
+
+    Parameters
+    ----------
+    sources : list(DagBuilder)
+        List of initialized subclasses of this class (dynamically updated during runtime)
+    config : DataSourceTablesConfig
+        DAG configuration object
     """
     sources = []
 
