@@ -19,7 +19,7 @@ In the Airflow's ``dags_folder`` create a new Python module (e.g. ``parse_dags.p
     
     from gcp_airflow_foundations.parse_dags import DagParser
     
-    parser = DagParser() 
+    parser = DagParser()
 
     parsed_dags = parser.parse_dags()
 
