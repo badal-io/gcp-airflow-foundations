@@ -41,6 +41,5 @@ Data Transformation
 In addition to data sources and sinks, gcp-airflow-foundations also supports ingegration with popular Google Cloud and third-party
 data transformation platforms:
 
-- Dataflow
 - Dataform
 - dbt (work in progress)

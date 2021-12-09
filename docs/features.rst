@@ -77,7 +77,8 @@ For example:
         dataform = DataformOperator(
             task_id='dataform_transformation',
             environment='production',
-            schedule='dataform_schedule_name'
+            schedule='dataform_schedule_name',
+            dag=dag
         )
 
         sensor >> dataform
