@@ -11,7 +11,12 @@ API Reference
     source_class.source.DagBuilder
     operators.airflow.external_task.TableIngestionSensor
 
-.. autoclass:: operators.airflow.external_task.TableIngestionSensor
+.. autoclass:: source_class.source.DagBuilder
+    :members:
+    :inherited-members:
+    :undoc-members:
 
-
-.. autoclass:: operators.airflow.external_task
+.. automodule:: source_class.source.DagBuilder
+    :members:
+    :inherited-members:
+    :undoc-members:
