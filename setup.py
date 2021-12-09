@@ -7,7 +7,7 @@ from pathlib import Path
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 
-with open(os.path.join(here, "src", "gcp_airflow_foundations", "__version__.py"), "r") as f:
+with open(os.path.join(here, "gcp_airflow_foundations", "__version__.py"), "r") as f:
     exec(f.read(), about)
 
 with open(os.path.join(here, "requirements.txt"), "r") as f:
@@ -28,8 +28,8 @@ def main():
         author=about["__author__"],
         author_email=about["__author_email__"],
         license=about["__license__"],
-        packages=find_packages(where="src", exclude=("tests")),
-        package_dir={"":"src"},
+        packages=find_packages(where="gcp_airflow_foundations", exclude=("tests")),
+        package_dir={"":"gcp_airflow_foundations"},
         install_requires=requirements,
         classifiers=[
             'Development Status :: 4 - Beta',      

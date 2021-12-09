@@ -1,4 +1,4 @@
-.. currentmodule:: gcp-airflow-foundations
+.. currentmodule:: gcp_airflow_foundations
 
 .. _api:
 
@@ -8,7 +8,11 @@ API Reference
 
 .. autosummary::
 
-    DagBuilder
+    source_class.source.DagBuilder
+    DagParser
+
+.. autoclass:: DagParser
+    :members:
 
 .. autoclass:: DagBuilder
     :members:
