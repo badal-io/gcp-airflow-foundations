@@ -13,7 +13,8 @@ API Reference
 
 .. autoclass:: source_class.source.DagBuilder
     :members:
+    :undoc-members:
 
-.. autoclass:: .DagParser
+.. autoclass:: DagBuilder
     :members:
-
+    :undoc-members:

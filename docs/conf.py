@@ -37,6 +37,8 @@ intersphinx_mapping = {
 
 intersphinx_disabled_domains = ['std']
 
+autoclass_content = "both"
+autodoc_default_options = {"members": True}
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 
 templates_path = ['_templates']
