@@ -1,4 +1,4 @@
-.. currentmodule:: gcp_airflow_foundations
+.. currentmodule:: src.gcp_airflow_foundations
 .. _api:
 
 *************
