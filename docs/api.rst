@@ -9,10 +9,11 @@ API Reference
 .. autosummary::
 
     source_class.source.DagBuilder
-    DagParser
+    .DagParser
 
-.. autoclass:: DagParser
+.. autoclass:: source_class.source.DagBuilder
     :members:
 
-.. autoclass:: DagBuilder
+.. autoclass:: .DagParser
     :members:
+
