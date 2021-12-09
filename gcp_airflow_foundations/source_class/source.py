@@ -13,7 +13,7 @@ import logging
 class DagBuilder(ABC):
     """A base DAG builder for creating a list of DAGs for a given source.
 
-    Parameters
+    Attributes
     ----------
     sources : list(DagBuilder)
         List of initialized subclasses of this class (dynamically updated during runtime)
@@ -37,6 +37,9 @@ class DagBuilder(ABC):
         cls.sources.append(cls)
 
     def build_dags(self):
+        """
+        Main DAG building method
+        """
         data_source = self.config.source
         logging.info(f"Building DAG for {data_source.name}")
 
@@ -68,9 +71,11 @@ class DagBuilder(ABC):
 
     @abstractmethod
     def get_bq_ingestion_task(self, table_config):
+        """Abstract method for the Airflow task that ingests data to the BigQuery staging table"""
         pass
 
     def get_datastore_ingestion_task(self, dag, preceding_task, data_source, table_config):
+        """Method for the Airflow task group that upserts data to the ODS and HDS tables"""
         load_builder(
             data_source=data_source,
             table_config=table_config,
