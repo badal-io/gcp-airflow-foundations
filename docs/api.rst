@@ -9,6 +9,10 @@ API Reference
 .. autosummary::
 
     source_class.source.DagBuilder
+    operators.airflow.external_task.TableIngestionSensor
 
-.. autoclass:: source_class.source.DagBuilder
+.. autoclass:: operators.airflow.external_task.TableIngestionSensor
+    :members:
+
+.. autoclass:: operators.airflow.external_task
     :members:

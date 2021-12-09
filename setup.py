@@ -7,27 +7,26 @@ from pathlib import Path
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 
-with open(os.path.join(here, "gcp_airflow_foundations", "__version__.py"), "r") as f:
-    exec(f.read(), about)
-
 with open(os.path.join(here, "requirements.txt"), "r") as f:
 	requirements = f.read().strip().split('\n')
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
+TAG = "v{}.{}.{}".format(0, 2, 7)
+
 def main():
     metadata = dict(
-        name=about["__title__"],
-        version=about["__version__"],
-        description=about["__description__"],
+        name="gcp-airflow-foundations",
+        version="0.2.7",
+        description="Opinionated framework based on Airflow 2.0 for building pipelines to ingest data into a BigQuery data warehouse",
         long_description=long_description,
         long_description_content_type='text/markdown',
-        url=about["__url__"],
-        download_url=about["__download_url__"],
-        author=about["__author__"],
-        author_email=about["__author_email__"],
-        license=about["__license__"],
+        url="https://github.com/badal-io/gcp-airflow-foundations",
+        download_url=f"https://github.com/badal-io/gcp-airflow-foundations/archive/refs/tags/{TAG}.tar.gz",
+        author="Badal.io",
+        author_email="info@badal.io",
+        license="Apache 2.0",
         packages=find_packages(where="gcp_airflow_foundations", exclude=("tests")),
         package_dir={"":"gcp_airflow_foundations"},
         install_requires=requirements,
