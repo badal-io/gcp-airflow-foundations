@@ -45,3 +45,7 @@ For example, implemented bellow for Google Ads using the custom ``GoogleAdsQuery
             )
 
             return query_operator
+     
+.. note:: 
+    You will need to import your implementation of :class:`gcp_airflow_foundations.source_class.source.DagBuilder`
+    in your ``parse_dags.py`` module inside your ``dags_folder``.
