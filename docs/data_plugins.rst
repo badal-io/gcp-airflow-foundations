@@ -40,6 +40,7 @@ Data Transformation
 ========================
 In addition to data sources and sinks, GCP Airflow Framework also supports ingegration with popular Google Cloud and third-party
 data transformation platforms:
+
 - `Dataflow <https://cloud.google.com/dataflow/docs>`_
 - `Dataform <https://dataform.co/>`_
 - `dbt <https://www.getdbt.com/>`_  (work in progress)
