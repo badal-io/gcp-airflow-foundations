@@ -12,7 +12,8 @@ gcp-airflow-foundations supports ingesting data from the following sources:
 
 - Google Cloud Storage (including loading from Parquet)
 - SFTP
-- Oracle
+- Oracle (using Dataflow)
+- MySQL (using Dataflow)
 - Salesforce
 - Facebook Ads
 
