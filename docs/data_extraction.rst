@@ -6,7 +6,7 @@ Extracting Data
 1. Overview
 ========================
 The building blocks of the data ingestion DAG are pre-defined in GCP Airflow Foundations, such that the user only needs to configure the parameters of the data ingestion.
-The data ingestions follows a set of default steps:
+The data ingestion follows a set of default steps:
 
 - The first step in the ingestion pipeline is to extract the data from a source and load them to a landing table in BigQuery. 
 - The schema of the landing stable is parsed and compared with the schema of the destination tables. 
