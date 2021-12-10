@@ -21,16 +21,20 @@ from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTab
 @dataclass
 class SourceTableConfig:
     """
+    Table configuration data class.
+
     Attributes:
-        table_name : Table name. Used for Dag Id
-        ingestion_type: FULL or INCREMENTAL
+        table_name : Table name. Used for Dag Id.
+        ingestion_type: FULL or INCREMENTAL.
         landing_zone_table_name_override: Optional staging zone table name.
-        dest_table_override: Optional target table name. If None, use table_name instead
-        surrogate_keys : Keys used to identify unique records when merging into ODS
-        column_mapping : Mapping used to rename columns
-        ods_config : See OdsTableConfig
-        hds_config : See HdsTableConfig
-        version : The Dag version for the table. Can be incremented if logic changes
+        dest_table_override: Optional target table name. If None, use table_name instead.
+        surrogate_keys : Keys used to identify unique records when merging into ODS.
+        column_mapping : Mapping used to rename columns.
+        ods_config : ODS table configuration. See :class:`gcp_airflow_foundations.base_class.ods_table_config.OdsTableConfig`.
+        hds_config : HDS table configuration. See :class:`gcp_airflow_foundations.base_class.hds_table_config.HdsTableConfig`.
+        facebook_table_config: Extra options for ingesting data from the Facebook API.
+        extra_options: Field for storing additional configuration options.
+        version : The Dag version for the table. Can be incremented if logic changes.
         catchup : Passed to a dag [see doc](https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#catchup).
             Defaults to True. May want to change it to False if Dag version is changed, and we don't want to rerun past dags.
     """

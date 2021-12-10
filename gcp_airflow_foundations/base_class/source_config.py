@@ -21,24 +21,27 @@ expiration_options = {
 @dataclass
 class SourceConfig:
     """
+    Source configuration data class.
+
     Attributes:
         name : Name of source
         source_type : Source type selection. See SourceType class
         ingest_schedule : Ingestion schedule. Currently only supporting @hourly, @daily, @weekly, and @monthly
-        gcp_project : GCP project ID
+        gcp_project : Google Cloud Platform project ID
         dataset_data_name : Target dataset name
-        connection : Aiflow GCP connection
-        extra_options : GCP bucket and objects for source data if loading from GCS
+        connection : Aiflow Google Cloud Platform connection
+        extra_options : Google Cloud Storage bucket and objects for source data if loading from GCS
         landing_zone_options : Staging dataset name
         acceptable_delay_minutes : Delay minutes limit
         notification_emails : Email address for notification emails
         owner : Airflow user owning the DAG
         partition_expiration: Expiration time for HDS Snapshot partitions in days.
+        facebook_options: Extra options for ingesting data from Facebook Marketing API.
         location: BigQuery job location.
         start_date : Start date for DAG
         start_date_tz : Timezone
         version : The Dag version. Can be incremented if logic changes
-        sla_mins : SLA mins
+        sla_mins : Service Level Agreement (SLA) timeout minutes. This is is an expectation for the maximum time a Task should take.
     """
     name: str
     source_type: str
