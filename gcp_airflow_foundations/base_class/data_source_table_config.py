@@ -25,8 +25,8 @@ class DataSourceTablesConfig:
     Main configuration class used to map the fields from the configuration file.
 
     Attributes:
-        source: The data source configuration
-        tables: The table configuration
+    source: The data source configuration
+    tables: The table configuration
     """
 
     source: SourceConfig
