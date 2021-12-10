@@ -4,7 +4,7 @@ Features
 
 GCP Airflow Foundations offer a suite of additional features that respond to common data ingestion pitfalls.
 
-.. schema_migration:
+.. schema_migration: 
 Schema Migration
 ------------------
 When ingesting from relational database tables and - to a lesser extend - from third party APIs, the source schema might evolve over time.
