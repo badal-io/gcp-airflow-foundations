@@ -6,7 +6,7 @@ Extracting Data
 Overview
 ========================
 The building blocks of the data ingestion DAG are pre-defined in GCP Airflow Foundations, such that the user only needs to configure the parameters of the data ingestion.
-The first step in the ingestion pipeline is to extract the data from a third-party API and load them to a staging table in BigQuery. Then, the schema of the staging stable
+The first step in the ingestion pipeline is to extract the data from a *third-party API* and load them to a staging table in BigQuery. Then, the schema of the staging stable
 is parsed and compared with the schema of the destination tables. If any schema changes are detected, these are migrated to the destination table. Finally,
 the data are upserted to the destination tables. 
 
@@ -16,7 +16,7 @@ This can be visualized in the tree diagram bellow:
     :width: 600
 
 .. dag_generation:
-Opinionated DAG Generation
+Config Based DAG Generation
 ========================
 GCP Airflow Foundations support the dynamic generation of ETL/ELT DAGs from simple, user-provided configuation files written in YAML.
 At minimum, the user declares in the configuration file the derised ingestion mode and the type of the data source, along with the required source tables to be ingested.
