@@ -21,7 +21,7 @@ from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTab
 @dataclass
 class SourceTableConfig:
     """
-    Source class configuration data class.
+    Table configuration data class.
 
     Attributes:
         table_name : Table name. Used for Dag Id

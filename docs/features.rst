@@ -30,7 +30,8 @@ on a table ingestion, you can create a task that waits for the completion of the
     from gcp_airflow_foundations.operators.airflow.external_task import TableIngestionSensor
     
     EXTERNAL_SOURCE_TABLES = {
-        'data_source':['table_to_wait_for']
+        'data_source_X':[r"^ABC.*"],
+        'data_source_Y':[r".*"]
     }
 
     sensor = TableIngestionSensor(
@@ -41,7 +42,8 @@ on a table ingestion, you can create a task that waits for the completion of the
 
 The ``external_source_tables`` argument of :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor` is a dictionary.
 Each key of the dictionary is a data source and the value is a list, whose elements are regex expressions that will be matched
-to the tables under that source.
+to the tables under that source. For instance, in the example above, the sensor's state will transition to `success` once 1) the tables of `data_source_X`
+that start with "ABC" and 2) all tables of `data_source_Y` are ingested. 
 
 .. dataform:
 SQL Workflows with Dataform
@@ -82,7 +84,3 @@ For example:
         )
 
         sensor >> dataform
-
-
-
-

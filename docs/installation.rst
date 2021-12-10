@@ -38,6 +38,11 @@ Running on Google Cloud
 -------------------------
 - An active Google Cloud with a Cloud Composer environment. The minimal Airflow version required is 2.0.2.
 - Enable Cloud Composer, Cloud Storage, and BigQuery APIs
+- Optional step: setup a `CI/CD pipeline <https://github.com/badal-io/airflow2-local-ci-cd>`_ for your Cloud Composer environmental that installs the dependencies from PyPI and syncs your DAGs.
+
+Running with Docker
+-------------------------
+If you deploy Airflow from a Docker image then you can add GCP Airflow Foundations to the dependencies of your Docker image.
 
 .. airflow_connections
 Airflow Connections
