@@ -23,4 +23,4 @@ pip install 'gcp-airflow-foundations'
 ```
 
 ## Usage
-See the [gcp-airflow-foundations documentation](https://gcp-airflow-foundations.readthedocs.io/en/feature-read-the-docs/index.html) for more details.
+See the [gcp-airflow-foundations documentation](https://gcp-airflow-foundations.readthedocs.io/en/latest/) for more details.
