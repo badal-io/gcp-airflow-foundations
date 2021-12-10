@@ -22,13 +22,14 @@ partitioning_options = {
 @dataclass
 class DataSourceTablesConfig:
     """ Main configuration class used to map the fields from the configuration file
-    
-    Attributes:
 
-        :param source: The data source configuration
-        :type source: :class:`SourceConfig`
-        :param tables: The table configuration
-        :type tables: List[:class:`SourceTableConfig`])
+    Attributes
+    ----------
+    :param source: The data source configuration
+    :type source: :class:`gcp_airflow_foundations.base_class.source_config.SourceConfig`
+    :param tables: The table configuration
+    :type tables: List[:class:`gcp_airflow_foundations.base_class.source_table_config.SourceTableConfig`])
+
     """
 
     source: SourceConfig
