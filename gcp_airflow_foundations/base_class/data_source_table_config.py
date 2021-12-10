@@ -21,7 +21,12 @@ partitioning_options = {
 
 @dataclass
 class DataSourceTablesConfig:
-    """ Main configuration class used to map the fields from the configuration file"""
+    """ Main configuration class used to map the fields from the configuration file
+    
+    Attributes:
+        source (SourceConfig): The data source configuration.
+        tables (List[SourceTableConfig]): The table configuration.
+    """
     
     source: SourceConfig
     tables: List[SourceTableConfig]
