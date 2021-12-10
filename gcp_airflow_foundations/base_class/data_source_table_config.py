@@ -24,10 +24,13 @@ class DataSourceTablesConfig:
     """ Main configuration class used to map the fields from the configuration file
     
     Attributes:
-        source (SourceConfig): The data source configuration.
-        tables (List[SourceTableConfig]): The table configuration.
+
+        :param source: The data source configuration
+        :type source: :class:`SourceConfig`
+        :param tables: The table configuration
+        :type tables: List[:class:`SourceTableConfig`])
     """
-    
+
     source: SourceConfig
     tables: List[SourceTableConfig]
 
