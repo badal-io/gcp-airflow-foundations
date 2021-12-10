@@ -12,7 +12,7 @@ from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
 import logging
 
 
-partitioning_options = {
+partitioning_options = {``
     "HOUR":"@hourly",
     "DAY":"@daily", 
     "MONTH":"@monthly"
@@ -25,8 +25,8 @@ class DataSourceTablesConfig:
     Main configuration class used to map the fields from the configuration file.
 
     Attributes:
-    source: The data source configuration
-    tables: The table configuration
+        source: The data source configuration
+        tables: The table configuration
     """
 
     source: SourceConfig
