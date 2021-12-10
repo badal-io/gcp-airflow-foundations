@@ -205,7 +205,7 @@ For example:
             surrogate_keys: ["account_id", "campaign_id", "date_start"]
             ingestion_type: INCREMENTAL
             facebook_table_config:
-                breakdowns: null
+                breakdowns: null 
                 action_breakdowns: ["action_type"]
                 column_mapping:
                     date_start: date
