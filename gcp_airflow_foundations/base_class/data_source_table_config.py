@@ -28,7 +28,6 @@ class DataSourceTablesConfig:
         source: The data source configuration
         tables: The table configuration
     """
-
     source: SourceConfig
     tables: List[SourceTableConfig]
 

@@ -82,11 +82,12 @@ class SqlHelperHDS:
                     JOIN `{self.target_dataset}.{self.target}` target
                     ON {' AND '.join([f'target.{self.column_mapping[surrogate_key]}=source.{surrogate_key}' for surrogate_key in self.surrogate_keys])}
                     WHERE ( 
-                                MD5(ARRAY_TO_STRING([{",".join(["CAST(target.`{}` AS STRING)".format(self.column_mapping[i]) for i in self.columns])}], "")) != MD5(ARRAY_TO_STRING([{",".join(["CAST(source.`{}` AS STRING)".format(col) for col in self.columns])}], ""))
-                            AND target.{self.eff_end_time_column_name} IS NULL)
+                            {' AND '.join([f'MD5(TO_JSON_STRING(target.`{self.column_mapping[col]}`)) != MD5(TO_JSON_STRING(source.`{col}`))' for col in self.columns])}
+                            AND target.{self.eff_end_time_column_name} IS NULL
+                        )
         """
         merge_condition = f"{' AND '.join([f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])}"
-        search_condition = f"""MD5(ARRAY_TO_STRING([{",".join(["CAST(T.`{}` AS STRING)".format(self.column_mapping[i]) for i in self.columns])}], "")) != MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(col) for col in self.columns])}], ""))"""
+        search_condition = f"{' AND '.join([f'MD5(TO_JSON_STRING(T.`{self.column_mapping[col]}`)) != MD5(TO_JSON_STRING(S.`{col}`))' for col in self.columns])}"
         matched_clause = f"UPDATE SET {self.eff_end_time_column_name} = CURRENT_TIMESTAMP()"
         not_matched_clause = f"""
             INSERT ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.eff_end_time_column_name}, {self.hash_column_name})

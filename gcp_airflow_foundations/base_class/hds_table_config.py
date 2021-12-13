@@ -2,7 +2,7 @@ from airflow.exceptions import AirflowException
 
 from dacite import Config
 from dataclasses import dataclass, field
-from pydantic import validator
+from pydantic import validator, root_validator
 
 from datetime import datetime
 from typing import List, Optional
@@ -24,8 +24,8 @@ class HdsTableConfig:
     hds_table_time_partitioning: Optional[TimePartitioning] # DAY, HOUR, or MONTH
     hds_table_type: HdsTableType = HdsTableType.SCD2 # SNAPSHOT OR SCD2
 
-    @validator('hds_table_time_partitioning')
-    def check_value(cls, v, values):
+    @root_validator(pre=True)
+    def valid_config(cls, values):
         if values['hds_table_type'] == HdsTableType.SNAPSHOT:
-            assert v is not None, 'Time partitioning must be set for HDS Snapshot tables'
-        return v
+            assert values['hds_table_time_partitioning'] is not None, 'HDS snapshot table\'s partition time must match the ingestion schedule'
+        return values
