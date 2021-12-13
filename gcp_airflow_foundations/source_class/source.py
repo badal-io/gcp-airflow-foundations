@@ -4,6 +4,7 @@ from airflow.models.dag import DAG
 
 from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
 from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
+from gcp_airflow_foundations.base_class.source_config import SourceConfig
 from gcp_airflow_foundations.enums.schema_source_type import SchemaSourceType
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 from gcp_airflow_foundations.source_class.schema_source_config import AutoSchemaSourceConfig, GCSSchemaSourceConfig, BQLandingZoneSchemaSourceConfig
@@ -11,11 +12,14 @@ from gcp_airflow_foundations.source_class.schema_source_config import AutoSchema
 import logging
 
 class DagBuilder(ABC):
-    """
-    A base DAG builder for creating a list of DAGs for a given source.
-    Attributes:
-        sources:              List of initialized subclasses of this class (dynamically updated during runtime)
-        config:               DataSourceTablesConfig object for DAG configuration
+    """A base DAG builder for creating a list of DAGs for a given source.
+
+    Attributes
+    ----------
+    sources : list(DagBuilder)
+        List of initialized subclasses of this class (dynamically updated during runtime)
+    config : DataSourceTablesConfig
+        DAG configuration object
     """
     sources = []
 
@@ -34,6 +38,9 @@ class DagBuilder(ABC):
         cls.sources.append(cls)
 
     def build_dags(self):
+        """
+        Main DAG building method
+        """
         data_source = self.config.source
         logging.info(f"Building DAG for {data_source.name}")
 
@@ -64,10 +71,12 @@ class DagBuilder(ABC):
         return dags
 
     @abstractmethod
-    def get_bq_ingestion_task(self, table_config):
+    def get_bq_ingestion_task(self, table_config: SourceTableConfig):
+        """Abstract method for the Airflow task that ingests data to the BigQuery staging table"""
         pass
 
-    def get_datastore_ingestion_task(self, dag, preceding_task, data_source, table_config):
+    def get_datastore_ingestion_task(self, dag, preceding_task, data_source: SourceConfig, table_config:SourceTableConfig):
+        """Method for the Airflow task group that upserts data to the ODS and HDS tables"""
         load_builder(
             data_source=data_source,
             table_config=table_config,
