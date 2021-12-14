@@ -29,6 +29,7 @@ class FTPtoBQDagBuilder(DagBuilder):
         taskgroup = TaskGroup(group_id="ftp_taskgroup")
 
         metadata_sensor_task = self.metadata_file_sensor(table_config, taskgroup)
+        flag_sensor_task = self.flag_file_sensor(table_config, taskgroup)
         schema_sensor_task = self.schema_file_sensor(table_config, taskgroup)
         get_file_list_task = self.get_file_list_task(table_config, taskgroup)
         sensor_task = self.file_sensor(table_config, taskgroup)
@@ -45,6 +46,14 @@ class FTPtoBQDagBuilder(DagBuilder):
         Implements an Airflow sensor to wait for initial metadata files for ingestion,
         e.g. a metadata file containing a list of files to ingest for .csv files from GCS->BQ,
              .SUCCESS file for a directory of .parquet files from an SFTP server, etc.
+        """
+        pass
+
+    @abstractmethod
+    def flag_file_sensor(self, table_config):
+        """
+        Implements an Airflow sensor to wait for optional flag files for ingestion.
+        e.g. for .PARQUET file ingestion, waiting for a _SUCCESS file is part of a common flow.
         """
         pass
 

@@ -15,7 +15,8 @@ def dataflow_taskgroup_builder(
     create_job_params,
     run_dataflow_job,
     create_table,
-    ingest_metadata
+    ingest_metadata,
+    table_type_casts
 ) -> TaskGroup:
 
     """
@@ -51,11 +52,13 @@ def dataflow_taskgroup_builder(
     )
 
     if not query_schema:
+
         create_table = PythonOperator(
             task_id="create_table_if_needed",
             op_kwargs={"destination_table": destination_table,
             "schema_table": destination_schema_table,
-            "source_table": table_name},
+            "source_table": table_name,
+            "table_type_casts": table_type_casts},
             python_callable=create_table,
             task_group=taskgroup,
         )

@@ -63,6 +63,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         destination_table = f"{gcp_project}:{landing_dataset}.{table_name}"
         destination_schema_table = f"{gcp_project}.{landing_dataset}.{schema_table}"
 
+        table_type_casts = data_source.extra_options["dataflow_job_config"]["table_type_casts"]
+
         taskgroup = dataflow_taskgroup_builder(
             query_schema=False,
             dataflow_job_params=dataflow_job_params,
@@ -73,7 +75,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             create_job_params=self.create_job_params,
             run_dataflow_job=self.run_dataflow_job,
             create_table=self.create_table,
-            ingest_metadata=ingest_metadata
+            ingest_metadata=ingest_metadata,
+            table_type_casts=table_type_casts
         )
 
         return taskgroup
@@ -113,7 +116,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                     create_job_params=self.create_job_params,
                     run_dataflow_job=self.run_dataflow_job,
                     create_table=self.create_table,
-                    ingest_metadata=ingest_metadata
+                    ingest_metadata=ingest_metadata,
+                    table_type_casts={}
                 )
                 taskgroup.dag = schema_dag
 
@@ -142,18 +146,25 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         )
         trigger_job.execute(context=kwargs)
     
-    def create_table(self, destination_table, schema_table, source_table, **kwargs):
+    def create_table(self, destination_table, schema_table, source_table, table_type_casts, **kwargs):
         ds = kwargs["ds"]
         ids = destination_table.split(":")
         project_id = ids[0]
         dataset_id = ids[1].split(".")[0]
         table_id = ids[1].split(".")[1] + f"_{ds}"
 
-        logging.info(ids)
+        logging.info(destination_table)
+
         bq_hook = BigQueryHook()
-        table_exists = bq_hook.table_exists(dataset_id=dataset_id, table_id=table_id)
+        table_exists = bq_hook.table_exists(dataset_id=dataset_id, table_id=table_id)s
+        logging.info(table_exists)
 
         schema_fields = self.get_landing_schema(schema_table, source_table)
+
+        for key in table_type_casts:
+            for i in range(len(schema_fields)):
+                if schema_fields[i]["type"] == key:
+                    schema_fields[i]["type"] = table_type_casts[key]
         logging.info(schema_fields)
 
         if not table_exists:

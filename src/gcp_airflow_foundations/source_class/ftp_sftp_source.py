@@ -18,6 +18,7 @@ from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.exceptions import AirflowException
 
+
 from gcp_airflow_foundations.base_class.gcs_table_config import GCSTableConfig
 from gcp_airflow_foundations.base_class.gcs_source_config import GCSSourceConfig
 from gcp_airflow_foundations.operators.api.operators.sf_to_gcs_query_operator import SalesforceToGcsQueryOperator
@@ -29,7 +30,7 @@ from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
 
-class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
+class SFTPFiletoBQDagBuilder(FTPtoBQDagBuilder):
     """
     Builds DAGs to load files from GCS to a BigQuery Table.
 
@@ -45,17 +46,16 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         FILE_NAME_N
     with all files to ingest
     """
-    source_type = "GCS"
-    gcs_hook = GCSHook()
+    source_type = "SFTP"
 
     def metadata_file_sensor(self, table_config, taskgroup):
         """
-        Implements a sensor for the metadata file specified in the table config.
+        Implements a sensor for either the metadata file specified in the table config, which specifies 
+        the parameterized file names to ingest.
         """
         if "metadata_file" in table_config.extra_options.get("gcs_table_config"):
             metadata_file_name = table_config.extra_options.get("gcs_table_config")["metadata_file"]
             bucket = self.config.source.extra_options["gcs_bucket"]
-
             return GCSObjectExistenceSensor(
                 task_id="wait_for_metadata_file",
                 bucket=bucket,
@@ -68,14 +68,20 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
                 task_group=taskgroup
             )
 
+    def flag_file_sensor(self, table_config, taskgroup):
+        if "flag_file" in table_config.extra_options.get("gcs_table_config"):
+            return self.get_sftp_sensor(table_config, taskgroup)
+        else:
+            return DummyOperator(
+                task_id="dummy_flag_file_sensor",
+                task_group=taskgroup
+            )
+
     def file_ingestion_task(self, table_config, taskgroup):
         """
-        No ingestion is needed - data is already in GCS, so return a dummy operator.
+        Ingest from SFTP
         """
-        return DummyOperator(
-            task_id="dummy_file_ingestion_operator",
-            task_group=taskgroup
-        )
+        return self.get_sftp_ingestion_operator(table_config, taskgroup)
 
     def schema_file_sensor(self, table_config, taskgroup):
         """
@@ -101,34 +107,28 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
             )
 
     def get_file_list_task(self, table_config, taskgroup):
+        if "metadata_file" in table_config.extra_options.get("gcs_table_config"):
+            execution_type = "metadata"
+        else:
+            execution_type = "success"
+
         return PythonOperator(
             task_id="get_file_list",
-            op_kwargs={"table_config": table_config},
+            op_kwargs={"table_config": table_config,
+                        "execution_type": execution_type},
             python_callable=self.get_list_of_files,
             task_group=taskgroup
         )
 
+    @abstractmethod
     def file_sensor(self, table_config, taskgroup):
         """
         Returns an Airflow sensor that waits for the list of files specified by the metadata file provided.
         """
-        bucket = self.config.source.extra_options["gcs_bucket"]
-        files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
+        #bucket = self.config.source.extra_options["gcs_bucket"]
+        #files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
+        pass
 
-        if self.config.source.extra_options["gcs_source_config"]["file_prefix_filtering"]:
-            return GCSObjectPrefixListExistenceSensor(
-                task_id="wait_for_files_to_ingest",
-                bucket=bucket,
-                prefixes=files_to_wait_for,
-                task_group=taskgroup
-            )
-        else:
-            return GCSObjectListExistenceSensor(
-                task_id="wait_for_files_to_ingest",
-                bucket=bucket,
-                objects=files_to_wait_for,
-                task_group=taskgroup
-            )
 
     def load_to_landing_task(self, table_config, taskgroup):
         return PythonOperator(
@@ -136,7 +136,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
             op_kwargs={"table_config": table_config},
             python_callable=self.load_to_landing_py_op_task,
             task_group=taskgroup
-        )
+        )   
 
     def load_to_landing_py_op_task(self, table_config, **kwargs):
         data_source = self.config.source
@@ -169,7 +169,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         if "schema_file" in table_config.extra_options.get("gcs_table_config"):
             schema_file_name = table_config.extra_options.get("gcs_table_config")["schema_file"]
         logging.info(field_delimeter)
-
+        
         allow_quoted_newlines = False
         if "allow_quoted_newlines" in table_config.extra_options.get("gcs_table_config"):
            allow_quoted_newlines = table_config.extra_options.get("gcs_table_config")["allow_quoted_newlines"]
@@ -177,7 +177,6 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         # Get files to load from metadata file
         if schema_file_name:
             schema_file = self.gcs_hook.download(bucket_name=bucket, object_name=schema_file_name)
-
             # Only supports json schema file format - add additional support if required
             schema_fields = json.loads(schema_file)
             logging.info(schema_fields)
@@ -238,6 +237,14 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         logging.info(file_list)
 
         kwargs['ti'].xcom_push(key='file_list', value=file_list)
+    
+    @abstractmethod
+    def get_sftp_sensor(self, table_config, taskgroup):
+        pass
+    
+    @abstractmethod
+    def get_sftp_ingestion_operator(self, table_config, taskgroup):
+        pass
 
     def validate_extra_options(self):
         pass

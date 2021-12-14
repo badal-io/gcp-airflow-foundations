@@ -50,7 +50,7 @@ def get_table_schema_query(schema_table, source_table_name):
     """
 
     return f" select distinct * from (select COLUMN_NAME, DATA_TYPE from `{schema_table}` \
-        where TABLE_NAME = '{source_table_name}' order by COLUMN_ID)"
+        where TABLE_NAME = '{source_table_name}' order by ORDINAL_POSITION)"
 
 
 def mysql_mappings():
