@@ -75,11 +75,11 @@ please refer to :class:`gcp_airflow_foundations.base_class.salesforce_ingestion_
             hds_table_type: SNAPSHOT
             hds_table_time_partitioning: DAY 
             extra_options:
-            sf_config:
-                ingest_all_columns: False
-                fields_to_omit: []
-                field_names: ["Id", "OwnerId", "Name", "Amount", "StageName"]
-                api_table_name: Opportunity
+                sf_config:
+                    ingest_all_columns: False
+                    fields_to_omit: []
+                    field_names: ["Id", "OwnerId", "Name", "Amount", "StageName"]
+                    api_table_name: Opportunity
         - table_name: Account
             ingestion_type: FULL
             surrogate_keys: []
@@ -87,8 +87,8 @@ please refer to :class:`gcp_airflow_foundations.base_class.salesforce_ingestion_
             hds_table_type: SNAPSHOT
             hds_table_time_partitioning: DAY 
             extra_options:
-            sf_config:
-                ingest_all_columns: False
-                fields_to_omit: []
-                field_names: ["Id","Name"]
-                api_table_name: Account
+                sf_config:
+                    ingest_all_columns: False
+                    fields_to_omit: []
+                    field_names: ["Id","Name"]
+                    api_table_name: Account
