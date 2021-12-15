@@ -28,4 +28,5 @@ We have written an opinionated yet flexible ingestion framework for building an 
    data_extraction
    features
    custom_source
+   sample_config
    api

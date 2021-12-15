@@ -5,7 +5,7 @@ Features
 GCP Airflow Foundations offer a suite of additional features that respond to common data ingestion pitfalls.
 
 .. schema_migration: 
-Schema Migration
+1. Schema Migration
 ------------------
 When ingesting from relational database tables and - to a lesser extend - from third party APIs, the source schema might evolve over time.
 GCP Airflow Foundations will detect such changes after loading the data in a staging table, and update the destination table's schema accordingly.
@@ -19,7 +19,7 @@ The audit table stores information on the table and dataset name, the timestamp 
 and the type of schema change that was performed.
 
 .. post_ingestion:
-Post-ingestion Task Dependencies
+2. Post-ingestion Task Dependencies
 ------------------
 The data that are ingested are often needed in downstream analytic workflows. These can be orchestrated in the same Airflow instance by 
 utilizing :class:`gcp_airflow_foundations.operators.airflow.external_task.TableIngestionSensor`. From your Python module with the DAG that depends
@@ -46,13 +46,18 @@ to the tables under that source. For instance, in the example above, the sensor'
 that start with "ABC" and 2) all tables of `data_source_Y` are ingested. 
 
 .. dataform:
-SQL Workflows with Dataform
+3. SQL Workflows with Dataform
 ------------------
 
 `Dataform <https://docs.dataform.co/>`_ is a framework used to manage data transformation workflows and SQL stored procedures in BigQuery.
-GCP Airflow Foundations provides a Dataform Operator, such that Dataform runs can be orchestrated in Airflow. The Dataform Operator can be
-used alongside the post-ingestion Operator in your downstream DAG for cases when the data transformation is dependent on the table ingestion DAGs.
-For example:
+GCP Airflow Foundations provides a Dataform Operator, such that Dataform runs can be orchestrated in Airflow. 
+
+.. dataform_external:
+3.1 Invoking Dataform in an External DAG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Dataform Operator can be used alongside the post-ingestion Operator in your downstream DAG for cases when the data transformation 
+is dependent on the table ingestion DAGs. For example:
 
 .. code-block:: python
 
@@ -84,3 +89,15 @@ For example:
         )
 
         sensor >> dataform
+
+.. dataform_internal:
+3.2 Invoking Dataform in the Ingestion DAG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+<WIP>
+
+.. dataflow:
+4. Data Processing with Dataflow
+------------------
+
+<WIP>

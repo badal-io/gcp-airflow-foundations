@@ -10,6 +10,8 @@ from typing import List, Optional
 @dataclass
 class SalesforceIngestionConfig:
     """
+    Salesforce configuration class.
+    
     Attributes:
         ingest_all_columns: SELECT * the Salesforce object if true
         fields_to_omit: a list of object fields to omit from ingestion

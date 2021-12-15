@@ -6,6 +6,8 @@ from typing import List, Optional
 @dataclass
 class DataflowJobConfig:
     """
+    Dataflow configuration class.
+    
     Attributes:
         project: the GCP project in which the Dataflow job runs
         region: the region in which the Dataflow job should run
