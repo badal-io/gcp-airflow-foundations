@@ -9,7 +9,7 @@ The building blocks of the data ingestion DAG are pre-defined in GCP Airflow Fou
 The data ingestion follows a set of default steps:
 
 - The first step in the ingestion pipeline is to extract the data from a source and load them to a landing table in BigQuery. 
-- The schema of the landing stable is parsed and compared with the schema of the destination tables. 
+- The schema of the landing table is parsed and compared with the schema of the destination tables. 
 - If any schema changes are detected, these are migrated to the destination table. 
 - Finally, the data are upserted to the destination tables. 
 
