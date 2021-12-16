@@ -1,0 +1,40 @@
+---
+source:
+  name: "dev_ingestion_6"
+  source_type: TTD
+  ingest_schedule: "@daily"
+  external_dag_id: null
+  start_date: "2021-01-01"
+  acceptable_delay_minutes: 5
+  gcp_project: dev-eyereturn-data-warehouse
+  dataset_data_name: ttd
+  connection: google_cloud_default
+  extra_options:
+    ttd:
+      partner_id: "2ui2ov3"
+  notification_emails:
+    - ''
+  owner: owner
+  version: 1
+  landing_zone_options:
+    landing_zone_dataset: staging_zone
+  schema_options:
+    schema_source_type: AUTO 
+  location: US
+tables:
+  - table_name: data_elements_performance
+    surrogate_keys: ['Date','Advertiser_ID','Campaign_ID','Ad_Group','Data_Element','metric_3rd_Party_Data_Brand','Tracking_Tag_ID']
+    ingestion_type: INCREMENTAL
+    extra_options:
+      ttd:
+        report_template_id: 1652867
+    dataform_options:
+      environment:
+      schedule:
+      tags:
+  - table_name: basic_stats
+    surrogate_keys: ['Date','Advertiser_ID','Campaign_ID','Ad_Group_ID','Campaign_Flight_ID','Ad_Group_Campaign_Flight_ID','Ad_Format','Creative']
+    ingestion_type: INCREMENTAL
+    extra_options:
+      ttd:
+        report_template_id: 1654646

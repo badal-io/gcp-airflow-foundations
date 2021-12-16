@@ -13,7 +13,7 @@ from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetad
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
-
+from gcp_airflow_foundations.dataform_config import DataformConfig
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTableConfig
@@ -32,6 +32,7 @@ class SourceTableConfig:
         column_mapping : Mapping used to rename columns.
         ods_config : ODS table configuration. See :class:`gcp_airflow_foundations.base_class.ods_table_config.OdsTableConfig`.
         hds_config : HDS table configuration. See :class:`gcp_airflow_foundations.base_class.hds_table_config.HdsTableConfig`.
+        dataform_options: Dataform configuration. See :class:`gcp_airflow_foundations.dataform_config.DataformConfig`.
         facebook_table_config: Extra options for ingesting data from the Facebook API.
         extra_options: Field for storing additional configuration options.
         version : The Dag version for the table. Can be incremented if logic changes.
@@ -46,6 +47,7 @@ class SourceTableConfig:
     surrogate_keys: List[str]
     column_mapping: Optional[dict]
     hds_config: Optional[HdsTableConfig]
+    dataform_options: Optional[DataformConfig]
     facebook_table_config: Optional[FacebookTableConfig]
     extra_options: dict = field(default_factory=dict)
     ods_config: Optional[OdsTableConfig] = OdsTableConfig(ods_metadata=OdsTableMetadataConfig())

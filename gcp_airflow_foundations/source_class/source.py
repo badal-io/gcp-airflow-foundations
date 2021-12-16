@@ -8,7 +8,7 @@ from gcp_airflow_foundations.base_class.source_config import SourceConfig
 from gcp_airflow_foundations.enums.schema_source_type import SchemaSourceType
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 from gcp_airflow_foundations.source_class.schema_source_config import AutoSchemaSourceConfig, GCSSchemaSourceConfig, BQLandingZoneSchemaSourceConfig
-
+from gcp_airflow_foundations.operators.api.operators.dataform_operator import DataformOperator
 import logging
 
 class DagBuilder(ABC):
@@ -61,10 +61,20 @@ class DagBuilder(ABC):
                 render_template_as_native_obj=True
             ) as dag:    
 
-                load_to_bq_landing = self.get_bq_ingestion_task(dag, table_config)
+                load_to_bq_landing = self.get_bq_ingestion_task(dag, table_config) # load data to BigQuery staging table
 
-                self.get_datastore_ingestion_task(dag, load_to_bq_landing, data_source, table_config)
+                self.get_datastore_ingestion_task(dag, load_to_bq_landing, data_source, table_config) # load data to BigQuery ODS/HDS tables
             
+                # TO-DO: add dataform task
+                if table_config.dataforms_options is not None:
+                    add_dataform = DataformOperator(
+                        task_id=f"{data_source.name}_dataform",
+                        dataform_conn_id='dataform_default',
+                        environment=table_config.dataforms_options.environment,
+                        project_id=table_config.dataforms_options.project_id,
+                        schedule=table_config.dataforms_options.schedule,
+                        tags=table_config.dataforms_options.tags,
+                    )
                 dags.append(dag)
                 
         dags = dags + self.get_extra_dags()
