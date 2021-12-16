@@ -90,14 +90,12 @@ is dependent on the table ingestion DAGs. For example:
 
         sensor >> dataform
 
-.. dataform_internal:
-3.2 Invoking Dataform in the Ingestion DAG
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-<WIP>
-
 .. dataflow:
 4. Data Processing with Dataflow
 ------------------
 
-<WIP>
+GCP Airflow Framework supports ingesting data to BigQuery from relational databases, including Oracle and MySQL, using Dataflow jobs.
+An example configuration file for migrating Oracle tables to BigQuery using Dataflow can be found here: :ref:`_oracle`.
+As a prerequisite for the ingestion, the Dataflow `.jar` file must be available in a bucket on Cloud Storage. 
+Ingesting data using Dataflow is compatible with all other features of GCP Airflow Framework, including chosing from incremental
+or full ingestions. In addition, with Dataflow the source table schema can be fetched from metadata tables in the source database. 

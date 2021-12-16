@@ -2,7 +2,7 @@
 Sample Configuration Files
 *************
 
-.. oracle: 
+.. _oracle: 
 Oracle
 ------------------
 

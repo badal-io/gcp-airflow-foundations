@@ -3,7 +3,7 @@ Welcome to gcp-airflow-foundations' documentation!
 ********************
 
 .. image:: ./_static/airflow_diagram.png
-    :width: 600
+    :width: 700
 
 Airflow is an awesome open source orchestration framework that is the go-to for building data ingestion pipelines on GCP (using Composer - a hosted AIrflow service). However, most companies using it face the same set of problems:
 
