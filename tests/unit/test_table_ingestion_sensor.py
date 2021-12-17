@@ -67,6 +67,7 @@ class TestTableIngestionSensor(unittest.TestCase):
             dag=self.dag
         )
 
+        op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
         execute_task(task=op, execution_date=DEFAULT_DATE)
 
     def test_table_ingestion_sensor_multiple_tables(self):
@@ -95,6 +96,7 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with self.assertLogs(op.log, level=logging.INFO) as cm:
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
             execute_task(task=op, execution_date=DEFAULT_DATE)
 
             assert 'INFO:airflow.task.operators:1 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable1\'].' in  cm.output
@@ -126,6 +128,7 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with self.assertLogs(op.log, level=logging.INFO) as cm:
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
             execute_task(task=op, execution_date=DEFAULT_DATE)
 
             assert 'INFO:airflow.task.operators:1 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable1\'].' in  cm.output
@@ -159,6 +162,7 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with self.assertLogs(op.log, level=logging.INFO) as cm:
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
             execute_task(task=op, execution_date=DEFAULT_DATE)
 
             assert 'INFO:airflow.task.operators:2 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable1\', \'TestSource1.TestTable2\'].' \
