@@ -94,8 +94,24 @@ is dependent on the table ingestion DAGs. For example:
 4. Data Processing with Dataflow
 ------------------
 
-GCP Airflow Framework supports ingesting data to BigQuery from relational databases, including Oracle and MySQL, using Dataflow jobs.
+GCP Airflow Framework supports ingesting data to BigQuery from relational databases, including Oracle and MySQL, using Dataflow jobs. Dataflow is used to ingest the data into a landing zone in BigQuery. Then the data in landing zone is ingested into the ODS and HDS using the common functionality of the framework.  :ref:`ods`. 
+
 An example configuration file for migrating Oracle tables to BigQuery using Dataflow can be found here: :ref:`Oracle`.
-As a prerequisite for the ingestion, the Dataflow `.jar` file must be available in a bucket on Cloud Storage. 
-Ingesting data using Dataflow is compatible with all other features of GCP Airflow Framework, including chosing from incremental
-or full ingestions. In addition, with Dataflow the source table schema can be fetched from metadata tables in the source database. 
+
+4.1 Configuring a DataFlow Job
+------------------
+As a prerequisite for the ingestion, the Dataflow `.jar` file must be available in a bucket on Cloud Storage. [TODO: Provide examples]
+
+4.2 Schema Auto-Detection
+------------------
+As the first step in the ingsetion the Dataflow job queries the relational database metadata table to retrieve all the tables and their schema. The schema is then compared against the target table schema, and proper schema evolution rules are followed :ref:`schema_migration`.
+
+4.3 Deployment into subnetworks 
+------------------
+In many usecases Composer is deployed in a network that doesn't have direct access to the source databases. For sercurity purposes it is desirable to allow acceess to databases only from specific subnetworks. Instead of having to deploy a seperate Composer cluster in each subnetwork, it is possible to configure the Dataflow ingetion jobs to run from seperate subnetwork for each source
+
+4.4 Work In Progress
+------------------
+- Auto ingestion of all tables in a database based on inclusion and exclusion rules
+- Paritioning of large table ingestion
+- Worker pools to limit number of connections established to each databases. 
