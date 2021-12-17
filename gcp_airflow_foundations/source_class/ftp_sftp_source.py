@@ -123,7 +123,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
     def get_sftp_ingestion_operator(self, table_config, taskgroup, dir_prefix, gcs_bucket_prefix, flag_file_path, bucket):
         if not flag_file_path == "":
             return PythonOperator(
-                task_id="load_sftp_to_gcs_flag",
+                task_id="load_sftp_to_gcs",
                 op_kwargs={"table_config": table_config,
                         "dir_prefix": dir_prefix,
                         "gcs_bucket_prefix": gcs_bucket_prefix,
@@ -244,6 +244,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
     
         # xcom push the prefix of external partitions, e.g. "par1=val1/par2=val/par3=val3"
         partition_prefix = files[0].replace(local_file_prefix_to_drop, "").rsplit('/', 1)[0]
+        logging.info(partition_prefix)
         kwargs['ti'].xcom_push(key='partition_prefix', value=partition_prefix)
 
     def validate_extra_options(self):
