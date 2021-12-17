@@ -85,10 +85,14 @@ credentials.
 .. ingestion_type
 5. Ingestion Type
 ========================
-GCP Airflow Foundations support both full and incremental ingestions. In the former, the lifetime range of data is extracted from the data source at every ingestion
-and the destination table is truncated with the new records. In the latter, the declared ingestion schedule is used as a time range to query the source data available within
-that time interval and the records are used to update the destination table. The ingestion type must be declared in the ``ingestion_type`` field for each table.
-Note that you can select a different ingestion type for each table.
+GCP Airflow Foundations support two methods for extracting data out of the source system:
+
+- Full Table Ingestion: All rows of a table  (including new, updated, and existing) are extracteed during every ingestion
+
+- Incremental Ingesteion: Only rows that have been added or updated since the last ingestion job are extracted. As an example an `updated_at` column can be useed to identify records that have been updated since a specified time, and then only replicate those records
+
+The ingestion type must be declared in the ``ingestion_type`` field for each table.
+Note that you can select a different ingestion type for each table, and some sources support only full table ingestion. 
 
 .. table_selection:
 6. Table Selection
@@ -104,7 +108,7 @@ These are usually record identifier fields, as well as breakdown dimension field
 
 By default, the destination table will be an Operational Data Store (ODS). An Operational Data Store (ODS) is a table that provides a snapshot of 
 the latest data for operational reporting. As newer records become available, the ODS continuously overwrites older data with either full or incremental data ingestions. 
-With full ingestions, the entire ODS is replaced with the updated data, whereas with incremental ingestions only the difference between the target and source data is loaded. 
+With full ingestions, the entire ODS is replaced with the updated data, whereas with incremental ingestions the new data is upserted into the target table
 
 The ODS table will include four metadata columns for each table row:
 
