@@ -13,7 +13,7 @@ from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetad
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
-from gcp_airflow_foundations.dataform_config import DataformConfig
+from gcp_airflow_foundations.base_class.dataform_config import DataformConfig
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTableConfig

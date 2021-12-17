@@ -5,6 +5,7 @@ from gcp_airflow_foundations.operators.gcp.schema_parsing.schema_parsing_operato
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.operators.gcp.delete_staging_table import BigQueryDeleteStagingTableOperator
+from gcp_airflow_foundations.operators.api.operators.dataform_operator import DataformOperator
 import logging
 
 
@@ -89,7 +90,24 @@ def load_builder(
         dag=dag
     )
 
-    if hds_task_group:
-        preceding_task >> parse_schema >> ods_task_group >> hds_task_group >> delete_staging_table
+    # dataform operator
+    if table_config.dataform_options is not None:
+        dataform = DataformOperator(
+            task_id=f"{data_source.name}_dataform",
+            dataform_conn_id='dataform_default',
+            environment=table_config.dataform_options.environment,
+            schedule=table_config.dataform_options.schedule,
+            tags=table_config.dataform_options.tags,
+            dag=dag
+        )
+
+        if hds_task_group:
+            preceding_task >> parse_schema >> ods_task_group >> hds_task_group >> delete_staging_table >> dataform
+        else:
+            preceding_task >> parse_schema >> ods_task_group >> delete_staging_table >> dataform
+
     else:
-        preceding_task >> parse_schema >> ods_task_group >> delete_staging_table
+        if hds_task_group:
+            preceding_task >> parse_schema >> ods_task_group >> hds_task_group >> delete_staging_table
+        else:
+            preceding_task >> parse_schema >> ods_task_group >> delete_staging_table
