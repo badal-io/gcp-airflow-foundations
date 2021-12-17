@@ -17,6 +17,7 @@ import logging
 
 def run_task(task, execution_date):
     ti = TaskInstance(task=task, execution_date=execution_date)
+    task.run(start_date=execution_date, end_date=execution_date, ignore_ti_state=True)
     task.execute(ti.get_template_context())
 
 @pytest.fixture(scope="session")

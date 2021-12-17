@@ -1,0 +1,52 @@
+# - Airflow Env variables.
+substitutions:
+  _GCP_PROJECT_ID: airflow-framework
+  _PYTHON_VERSION: '3.8'
+  _BUILD_IMG_NAME: airflow2_cicd:latest
+
+steps:
+# - Setup framework.
+  # [START setup-framework]
+  - name: python
+    waitFor: ['-']
+    entrypoint: 'bash'
+    args: 
+      - '-c' 
+      - |
+        pip install build wheel
+        python3 setup.py sdist
+    id: setup-framework
+  # [END setup-framework]
+
+# - Build a new Airflow2 image.
+  # [START build-airflow2]
+  - name: 'gcr.io/cloud-builders/docker'
+    waitFor: ['setup-framework']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        docker build -t gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
+        --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
+        -f docker/Dockerfile .
+    #env:
+    #  - 'FOO=$_BAR'
+    dir: '.'
+    id: 'build-airflow2'
+  # [END build-airflow2]
+
+# - Unit tests.
+  # [START unit-test]
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+          pytest tests/unit/test_unit.py -v && pytest tests/unit/test_table_ingestion_sensor.py -v
+    id: "unit-test"
+  # [END unit-test]
+
+timeout: 3600s
+images:
+  - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
