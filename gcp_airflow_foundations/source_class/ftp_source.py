@@ -120,7 +120,11 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         )
 
     def get_list_of_files(self, table_config, **kwargs):
-        ds = kwargs["ds"]
+        airflow_date_template = self.config.source.extra_options["ftp_source_config"]["airflow_date_template"]
+        if airflow_date_template == "ds":
+            ds = kwargs["ds"]
+        else:
+            ds = kwargs["prev_ds"]
         ds = datetime.strptime(ds, "%Y-%m-%d").strftime(self.config.source.extra_options["ftp_source_config"]["date_format"])
         # XCom push the list of files
         # overwrite if in table_config
@@ -241,7 +245,15 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                     create_disposition='CREATE_IF_NEEDED',
                     skip_leading_rows=1,
                 )
-            gcs_to_bq.execute(context=kwargs)    
+            gcs_to_bq.execute(context=kwargs)   
+
+    def get_load_script(self, gcp_project, landing_dataset, landing_table_name, bucket, gcs_bucket_prefix, partition_prefix, table_name, date_column, ds):
+        full_table_name = f"{landing_dataset}.{landing_table_name}"
+        source_uri_prefix = f"gs://{bucket}/{gcs_bucket_prefix}/{table_name}/{ds}"
+        uri_wildcards = f"gs://{bucket}/{gcs_bucket_prefix}/{table_name}/{ds}/{partition_prefix}/*"
+        command = f"bq load --source_format=PARQUET --autodetect --hive_partitioning_mode=STRINGS --hive_partitioning_source_uri_prefix={source_uri_prefix} {full_table_name} {uri_wildcards}"
+        logging.info(command)
+        return command
 
     def validate_extra_options(self):
         # try and parse as FTPSourceConfig

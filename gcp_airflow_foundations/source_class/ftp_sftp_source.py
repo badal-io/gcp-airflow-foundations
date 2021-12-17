@@ -118,7 +118,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         dir_prefix = dir_prefix.replace("{{ ds }}", ds)
         mod_time = sftp_hook.get_mod_time(flag_file_path)
         mod_time = datetime.strptime(mod_time, '%Y%m%d%H%M%S').strftime('%Y-%m-%d')
-        return ds == mod_time
+        return ds <= mod_time
     
     def get_sftp_ingestion_operator(self, table_config, taskgroup, dir_prefix, gcs_bucket_prefix, flag_file_path, bucket):
         if not flag_file_path == "":
@@ -176,6 +176,15 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
     def load_sftp_to_gcs_flag(self, table_config, dir_prefix, gcs_bucket_prefix, bucket, flag_file_path, **kwargs):
         ds = kwargs["ds"]
         ti = kwargs["ti"]
+
+        airflow_date_template = self.config.source.extra_options["ftp_source_config"]["airflow_date_template"]
+        
+        # flag to check whether we are loading dates named with {{ prev_ds }} or {{ ds }}
+        # landing zone table creation will still use {{ ds }}
+        source_file_date = ds
+        if airflow_date_template == "prev_ds":
+            source_file_date = kwargs["prev_ds"]
+
         date_column = table_config.extra_options.get("sftp_table_config")["date_column"]
         table_name = table_config.table_name
         source_path_prefix = dir_prefix + "/*"
@@ -194,7 +203,8 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             map = map[0]
 
         # get list of files, create local directory structure, download
-        files_to_upload = [x for x in map if f"{date_column}={ds}" in x]
+        files_to_upload = [x for x in map if f"{date_column}={source_file_date}" in x]
+        logging.info(files_to_upload)
         for remote_file in files_to_upload:
             conn = sftp_hook.get_conn()
             path_to_create = my_path + "/" + remote_file
@@ -235,14 +245,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         # xcom push the prefix of external partitions, e.g. "par1=val1/par2=val/par3=val3"
         partition_prefix = files[0].replace(local_file_prefix_to_drop, "").rsplit('/', 1)[0]
         kwargs['ti'].xcom_push(key='partition_prefix', value=partition_prefix)
-
-    def get_load_script(self, gcp_project, landing_dataset, landing_table_name, bucket, gcs_bucket_prefix, partition_prefix, table_name, date_column, ds):
-        full_table_name = f"{landing_dataset}.{landing_table_name}"
-        source_uri_prefix = f"gs://{bucket}/{gcs_bucket_prefix}/{table_name}/{ds}"
-        uri_wildcards = f"gs://{bucket}/{gcs_bucket_prefix}/{table_name}/{ds}/{partition_prefix}/*"
-        command = f"bq load --source_format=PARQUET --autodetect --hive_partitioning_mode=STRINGS --hive_partitioning_source_uri_prefix={source_uri_prefix} {full_table_name} {uri_wildcards}"
-        logging.info(command)
-        return command
 
     def validate_extra_options(self):
         super().validate_extra_options()
