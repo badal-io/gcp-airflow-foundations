@@ -43,7 +43,7 @@ steps:
     args:
       - '-c'
       - |
-          pytest tests/unit/test_unit.py -v && pytest tests/unit/test_table_ingestion_sensor.py -v
+          pytest tests/unit/dags -vv && pytest tests/unit/operators -vv
     id: "unit-test"
   # [END unit-test]
 
