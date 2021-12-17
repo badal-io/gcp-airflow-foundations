@@ -1,0 +1,55 @@
+---
+source:
+  name: "facebook_campaigns_ingestion"
+  source_type: FACEBOOK
+  ingest_schedule: "@daily"
+  external_dag_id: null
+  start_date: "2021-01-01"
+  acceptable_delay_minutes: 5
+  gcp_project: airflow-framework
+  dataset_data_name: facebook
+  connection: google_cloud_default
+  notification_emails:
+    - ''
+  owner: owner
+  version: 1
+  landing_zone_options:
+    landing_zone_dataset: landing_zone
+  schema_options:
+    schema_source_type: AUTO 
+  facebook_options:
+    account_lookup_scope: all
+    fields: [
+      "account_id",
+      "account_name",
+      "attribution_setting",
+      "account_currency",
+      "campaign_name", 
+      "campaign_id", 
+      "impressions",
+      "spend",
+      "reach",
+      "clicks"
+      ]
+    level: campaign
+    time_increment: "1"
+    use_account_attribution_setting: False
+    use_unified_attribution_setting: True
+  location: US
+tables:
+  - table_name: fb_campaign_insights
+    surrogate_keys: ['account_id','campaign_id','date_start']
+    ingestion_type: INCREMENTAL
+    facebook_table_config:
+      breakdowns: null
+      action_breakdowns: ["action_type"]
+    column_mapping:
+      date_start: date
+  - table_name: fb_campaign_insights_platform_placement
+    surrogate_keys: ['account_id','campaign_id','date_start','publisher_platform','platform_position']
+    ingestion_type: INCREMENTAL
+    facebook_table_config:
+      breakdowns:  ["publisher_platform","platform_position"]
+      action_breakdowns: ["action_type"]
+    column_mapping:
+      date_start: date

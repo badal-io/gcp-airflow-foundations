@@ -1,0 +1,24 @@
+---
+source:
+  name: "custom_source"
+  source_type: CUSTOM
+  ingest_schedule: "@daily"
+  external_dag_id: null
+  start_date: "2021-01-01"
+  acceptable_delay_minutes: 5
+  gcp_project: airflow-framework
+  dataset_data_name: custom_source
+  connection: google_cloud_default
+  notification_emails:
+    - ''
+  owner: owner
+  version: 1
+  landing_zone_options:
+    landing_zone_dataset: landing_zone
+  schema_options:
+    schema_source_type: AUTO 
+  location: US
+tables:
+  - table_name: custom_source_table
+    surrogate_keys: []
+    ingestion_type: INCREMENTAL
