@@ -16,4 +16,5 @@ class FTPTableConfig:
     directory_prefix: Optional[str]
     metadata_file: Optional[str]
     schema_file: Optional[str]
+    source_format: str
     flag_file_path: Optional[str]
