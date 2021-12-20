@@ -13,6 +13,7 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.operators.dummy import DummyOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.sensors.python import PythonSensor
+from airflow.models import Variable
 
 from gcp_airflow_foundations.operators.api.hooks.sftp_hook import SFTPHook
 from gcp_airflow_foundations.operators.api.sensors.sftp_sensor import SFTPFilesExistenceSensor
@@ -114,6 +115,9 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         # Check if the flag file is dated with the execution date or later - if yes, then the files are ready for ingestion.
         # allows backfilling
         ds = kwargs["ds"]
+        if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
+            private_key_name = self.config.source.extra_options["sftp_source_config"]["sftp_private_key_secret_name"]
+            self.save_id_to_file(private_key_name)
         sftp_hook = SFTPHook()
         dir_prefix = dir_prefix.replace("{{ ds }}", ds)
         mod_time = sftp_hook.get_mod_time(flag_file_path)
@@ -155,6 +159,9 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         source_path_prefix = dir_prefix + "/*"
         destination_path_prefix = gcs_bucket_prefix + "/" + table_name + "/" + ds 
 
+        if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
+            private_key_name = self.config.source.extra_options["sftp_source_config"]["sftp_private_key_secret_name"]
+            self.save_id_to_file(private_key_name)
         sftp_hook = SFTPHook()
         files_to_load = ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list')
 
@@ -173,6 +180,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         # delete data
         shutil.rmtree(my_path)
 
+
     def load_sftp_to_gcs_flag(self, table_config, dir_prefix, gcs_bucket_prefix, bucket, flag_file_path, **kwargs):
         ds = kwargs["ds"]
         ti = kwargs["ti"]
@@ -186,9 +194,14 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             source_file_date = kwargs["prev_ds"]
 
         date_column = table_config.extra_options.get("sftp_table_config")["date_column"]
+        full_dir_download = table_config.extra_options.get("sftp_table_config")["full_dir_download"]
         table_name = table_config.table_name
         source_path_prefix = dir_prefix + "/*"
         destination_path_prefix = gcs_bucket_prefix + "/" + table_name + "/" + ds 
+
+        if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
+            private_key_name = self.config.source.extra_options["sftp_source_config"]["sftp_private_key_secret_name"]
+            self.save_id_to_file(private_key_name)
         sftp_hook = SFTPHook()
 
         # Create directory and download data
@@ -203,7 +216,11 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             map = map[0]
 
         # get list of files, create local directory structure, download
-        files_to_upload = [x for x in map if f"{date_column}={source_file_date}" in x]
+        if full_dir_download:
+            files_to_upload = [x for x in map]
+        else:
+            files_to_upload = [x for x in map if f"{date_column}={source_file_date}" in x]
+
         logging.info(files_to_upload)
         for remote_file in files_to_upload:
             conn = sftp_hook.get_conn()
@@ -246,6 +263,13 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         partition_prefix = files[0].replace(local_file_prefix_to_drop, "").rsplit('/', 1)[0]
         logging.info(partition_prefix)
         kwargs['ti'].xcom_push(key='partition_prefix', value=partition_prefix)
+
+    def save_id_to_file(self, private_key_var):
+        key = Variable.get(private_key_var)
+        if not os.path.isfile("id_rsa"):
+            with open("id_rsa", "w") as f:
+                f.write(key)
+        
 
     def validate_extra_options(self):
         super().validate_extra_options()
