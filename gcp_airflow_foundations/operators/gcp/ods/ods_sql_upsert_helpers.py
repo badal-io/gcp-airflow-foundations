@@ -34,6 +34,9 @@ class SqlHelperODS:
         column_mapping,
         columns,
         ods_metadata,
+        partition_column_name=None,
+        time_partitioning=None,
+        partition_timestamp=None,
         gcp_conn_id='google_cloud_default'):
 
         self.source_dataset = source_dataset
@@ -49,6 +52,9 @@ class SqlHelperODS:
         self.primary_key_hash_column_name = ods_metadata.primary_key_hash_column_name
         self.ingestion_time_column_name = ods_metadata.ingestion_time_column_name
         self.update_time_column_name = ods_metadata.update_time_column_name
+        self.partition_column_name = partition_column_name
+        self.time_partitioning = time_partitioning
+        self.partition_timestamp = partition_timestamp
 
         self.columns_str_source: str = ",".join(["`{}`".format(col) for col in columns])
         self.columns_str_keys: str = ",".join(surrogate_keys)
@@ -75,12 +81,23 @@ class SqlHelperODS:
         comma = ","
 
         rows, values = self.create_insert_sql()
+        
+        if self.time_partitioning:
+            partition_filter = f"""
+                AND 
+                    T.`{self.column_mapping[self.partition_column_name]}` = TIMESTAMP_TRUNC('{self.partition_timestamp}', {self.time_partitioning}) 
+                AND
+                    S.`{self.partition_column_name}` = TIMESTAMP_TRUNC('{self.partition_timestamp}', {self.time_partitioning}) 
+            """
+        else:
+            partition_filter = ""
 
         return f"""
                 MERGE `{self.target_dataset}.{self.target}` T
                 USING `{self.source_dataset}.{self.source}` S
                 ON {' AND '.join(
-            [f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])}
+                    [f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])}
+                {partition_filter}
                 WHEN MATCHED THEN UPDATE
                     SET {(','.join(f'`{self.column_mapping[col]}`=S.`{col}`' for col in self.columns )) + f'{comma}' + f'{self.update_time_column_name}=CURRENT_TIMESTAMP()' + f'{comma}' +  f'{self.hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }
                 WHEN NOT MATCHED THEN

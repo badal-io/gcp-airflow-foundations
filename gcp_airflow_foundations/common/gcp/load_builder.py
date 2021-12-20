@@ -53,6 +53,7 @@ def load_builder(
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
         ingestion_type=ingestion_type,
+        partition_expiration=partition_expiration,
         ods_table_config=ods_table_config,
         location=location,
         dag=dag

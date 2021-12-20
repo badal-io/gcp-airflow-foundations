@@ -48,7 +48,7 @@ class SourceTableConfig:
     hds_config: Optional[HdsTableConfig]
     facebook_table_config: Optional[FacebookTableConfig]
     extra_options: dict = field(default_factory=dict)
-    ods_config: Optional[OdsTableConfig] = OdsTableConfig(ods_metadata=OdsTableMetadataConfig())
+    ods_config: Optional[OdsTableConfig] = OdsTableConfig(ods_metadata=OdsTableMetadataConfig(), ods_table_time_partitioning=None, partition_column_name=None)
     version: int = 1
     catchup: bool = True
 

@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
 from airflow.contrib.operators.bigquery_operator import (
@@ -129,6 +130,24 @@ class MergeBigQueryODS(BigQueryOperator):
             column_mapping=self.column_mapping,
             ods_metadata=self.ods_table_config.ods_metadata
         )
+
+        if self.ods_table_config.ods_table_time_partitioning:
+            partitioning_dimension = self.ods_table_config.ods_table_time_partitioning.value
+            sql_helper.time_partitioning = partitioning_dimension
+            sql_helper.partition_column_name =  self.ods_table_config.partition_column_name
+        
+            ts = context['ts']
+            now = datetime.strptime(ts, '%Y-%m-%dT%H:%M:%S%z')
+            if partitioning_dimension == "HOUR":
+                partition_id = now.strftime("%Y%m%d%H")
+            elif partitioning_dimension == "DAY":
+                partition_id = now.strftime("%Y%m%d")
+            elif partitioning_dimension == "MONTH":
+                partition_id = now.strftime("%Y%m")
+            else:
+                raise AirflowException(f"Could not determine partition ID format from `{partitioning_dimension}`")   
+
+            sql_helper.partition_timestamp = ts
 
         if self.ingestion_type == IngestionType.INCREMENTAL:
             # Append staging table to ODS table
