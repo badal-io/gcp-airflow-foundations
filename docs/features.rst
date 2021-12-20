@@ -100,18 +100,24 @@ An example configuration file for migrating Oracle tables to BigQuery using Data
 
 4.1 Configuring a DataFlow Job
 ------------------
-As a prerequisite for the ingestion, the Dataflow `.jar` file must be available in a bucket on Cloud Storage. [TODO: Provide examples]
+Several prerequisites are required for the ingestion:
+
+A driver .jar file must be available in a bucket on Cloud Storage. For example, for Oracle ingestion an ojdbc{#}.jar file should be provided
+A path to the compiled Dataflow template must be available in a bucket on Cloud Storage. The JdbcToBigQuery.java template and instructions to compile it are provided by GCP at `this repository <https://github.com/GoogleCloudPlatform/DataflowTemplates>`_.
+Another folder in Cloud Storage should be reserved for the Dataflow job temporary write directory. 
+
+A simple way to configure this would be to create a dedicated GCS bucket per source ingestion, with subfolders for the template file, driver and temporary storage. The rest of the configuration are specified in the jdbc config class, and include jdbc credentials, dataflow job parameters, etc.
 
 4.2 Schema Auto-Detection
 ------------------
-As the first step in the ingsetion the Dataflow job queries the relational database metadata table to retrieve all the tables and their schema. The schema is then compared against the target table schema, and proper schema evolution rules are followed :ref:`schema_migration`.
+As an optional first step in the ingestion the Dataflow job queries the relational database metadata table to retrieve all the tables and their schema. The schema is then compared against the target table schema, and proper schema evolution rules are followed for schema migration :ref:`schema_migration`. This will occur if the configuration parameter “ingest_metadata” is set to True. If the configuration parameter “ingest_metadata” is set to False, however, then a BigQuery table with the same content should be created manually, and the configuration parameter “bq_schema_table” should point to it.
 
 4.3 Deployment into subnetworks 
 ------------------
-In many usecases Composer is deployed in a network that doesn't have direct access to the source databases. For sercurity purposes it is desirable to allow acceess to databases only from specific subnetworks. Instead of having to deploy a seperate Composer cluster in each subnetwork, it is possible to configure the Dataflow ingetion jobs to run from seperate subnetwork for each source
+In many use-cases, Composer is deployed in a network that doesn’t have direct access to the source databases. For security purposes it is desirable to allow access to databases only from specific subnetworks. Instead of having to deploy a separate Composer cluster in each subnetwork, Dataflow jobs are configurable to run from separate subnetworks for each source. The source configuration parameter “subnetwork” should be specified as the full subnetwork name in the form: regions/{region}/subnetworks/{subnetwork}.
 
 4.4 Work In Progress
 ------------------
-- Auto ingestion of all tables in a database based on inclusion and exclusion rules
-- Paritioning of large table ingestion
-- Worker pools to limit number of connections established to each databases. 
+- Auto ingestion of all tables in a database based on inclusion and exclusion rules (e.g. based on regular expressions, by schema in Oracle). 
+- Dataflow job partitioning of large table ingestions
+
