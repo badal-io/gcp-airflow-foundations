@@ -40,6 +40,12 @@ tables:
   - table_name: fb_campaign_insights
     surrogate_keys: ['account_id','campaign_id','date_start']
     ingestion_type: INCREMENTAL
+    hds_config:
+      hds_table_type: SCD2
+      hds_metadata:
+        eff_start_time_column_name: af_metadata_created_at
+        eff_end_time_column_name: af_metadata_expired_at
+        hash_column_name: af_metadata_row_hash
     facebook_table_config:
       breakdowns: null
       action_breakdowns: ["action_type"]
@@ -48,6 +54,12 @@ tables:
   - table_name: fb_campaign_insights_platform_placement
     surrogate_keys: ['account_id','campaign_id','date_start','publisher_platform','platform_position']
     ingestion_type: INCREMENTAL
+    hds_config:
+      hds_table_type: SCD2
+      hds_metadata:
+        eff_start_time_column_name: af_metadata_created_at
+        eff_end_time_column_name: af_metadata_expired_at
+        hash_column_name: af_metadata_row_hash
     facebook_table_config:
       breakdowns:  ["publisher_platform","platform_position"]
       action_breakdowns: ["action_type"]
