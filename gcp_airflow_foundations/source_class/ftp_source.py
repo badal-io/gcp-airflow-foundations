@@ -180,9 +180,13 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         table_name = table_config.table_name
         destination_table = f"{gcp_project}:{landing_dataset}.{table_config.landing_zone_table_name_override}" + f"_{ds}"
         files_to_load = ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list')
+        if "parquet_upload_option" in table_config.extra_options.get("ftp_table_config"):
+            parquet_upload_option = table_config.extra_options.get("ftp_table_config")["parquet_upload_option"]
+        else:
+            parquet_upload_option = "BASH"
 
         source_format = self.config.source.extra_options["ftp_source_config"]["source_format"]
-        if source_format == "PARQUET":
+        if source_format == "PARQUET" and parquet_upload_option == "BASH":
             date_column = table_config.extra_options.get("sftp_table_config")["date_column"]
             gcs_bucket_prefix = data_source.extra_options["ftp_source_config"]["gcs_bucket_prefix"]
             # bq load command if parquet
@@ -213,6 +217,12 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             allow_quoted_newlines = False
             if "allow_quoted_newlines" in table_config.extra_options.get("ftp_table_config"):
                 allow_quoted_newlines = table_config.extra_options.get("ftp_table_config")["allow_quoted_newlines"]
+
+            if parquet_upload_option == "GCS" and source_format == "PARQUET":
+                # overwrite files_to_upload
+                partition_prefix = ti.xcom_pull(key='partition_prefix', task_ids='ftp_taskgroup.load_sftp_to_gcs')
+                files_to_load = self.gcs_hook.list(bucket_name=bucket, prefix=partition_prefix)
+                logging.info(files_to_load)
 
             # Get files to load from metadata file
             if schema_file_name:
@@ -245,7 +255,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                     create_disposition='CREATE_IF_NEEDED',
                     skip_leading_rows=1,
                 )
-            gcs_to_bq.execute(context=kwargs)   
+        gcs_to_bq.execute(context=kwargs)   
 
     def get_load_script(self, gcp_project, landing_dataset, landing_table_name, bucket, gcs_bucket_prefix, partition_prefix, table_name, date_column, ds):
         full_table_name = f"{landing_dataset}.{landing_table_name}"
