@@ -32,6 +32,7 @@ def load_builder(
     ods_table_config = table_config.ods_config
     hds_table_config = table_config.hds_config
     location = data_source.location
+    cluster_fields = table_config.cluster_fields
 
     ods_table_config.table_id = f"{landing_zone_table_name_override}_ODS"
 
@@ -53,6 +54,7 @@ def load_builder(
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
         ingestion_type=ingestion_type,
+        cluster_fields=cluster_fields,
         partition_expiration=partition_expiration,
         ods_table_config=ods_table_config,
         location=location,
@@ -76,6 +78,7 @@ def load_builder(
             surrogate_keys=surrogate_keys,
             column_mapping=column_mapping,
             ingestion_type=ingestion_type,
+            cluster_fields=cluster_fields,
             partition_expiration=partition_expiration,
             hds_table_config=hds_table_config,
             location=location,

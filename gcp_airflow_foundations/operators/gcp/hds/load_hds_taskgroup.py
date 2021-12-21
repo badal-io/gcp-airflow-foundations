@@ -28,6 +28,7 @@ def hds_builder(
     partition_expiration,
     location,
     dag,
+    cluster_fields=None,
     time_partitioning=None,
     labels=None,
     encryption_configuration=None) -> TaskGroup:
@@ -55,6 +56,7 @@ def hds_builder(
         project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
+        cluster_fields=cluster_fields,
         time_partitioning=time_partitioning,
         task_group=taskgroup,
         dag=dag
