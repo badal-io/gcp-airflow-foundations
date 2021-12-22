@@ -61,8 +61,7 @@ class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
             dataset_id=TEST_DATASET, 
             project_id=TEST_GCP_PROJECT_ID, 
             table_id=TEST_TABLE_ID,
-            schema_task_id='dummy',
-            dag=self.dag
+            schema_task_id='dummy'
         )
         
         operator.pre_execute(context=self.template_context)
