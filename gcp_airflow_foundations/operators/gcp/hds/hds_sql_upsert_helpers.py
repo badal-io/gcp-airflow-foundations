@@ -62,37 +62,40 @@ class SqlHelperHDS:
         comma = ","
 
         TEMPLATE = """
-                    MERGE `{target}` T
-                    USING ( {source_query} ) S
-                    ON {merge_condition}
-                    WHEN MATCHED AND {search_condition} THEN {matched_clause}
-                    WHEN NOT MATCHED BY TARGET THEN {not_matched_clause}
+            MERGE `{target}` T
+            USING ({source_query}) S
+            ON {merge_condition}
+            WHEN MATCHED AND {search_condition} THEN {matched_clause}
+            WHEN NOT MATCHED BY TARGET THEN {not_matched_clause} 
+            {not_matched_by_source_clause}
         """
 
         target = f"{self.target_dataset}.{self.target}"
-        source_query = f"""
-                SELECT  {",".join(["{} AS join_key_{}".format(surrogate_key, surrogate_key) for surrogate_key in self.surrogate_keys])},
-                        {",".join([col for col in self.columns])}
-                FROM `{self.source_dataset}.{self.source}`
-                UNION ALL 
-                SELECT
-                    {",".join(["source.`{}`".format(surrogate_key) for surrogate_key in self.surrogate_keys])},
-                    {",".join(["source.`{}`".format(col) if col not in self.surrogate_keys else "NULL" for col in self.columns])}
-                    FROM `{self.source_dataset}.{self.source}` source
-                    JOIN `{self.target_dataset}.{self.target}` target
-                    ON {' AND '.join([f'target.{self.column_mapping[surrogate_key]}=source.{surrogate_key}' for surrogate_key in self.surrogate_keys])}
-                    WHERE ( 
-                            {' AND '.join([f'MD5(TO_JSON_STRING(target.`{self.column_mapping[col]}`)) != MD5(TO_JSON_STRING(source.`{col}`))' for col in self.columns])}
-                            AND target.{self.eff_end_time_column_name} IS NULL
-                        )
-        """
+        source_query = f"""SELECT  {",".join(["{} AS join_key_{}".format(surrogate_key, surrogate_key) for surrogate_key in self.surrogate_keys])}, {",".join([col for col in self.columns])}
+            FROM `{self.source_dataset}.{self.source}`
+            UNION ALL 
+            SELECT
+                {",".join(["source.`{}`".format(surrogate_key) for surrogate_key in self.surrogate_keys])},
+                {",".join(["source.`{}`".format(col) if col not in self.surrogate_keys else "NULL" for col in self.columns])}
+                FROM `{self.source_dataset}.{self.source}` source
+                JOIN `{self.target_dataset}.{self.target}` target
+                ON {' AND '.join([f'target.{self.column_mapping[surrogate_key]}=source.{surrogate_key}' for surrogate_key in self.surrogate_keys])}
+                WHERE ( 
+                        {' AND '.join([f'MD5(TO_JSON_STRING(target.`{self.column_mapping[col]}`)) != MD5(TO_JSON_STRING(source.`{col}`))' for col in self.columns if col not in self.surrogate_keys])}
+                        AND target.{self.eff_end_time_column_name} IS NULL
+                    )"""
+
         merge_condition = f"{' AND '.join([f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])}"
-        search_condition = f"{' AND '.join([f'MD5(TO_JSON_STRING(T.`{self.column_mapping[col]}`)) != MD5(TO_JSON_STRING(S.`{col}`))' for col in self.columns])}"
+        search_condition = f"{' AND '.join([f'MD5(TO_JSON_STRING(T.`{self.column_mapping[col]}`)) != MD5(TO_JSON_STRING(S.`{col}`))' for col in self.columns if col not in self.surrogate_keys])}"
         matched_clause = f"UPDATE SET {self.eff_end_time_column_name} = CURRENT_TIMESTAMP()"
-        not_matched_clause = f"""
-            INSERT ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.eff_end_time_column_name}, {self.hash_column_name})
-            VALUES ({",".join(["`{}`".format(col) if col not in self.surrogate_keys else "join_key_{}".format(col) for col in self.columns])}, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S))))
-        """
+        not_matched_clause = f"""INSERT ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.eff_end_time_column_name}, {self.hash_column_name})
+            VALUES ({",".join(["`{}`".format(col) if col not in self.surrogate_keys else "join_key_{}".format(col) for col in self.columns])}, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S))))"""
+
+        if ingestion_type == IngestionType.INCREMENTAL:
+            not_matched_by_source_clause = ""
+
+        elif ingestion_type == IngestionType.FULL:
+            not_matched_by_source_clause = f"""WHEN NOT MATCHED BY SOURCE THEN UPDATE SET T.{self.eff_end_time_column_name} = CURRENT_TIMESTAMP()"""  
 
         sql = TEMPLATE.format(
             target=target,
@@ -100,25 +103,19 @@ class SqlHelperHDS:
             merge_condition=merge_condition,
             search_condition=search_condition,
             matched_clause=matched_clause,
-            not_matched_clause=not_matched_clause
+            not_matched_clause=not_matched_clause,
+            not_matched_by_source_clause=not_matched_by_source_clause
         )
 
-        if ingestion_type == IngestionType.INCREMENTAL:
-            return sql
-
-        elif ingestion_type == IngestionType.FULL:
-            return sql + \
-                f"""WHEN NOT MATCHED BY SOURCE THEN UPDATE
-                        SET T.{self.eff_end_time_column_name} = CURRENT_TIMESTAMP()
-                """  
+        return sql
 
     def create_snapshot_sql_with_hash(self, partition_timestamp):
         sql = f"""
-                    SELECT
-                        {(','.join(f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns))},
-                        CURRENT_TIMESTAMP() AS {self.eff_start_time_column_name},
-                        TIMESTAMP_TRUNC('{partition_timestamp}', {self.time_partitioning}) AS {self.partition_column_name},
-                        TO_BASE64(MD5(TO_JSON_STRING(S))) AS {self.hash_column_name}
-                    FROM {self.source_dataset}.{self.source} S
+            SELECT
+                {(','.join(f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns))},
+                CURRENT_TIMESTAMP() AS {self.eff_start_time_column_name},
+                TIMESTAMP_TRUNC('{partition_timestamp}', {self.time_partitioning}) AS {self.partition_column_name},
+                TO_BASE64(MD5(TO_JSON_STRING(S))) AS {self.hash_column_name}
+            FROM {self.source_dataset}.{self.source} S
         """
         return sql
