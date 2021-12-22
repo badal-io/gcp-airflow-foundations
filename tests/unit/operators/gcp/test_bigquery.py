@@ -6,6 +6,7 @@ import pytest
 from google.cloud.exceptions import Conflict
 
 from datetime import datetime
+import pytz
 
 from airflow.operators.dummy import DummyOperator
 from airflow.exceptions import AirflowException
@@ -22,7 +23,7 @@ TASK_ID = 'test-bq-generic-operator'
 TEST_DATASET = 'test-dataset'
 TEST_GCP_PROJECT_ID = 'test-project'
 TEST_TABLE_ID = 'test-table-id'
-DEFAULT_DATE = datetime(2015, 1, 1)
+DEFAULT_DATE = pytz.utc.localize(datetime(2015, 1, 1))
 TEST_DAG_ID = 'test-bigquery-operators'
 SCHEMA_FIELDS = [{'name':'column', 'type':'STRING'}]
 TEST_TABLE_RESOURCES = {
@@ -33,6 +34,7 @@ TEST_TABLE_RESOURCES = {
 }
 
 from airflow.utils.session import create_session, provide_session
+from airflow.utils.state import State
 from airflow.utils import timezone
 
 @provide_session
@@ -44,6 +46,10 @@ class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
     def setUp(self):
         args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
         self.dag = DAG('TEST_DAG_ID', default_args=args, schedule_interval='@once')
+
+        self.dag.create_dagrun(
+            run_id='test', start_date=DEFAULT_DATE, execution_date=DEFAULT_DATE, state=State.SUCCESS
+        )
 
         task = DummyOperator(task_id='dummy', dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
