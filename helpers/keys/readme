@@ -1,0 +1,1 @@
+keys.json file is added to gitignore. You need manually upload/update it if gcp authentification uses a keys file.
