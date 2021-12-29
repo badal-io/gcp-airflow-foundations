@@ -1,3 +1,7 @@
+# -- Dev Env Config:
+# - GCP project ID (required for GCP connection)
+GCP_PROJECT_ID=airflow-framework 
+
 # -- Airflow Configuration:
 AIRFLOW__API__AUTH_BACKEND=airflow.api.auth.backend.basic_auth
 AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=false
@@ -7,9 +11,7 @@ AIRFLOW__WEBSERVER__RELOAD_ON_PLUGIN_CHANGE=true
 AIRFLOW__EMAIL__EMAIL_BACKEND=airflow.providers.sendgrid.utils.emailer.send_email
 AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=30
 AIRFLOW__CORE__LAZY_LOAD_PLUGINS=false
-
-# - GCP project ID (required for GCP connection)
-GCP_PROJECT_ID='<your_project_id>' #<< GCP project-ID here
+AIRFLOW__WEBSERVER__EXPOSE_CONFIG=true
 
 # - GCP connection (gcloud auth)
 GCP_AUTH_SCOPE='https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform'

@@ -6,27 +6,18 @@ source:
   acceptable_delay_minutes: 5
   extra_options:
     gcs_bucket: public-gcp-airflow-foundation-samples
-    ftp_source_config:
-      file_name_template: "workassure.COGECO_CLS.{{ TABLE_NAME }}.{{ ds }}"
-      gcs_bucket_prefix: ""
-      airflow_date_template: ds
-      file_prefix_filtering: True
-      date_format: "%Y%m%d"
+    gcs_source_config:
+      templated_file_name: "{{ TABLE_NAME }}"
       source_format: CSV
-      delimeter: "|"
-  gcp_project: cogeco-edh-prod
-  location: northamerica-northeast1
-  dataset_data_name: ccx_workassure_ods_data
-  dataset_hds_override: ccx_workassure_hds_data
-  connection: google_cloud_default
-  notification_emails:
-    - ''
-  owner: owner
+      delimeter: ","
+  gcp_project: airflow-framework
+  location: us-central1
+  dataset_data_name: af_test_ods
+  dataset_hds_override: af_test_hds
+  owner: test_user
   version: 1
   landing_zone_options:
-    landing_zone_dataset: ccx_workassure_landing_zone_data
-  schema_options:
-    schema_source_type: AUTO
+    landing_zone_dataset: af_test_hds_landing_zone
 tables:
   - table_name: BUSINESSUNIT
     ingestion_type: FULL
