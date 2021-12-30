@@ -75,7 +75,7 @@ class SchemaMigrationAudit:
             conn = bq_hook.get_conn()
             cursor = conn.cursor()
 
-            cursor.create_empty_table(
+            cursor.c(
                 project_id=self.project_id,
                 dataset_id=self.dataset_id,
                 table_id=self.table_id,
