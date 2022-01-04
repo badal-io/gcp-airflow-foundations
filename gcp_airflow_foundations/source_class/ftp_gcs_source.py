@@ -46,12 +46,12 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
     with all files to ingest
     """
     source_type = "GCS"
-    gcs_hook = GCSHook()
 
     def metadata_file_sensor(self, table_config, taskgroup):
         """
         Implements a sensor for the metadata file specified in the table config.
         """
+        logging.info("table_config.extra_options {} ".format(table_config.extra_options))
         if "metadata_file" in table_config.extra_options.get("gcs_table_config"):
             metadata_file_name = table_config.extra_options.get("gcs_table_config")["metadata_file"]
             bucket = self.config.source.extra_options["gcs_bucket"]
@@ -115,6 +115,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         bucket = self.config.source.extra_options["gcs_bucket"]
         files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
 
+        logging.info(self.config.source.extra_options)
         if self.config.source.extra_options["gcs_source_config"]["file_prefix_filtering"]:
             return GCSObjectPrefixListExistenceSensor(
                 task_id="wait_for_files_to_ingest",

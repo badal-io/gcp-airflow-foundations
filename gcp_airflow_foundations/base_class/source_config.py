@@ -29,7 +29,6 @@ class SourceConfig:
         ingest_schedule : Ingestion schedule. Currently only supporting @hourly, @daily, @weekly, and @monthly
         gcp_project : Google Cloud Platform project ID
         dataset_data_name : Target dataset name
-        connection : Aiflow Google Cloud Platform connection
         extra_options : Google Cloud Storage bucket and objects for source data if loading from GCS
         landing_zone_options : Staging dataset name
         acceptable_delay_minutes : Delay minutes limit
@@ -42,6 +41,8 @@ class SourceConfig:
         start_date_tz : Timezone
         version : The Dag version. Can be incremented if logic changes
         sla_mins : Service Level Agreement (SLA) timeout minutes. This is is an expectation for the maximum time a Task should take.
+        connection  : Aiflow Google Cloud Platform connection
+
     """
     name: str
     source_type: str
@@ -50,7 +51,6 @@ class SourceConfig:
     gcp_project: str
     dataset_data_name: str
     dataset_hds_override: Optional[str]
-    connection: str
     extra_options: Optional[dict]
     landing_zone_options: LandingZoneConfig
     acceptable_delay_minutes: int
@@ -64,6 +64,7 @@ class SourceConfig:
     start_date_tz: str = "EST"
     version: int = 1
     sla_mins: int = 900
+    connection: str = "google_cloud_default"\
 
     @validator("name")
     def valid_name(cls, v):

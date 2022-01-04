@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
-from pydantic import validator, root_validator
 from typing import Optional
 
-from base_class.dlp_source_config import DlpSourceConfig
+from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
 
 
 @dataclass

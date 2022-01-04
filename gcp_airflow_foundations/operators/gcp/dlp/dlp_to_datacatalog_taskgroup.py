@@ -1,10 +1,9 @@
 
-from collections.abc import Sequence
-
-from base_class.dlp_source_config import DlpSourceConfig
-from base_class.dlp_table_config import DlpTableConfig
-from operators.gcp.dlp.dlp_job_helpers import job_trigger
-from operators.gcp.dlp.get_dlp_bq_inspection_results_operator import DlpBQInspectionResultsOperator
+from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
+from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
+from gcp_airflow_foundations.operators.gcp.dlp.dlp_job_helpers import job_trigger
+from gcp_airflow_foundations.operators.gcp.dlp.get_dlp_bq_inspection_results_operator import DlpBQInspectionResultsOperator
+from airflow.utils.task_group import TaskGroup
 
 
 def dlp_to_datacatalog_builder(

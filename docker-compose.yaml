@@ -3,8 +3,8 @@ version: '3'
 x-airflow-common:
   &airflow-common
   build:
-    context: ./docker
-    dockerfile: Dockerfile
+    context: ./
+    dockerfile: ./docker/Dockerfile
   environment:
     &airflow-common-env
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -19,6 +19,7 @@ x-airflow-common:
     - ./data:/opt/airflow/data
     - ./helpers:/opt/airflow/helpers
     - ./tests:/opt/airflow/tests
+    - ./gcp_airflow_foundations:/opt/airflow/gcp_airflow_foundations # to make it easier to run unit tests from inside the container
     - ~/.config/gcloud:/home/airflow/.config/gcloud  # GCP auth keys
     - ~/.config/gcloud:/root/.config/gcloud  # GCP auth keys
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}"

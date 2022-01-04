@@ -2,7 +2,7 @@ source:
   name: SampleGCS
   source_type: GCS
   ingest_schedule: "@daily"
-  start_date: "2021-12-13"
+  start_date: "2022-01-03"
   acceptable_delay_minutes: 5
   extra_options:
     gcs_bucket: public-gcp-airflow-foundation-samples
@@ -10,134 +10,24 @@ source:
       templated_file_name: "{{ TABLE_NAME }}"
       source_format: CSV
       delimeter: ","
+      file_prefix_filtering: False
   gcp_project: airflow-framework
   location: us-central1
   dataset_data_name: af_test_ods
   dataset_hds_override: af_test_hds
   owner: test_user
-  version: 1
+  notification_emails: []
   landing_zone_options:
     landing_zone_dataset: af_test_hds_landing_zone
+  schema_options:
+    schema_source_type: AUTO
+    version: 1
 tables:
-  - table_name: BUSINESSUNIT
+  - table_name: users
     ingestion_type: FULL
     surrogate_keys: []
-    ods_config:
-      ods_metadata:
-        hash_column_name: af_metadata_row_hash
-        primary_key_hash_column_name: af_metadata_primary_key_hash
-        ingestion_time_column_name: af_metadata_inserted_at
-        update_time_column_name: af_metadata_updated_at
-    hds_config:
-      hds_table_type: SNAPSHOT
-      hds_table_time_partitioning: DAY
-      hds_metadata:
-        eff_start_time_column_name: af_metadata_created_at
-        eff_end_time_column_name: af_metadata_expired_at
-        hash_column_name: af_metadata_row_hash
-    landing_zone_table_name_override: CLS_BUSINESS_UNIT
     extra_options:
-      ftp_table_config:
-        directory_prefix: "toedh/PROD/WA/"
-  - table_name: CHANGEHISTORY
-    ingestion_type: FULL
-    surrogate_keys: []
-    ods_config:
-      ods_metadata:
-        hash_column_name: af_metadata_row_hash
-        primary_key_hash_column_name: af_metadata_primary_key_hash
-        ingestion_time_column_name: af_metadata_inserted_at
-        update_time_column_name: af_metadata_updated_at
-    hds_config:
-      hds_table_type: SNAPSHOT
-      hds_table_time_partitioning: DAY
-      hds_metadata:
-        eff_start_time_column_name: af_metadata_created_at
-        eff_end_time_column_name: af_metadata_expired_at
-        hash_column_name: af_metadata_row_hash
-    landing_zone_table_name_override: CLS_CHANGE_HISTORY
-    extra_options:
-      ftp_table_config:
+      gcs_table_config:
         directory_prefix: "toedh/PROD/WA/"
         allow_quoted_newlines: True
-  - table_name: CUSTOMER
-    ingestion_type: FULL
-    surrogate_keys: []
-    ods_config:
-      ods_metadata:
-        hash_column_name: af_metadata_row_hash
-        primary_key_hash_column_name: af_metadata_primary_key_hash
-        ingestion_time_column_name: af_metadata_inserted_at
-        update_time_column_name: af_metadata_updated_at
-    hds_config:
-      hds_table_type: SNAPSHOT
-      hds_table_time_partitioning: DAY
-      hds_metadata:
-        eff_start_time_column_name: af_metadata_created_at
-        eff_end_time_column_name: af_metadata_expired_at
-        hash_column_name: af_metadata_row_hash
-    landing_zone_table_name_override: CLS_CUSTOMER
-    extra_options:
-      ftp_table_config:
-        directory_prefix: "toedh/PROD/WA/"
-  - table_name: DETAIL
-    ingestion_type: FULL
-    surrogate_keys: []
-    ods_config:
-      ods_metadata:
-        hash_column_name: af_metadata_row_hash
-        primary_key_hash_column_name: af_metadata_primary_key_hash
-        ingestion_time_column_name: af_metadata_inserted_at
-        update_time_column_name: af_metadata_updated_at
-    hds_config:
-      hds_table_type: SNAPSHOT
-      hds_table_time_partitioning: DAY
-      hds_metadata:
-        eff_start_time_column_name: af_metadata_created_at
-        eff_end_time_column_name: af_metadata_expired_at
-        hash_column_name: af_metadata_row_hash
-    landing_zone_table_name_override: CLS_DETAIL
-    extra_options:
-      ftp_table_config:
-        directory_prefix: "toedh/PROD/WA/"
-        schema_file: toedh/DEV/WA/COGECO_CLS_DETAIL.SCHEMA
-  - table_name: EQUIPMENT
-    ingestion_type: FULL
-    surrogate_keys: []
-    ods_config:
-      ods_metadata:
-        hash_column_name: af_metadata_row_hash
-        primary_key_hash_column_name: af_metadata_primary_key_hash
-        ingestion_time_column_name: af_metadata_inserted_at
-        update_time_column_name: af_metadata_updated_at
-    hds_config:
-      hds_table_type: SNAPSHOT
-      hds_table_time_partitioning: DAY
-      hds_metadata:
-        eff_start_time_column_name: af_metadata_created_at
-        eff_end_time_column_name: af_metadata_expired_at
-        hash_column_name: af_metadata_row_hash
-    landing_zone_table_name_override: CLS_EQUIPMENT
-    extra_options:
-      ftp_table_config:
-        directory_prefix: "toedh/PROD/WA/"
-  - table_name: LOCATION
-    ingestion_type: FULL
-    surrogate_keys: []
-    ods_config:
-      ods_metadata:
-        hash_column_name: af_metadata_row_hash
-        primary_key_hash_column_name: af_metadata_primary_key_hash
-        ingestion_time_column_name: af_metadata_inserted_at
-        update_time_column_name: af_metadata_updated_at
-    hds_config:
-      hds_table_type: SNAPSHOT
-      hds_table_time_partitioning: DAY
-      hds_metadata:
-        eff_start_time_column_name: af_metadata_created_at
-        eff_end_time_column_name: af_metadata_expired_at
-        hash_column_name: af_metadata_row_hash
-    landing_zone_table_name_override: CLS_LOCATION
-    extra_options:
-      ftp_table_config:
-        directory_prefix: "toedh/PROD/WA/"
+

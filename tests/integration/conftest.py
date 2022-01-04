@@ -36,17 +36,17 @@ def run_task_with_pre_execute(task):
     task.pre_execute(ti.get_template_context())
     task.execute(ti.get_template_context())
 
-@pytest.fixture(scope="session")
-def config():
-    here = os.path.abspath(os.path.dirname(__file__))
-
-    path_parent = os.path.dirname(here)
-
-    conf_location = os.path.join(path_parent, "config/gcs_customer_data.yaml")
-
-    config = load_tables_config(conf_location)
-
-    return config
+# @pytest.fixture(scope="session")
+# def config():
+#     here = os.path.abspath(os.path.dirname(__file__))
+#
+#     path_parent = os.path.dirname(here)
+#
+#     conf_location = os.path.join(path_parent, "config/gcs_customer_data.yaml")
+#
+#     config = load_tables_config(conf_location)
+#
+#     return config
 
 @pytest.fixture(scope="session")
 def staging_dataset(config):

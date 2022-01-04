@@ -1,0 +1,8 @@
+pytest==5.3.5
+pytest-testconfig>=0.2.0
+pytest-airflow>=0.0.3
+pytest-testconfig>=0.2.0
+pytest-mock>=3.3.1
+pytest-airflow>=0.0.3
+pytest-pythonpath>=0.7.3
+

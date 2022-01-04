@@ -1,12 +1,11 @@
-
 import pytest
 import uuid
 import pandas as pd
 from time import sleep
 
-from base_class.dlp_source_config import DlpSourceConfig
-from base_class.dlp_table_config import DlpTableConfig
-from operators.gcp.dlp.dlp_to_datacatalog_taskgroup import dlp_to_datacatalog_builder
+from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetadataConfig
+from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
+from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup import dlp_to_datacatalog_builder
 from tests.integration.conftest import run_task, run_task_with_pre_execute
 
 from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
@@ -43,15 +42,13 @@ class TestOdsMerge(object):
         self.mock_dlp_data_bq_schema   = mock_dlp_data_bq_schema_1
 
 
-def insert_mock_data(self, data, bq_schema):
+    def insert_mock_data(self, data, bq_schema):
         staging_table_id = f"{self.project_id}.{self.staging_dataset}.{self.target_table_id}"
 
         table = bigquery.Table(staging_table_id, schema=bq_schema)
         self.client.create_table(table)
 
         df = pd.DataFrame.from_dict(data)
-
-
 
         load_job = self.client.load_table_from_dataframe(df, staging_table_id)
 
@@ -99,19 +96,19 @@ def insert_mock_data(self, data, bq_schema):
 
         run_task_with_pre_execute(insert)
 
-        # sql = f"""
-        #     SELECT
-        #         customerID, key_id, city_name
-        #     FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_ODS_INCREMENTAL
-        #     ORDER BY key_id ASC"""
-        #
-        # query_config = bigquery.QueryJobConfig(use_legacy_sql=False)
-        #
-        # query_results = self.client.query(sql, job_config=query_config).to_dataframe().to_dict(orient='record')
-        #
-        # expected_rows = self.mock_data_rows[:]
-        #
-        # assert query_results == expected_rows
+        sql = f"""
+            SELECT
+                customerID, key_id, city_name
+            FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_ODS_INCREMENTAL
+            ORDER BY key_id ASC"""
+
+        query_config = bigquery.QueryJobConfig(use_legacy_sql=False)
+
+        query_results = self.client.query(sql, job_config=query_config).to_dataframe().to_dict(orient='record')
+
+        expected_rows = self.mock_data_rows[:]
+
+        assert query_results == expected_rows
 
         self.clean_up()
 

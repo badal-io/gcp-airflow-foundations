@@ -1,20 +1,12 @@
 from typing import Optional
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.contrib.operators.bigquery_operator import (
-    BigQueryOperator,
-    BigQueryCreateEmptyTableOperator,
-)
-
 from airflow.utils.decorators import apply_defaults
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
-from airflow.exceptions import AirflowException
-
 import logging
 
-from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_audit import SchemaMigrationAudit
-from operators.gcp.dlp.dlp_helpers import get_dlp_results_sql
+from gcp_airflow_foundations.operators.gcp.dlp.dlp_helpers import get_dlp_results_sql
 
 
 class DlpBQInspectionResultsOperator(BaseOperator):

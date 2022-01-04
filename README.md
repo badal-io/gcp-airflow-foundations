@@ -25,3 +25,11 @@ pip install 'gcp-airflow-foundations'
 
 ## Usage
 See the [gcp-airflow-foundations documentation](https://gcp-airflow-foundations.readthedocs.io/en/latest/) for more details.
+
+## Running locally
+
+- Authorize gcloud to access the Cloud Platform with Google user credentials: ```helpers/scripts/gcp-auth.sh```
+- Run Airflow locally (Airflow UI will be accessible at http://localhost:8080): ```docker-compose up```
+- Run unit test ```./tests/airflow  "pytest tests/unit``` 
+- Run integration tests ```./tests/airflow  "pytest tests/integration``` 
+- Rebuild docker image if requirements changed: ```docker-compose build```
