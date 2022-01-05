@@ -3,6 +3,7 @@ import uuid
 import pandas as pd
 from time import sleep
 
+from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
 from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetadataConfig
 from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup import dlp_to_datacatalog_builder
@@ -12,7 +13,7 @@ from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import M
 
 from google.cloud import bigquery
 
-class TestOdsMerge(object):
+class TestDlp(object):
     """
         End-to-end testing for DLP to Data Catalog . Steps:
 
@@ -35,7 +36,8 @@ class TestOdsMerge(object):
 
         self.dlp_source_config = DlpSourceConfig(
             results_dataset_id=target_dataset,
-            template_name="test1"
+            template_name="test1",
+            rows_limit_percent=10
         )
         self.dlp_source_config          = DlpTableConfig()
         self.mock_dlp_data              = mock_dlp_data_1

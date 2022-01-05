@@ -49,12 +49,14 @@ def run_task_with_pre_execute(task):
 #     return config
 
 @pytest.fixture(scope="session")
-def staging_dataset(config):
-    return config.source.landing_zone_options.landing_zone_dataset
+def staging_dataset():
+    return "test_stg"
+    #return config.source.landing_zone_options.landing_zone_dataset
 
 @pytest.fixture(scope="session")
-def target_dataset(config):
-    return config.source.dataset_data_name
+def target_dataset():
+    return "test"
+    #return config.source.dataset_data_name
 
 @pytest.fixture(scope="session")
 def target_table_id():
