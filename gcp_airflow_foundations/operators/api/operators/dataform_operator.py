@@ -1,5 +1,5 @@
 from airflow.models.baseoperator import BaseOperator
-from dataform_hook import DataformHook
+from gcp_airflow_foundations.operators.api.hooks.dataform_hook import DataformHook
 from airflow.utils.decorators import apply_defaults
 from typing import Any, Optional
 
