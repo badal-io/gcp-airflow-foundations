@@ -27,6 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 WORKDIR /opt/gcp-airflow-foundations
 RUN pip install --upgrade pip
 RUN pip install -e .
+RUN cd dist && ls
 
 # - Create distribution file
 RUN pip install build wheel

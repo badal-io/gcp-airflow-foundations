@@ -33,6 +33,20 @@ steps:
     id: "unit-test"
   # [END unit-test]
 
+# - Unit tests.
+  # [START unit-test]
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['unit-test']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+          ls
+          cd dist
+          ls
+    id: "publish"
+  # [END unit-test]
+
 timeout: 3600s
 images:
   - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
