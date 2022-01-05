@@ -41,7 +41,7 @@ RUN pip install --no-cache-dir -r requirements-ci.txt
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-WORKDIR /opt/airflow
+#WORKDIR /opt/airflow
 RUN pip install --upgrade pip
 RUN pip install -e .
 RUN pip freeze | grep gcp-airflow-foundations
