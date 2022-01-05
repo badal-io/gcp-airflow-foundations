@@ -29,8 +29,8 @@ steps:
     args:
       - '-c'
       - |
-          pip freeze | grep gcp-airflow-foundations
-          pip install -U pytest
+          whoami
+#          pip install -U pytest
 #          pytest tests/unit -vv
     id: "unit-test"
   # [END unit-test]

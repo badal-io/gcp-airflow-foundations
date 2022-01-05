@@ -31,6 +31,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 WORKDIR /opt/airflow
 RUN pip install --upgrade pip
 RUN pip install -e .
+RUN pip freeze | grep gcp-airflow-foundations
 
 # Initiaize Airflow DB
 RUN airflow db init
+
+RUN whoami
