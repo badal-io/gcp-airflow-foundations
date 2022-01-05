@@ -29,7 +29,6 @@ steps:
     args:
       - '-c'
       - |
-          whoami
           pytest tests/unit -vv
     id: "unit-test"
   # [END unit-test]
