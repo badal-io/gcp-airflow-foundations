@@ -2,7 +2,7 @@
 substitutions:
   _GCP_PROJECT_ID: airflow-framework
   _BUILD_IMG_NAME: airflow2_cicd:latest
-
+  _PYTHON_VERSION: '3.8'
 steps:
 # - Build a new Airflow2 image.
   # [START build-airflow2]
@@ -30,8 +30,7 @@ steps:
       - '-c'
       - |
           whoami
-#          pip install -U pytest
-#          pytest tests/unit -vv
+          pytest tests/unit -vv
     id: "unit-test"
   # [END unit-test]
 

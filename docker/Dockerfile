@@ -1,6 +1,19 @@
-ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
+#ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
 
-FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
+#FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
+ARG PYTHON_VERSION
+
+FROM python:$PYTHON_VERSION
+
+# Environment variabls
+ENV AIRFLOW_VER='2.1.1'
+ENV AIRFLOW_HOME=/opt/airflow
+
+
+# Install Airflow and dependencies
+COPY helpers/scripts/airflow-ci.sh .
+RUN chmod +x ./airflow-ci.sh
+RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
 
 # - Install GCP util
 #RUN curl -sSL https://sdk.cloud.google.com | bash
