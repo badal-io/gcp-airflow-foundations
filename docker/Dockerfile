@@ -24,7 +24,6 @@ RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
 
 # - install gcp_airflow_foundations package in EDITABLE mode.
 # The gcp_airflow_foundations folder is later mounted into the container, so the latest version is picked up
-RUN mkdir /opt
 RUN mkdir /opt/gcp_airflow_foundations
 
 COPY setup.py /opt/setup.py
