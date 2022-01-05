@@ -14,7 +14,7 @@ steps:
       - '-c' 
       - |
         pip install build wheel
-        python3 setup.py sdist
+#        python3 setup.py sdist
     id: setup-framework
   # [END setup-framework]
 
