@@ -24,14 +24,15 @@ RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
 
 # - install gcp_airflow_foundations package in EDITABLE mode.
 # The gcp_airflow_foundations folder is later mounted into the container, so the latest version is picked up
-RUN mkdir /opt/gcp_airflow_foundations
 
-COPY setup.py /opt/setup.py
-COPY setup.cfg /opt/setup.cfg
-COPY README.md /opt/README.md
-COPY MANIFEST.in /opt/MANIFEST.in
-COPY gcp_airflow_foundations/__init__.py /opt/gcp_airflow_foundations/__init__.py
-COPY gcp_airflow_foundations/version.py /opt/gcp_airflow_foundations/version.py
+RUN mkdir /opt/gcp-airflow-foundations
+
+COPY . /opt/gcp-airflow-foundations
+#COPY setup.cfg /opt/setup.cfg
+#COPY README.md /opt/README.md
+#COPY MANIFEST.in /opt/MANIFEST.in
+#COPY gcp_airflow_foundations/__init__.py /opt/gcp_airflow_foundations/__init__.py
+#COPY gcp_airflow_foundations/version.py /opt/gcp_airflow_foundations/version.py
 
 # - Install CI/test dependencies
 COPY docker/requirements-ci.txt requirements-ci.txt
@@ -41,7 +42,7 @@ RUN pip install --no-cache-dir -r requirements-ci.txt
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-WORKDIR /opt
+WORKDIR /opt/gcp-airflow-foundations
 RUN pip install --upgrade pip
 RUN pip install -e .
 RUN pip freeze | grep gcp-airflow-foundations
