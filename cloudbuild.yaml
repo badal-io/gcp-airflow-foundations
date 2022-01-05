@@ -1,27 +1,13 @@
 # - Airflow Env variables.
 substitutions:
   _GCP_PROJECT_ID: airflow-framework
-  _PYTHON_VERSION: '3.8'
   _BUILD_IMG_NAME: airflow2_cicd:latest
 
 steps:
-# - Setup framework.
-  # [START setup-framework]
-  - name: python
-    waitFor: ['-']
-    entrypoint: 'bash'
-    args: 
-      - '-c' 
-      - |
-        pip install build wheel
-#        python3 setup.py sdist
-    id: setup-framework
-  # [END setup-framework]
-
 # - Build a new Airflow2 image.
   # [START build-airflow2]
   - name: 'gcr.io/cloud-builders/docker'
-    waitFor: ['setup-framework']
+    waitFor: ['-']
     entrypoint: 'bash'
     args:
       - '-c'
@@ -44,7 +30,8 @@ steps:
       - '-c'
       - |
           pip freeze | grep gcp-airflow-foundations
-          pytest tests/unit -vv
+          pip install -U pytest
+#          pytest tests/unit -vv
     id: "unit-test"
   # [END unit-test]
 
