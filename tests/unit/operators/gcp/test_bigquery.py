@@ -13,11 +13,17 @@ from airflow.exceptions import AirflowException
 from airflow.models import (
     DAG,
     TaskInstance,
-    XCom
+    XCom,
+    DagBag, 
+    DagRun, 
+    DagTag,
+    DagModel
 )
 from airflow.models.xcom import XCOM_RETURN_KEY
 
 from gcp_airflow_foundations.operators.gcp.create_table import CustomBigQueryCreateEmptyTableOperator
+from gcp_airflow_foundations.operators.gcp.delete_staging_table import BigQueryDeleteStagingTableOperator
+from gcp_airflow_foundations.operators.gcp.gcs_to_bigquery import CustomGCSToBigQueryOperator
 
 TASK_ID = 'test-bq-generic-operator'
 TEST_DATASET = 'test-dataset'
@@ -41,6 +47,13 @@ from airflow.utils import timezone
 def cleanup_xcom(session=None):
     session.query(XCom).delete()
 
+def clear_db_dags():
+    with create_session() as session:
+        session.query(DagTag).delete()
+        session.query(DagModel).delete()
+        session.query(DagRun).delete()
+        session.query(TaskInstance).delete()
+
 
 class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
     def setUp(self):
@@ -59,6 +72,7 @@ class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
 
     def doCleanups(self):
         cleanup_xcom()
+        clear_db_dags()
 
     @mock.patch('airflow.providers.google.cloud.operators.bigquery.BigQueryHook')
     def test_execute(self, mock_hook):
@@ -87,4 +101,43 @@ class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
             encryption_configuration=None,
             table_resource=TEST_TABLE_RESOURCES,
             exists_ok=True
+        )
+
+
+class TestBigQueryDeleteStagingTableOperator(unittest.TestCase):
+    def setUp(self):
+        args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
+        self.dag = DAG('TEST_DAG_ID', default_args=args, schedule_interval='@once')
+
+        self.dag.create_dagrun(
+            run_id='test', start_date=DEFAULT_DATE, execution_date=DEFAULT_DATE, state=State.SUCCESS
+        )
+
+        task = DummyOperator(task_id='dummy', dag=self.dag)
+        self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
+
+        self.template_context = self.ti.get_template_context()
+
+    def doCleanups(self):
+        cleanup_xcom()
+        clear_db_dags()
+
+    @mock.patch('airflow.providers.google.cloud.operators.bigquery.BigQueryHook')
+    def test_execute(self, mock_hook):
+        operator = BigQueryDeleteStagingTableOperator(
+            task_id=TASK_ID, 
+            dataset_id=TEST_DATASET, 
+            project_id=TEST_GCP_PROJECT_ID, 
+            table_id=TEST_TABLE_ID
+        )
+        
+        operator.pre_execute(context=self.template_context)
+       
+        operator.execute(context=self.template_context)
+
+        ds = self.template_context['ds'] 
+
+        mock_hook.return_value.delete_table.assert_called_once_with(
+            table_id=f"{TEST_GCP_PROJECT_ID}.{TEST_DATASET}.{TEST_TABLE_ID}_{ds}",
+            not_found_ok=True
         )
