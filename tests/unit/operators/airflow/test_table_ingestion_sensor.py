@@ -21,7 +21,7 @@ from airflow.utils.timezone import datetime
 from airflow.utils.session import create_session
 
 from gcp_airflow_foundations.operators.airflow.external_task import TableIngestionSensor
-from tests.unit.conftest import run_task
+from tests.unit.conftest import execute_task
 
 
 DEFAULT_DATE = datetime(2015, 1, 1)
@@ -67,7 +67,8 @@ class TestTableIngestionSensor(unittest.TestCase):
             dag=self.dag
         )
 
-        run_task(task=op, execution_date=DEFAULT_DATE)
+        op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+        execute_task(task=op, execution_date=DEFAULT_DATE)
 
     def test_table_ingestion_sensor_multiple_tables(self):
         clear_db_dags()
@@ -95,7 +96,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with self.assertLogs(op.log, level=logging.INFO) as cm:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
 
             assert 'INFO:airflow.task.operators:1 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable1\'].' in  cm.output
             assert 'INFO:airflow.task.operators:1 dependent DAGs found for source TestSource2: [\'TestSource2.TestTable2\'].' in  cm.output
@@ -126,7 +128,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with self.assertLogs(op.log, level=logging.INFO) as cm:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
 
             assert 'INFO:airflow.task.operators:1 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable1\'].' in  cm.output
             assert 'INFO:airflow.task.operators:1 dependent DAGs found for source TestSource2: [\'TestSource2.TestTable2\'].' in  cm.output
@@ -159,7 +162,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with self.assertLogs(op.log, level=logging.INFO) as cm:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
 
             assert 'INFO:airflow.task.operators:2 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable1\', \'TestSource1.TestTable2\'].' \
                 or 'INFO:airflow.task.operators:2 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable2\', \'TestSource1.TestTable1\'].' in cm.output
@@ -192,7 +196,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with self.assertLogs(op.log, level=logging.INFO) as cm:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
 
             assert 'INFO:airflow.task.operators:2 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable1\', \'TestSource1.TestTable2\'].' \
                 or 'INFO:airflow.task.operators:2 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable2\', \'TestSource1.TestTable1\'].' in cm.output
@@ -225,7 +230,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with self.assertLogs(op.log, level=logging.INFO) as cm:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
 
             assert 'INFO:airflow.task.operators:1 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable1\'].' in cm.output
 
@@ -252,7 +258,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with self.assertLogs(op.log, level=logging.INFO) as cm:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
 
             assert 'INFO:airflow.task.operators:1 dependent DAGs found for source TestSource1: [\'TestSource1.TestTable1\'].' in cm.output
 
@@ -278,7 +285,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with pytest.raises(AirflowException) as ctx:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
         assert str(ctx.value) == f'The regex expression \'{regex}\' is invalid.'
 
     def test_catch_no_dags_error(self):
@@ -293,7 +301,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with pytest.raises(AirflowException) as ctx:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
         assert str(ctx.value) == "No active dags found."
 
     def test_catch_no_dags_for_source_error(self):
@@ -315,7 +324,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with pytest.raises(AirflowException) as ctx:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
         assert str(ctx.value) == f'No active dags found for source {SOURCE}.'
 
     def test_catch_no_matching_dags_error(self):
@@ -337,7 +347,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with pytest.raises(AirflowException) as ctx:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
         assert str(ctx.value) == f'No active dags found for source {SOURCE} using regex: \"{REGEX}\".'
 
     def test_catch_incompatible_schedules_error(self):
@@ -360,7 +371,8 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with pytest.raises(AirflowException) as ctx:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
         assert str(ctx.value) == f'Incompatible schedule intervals with that of the main DAG: @once.'
 
     def test_catch_delimiter_error(self):
@@ -382,5 +394,6 @@ class TestTableIngestionSensor(unittest.TestCase):
         )
 
         with pytest.raises(AirflowException) as ctx:
-            run_task(task=op, execution_date=DEFAULT_DATE)
+            op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+            execute_task(task=op, execution_date=DEFAULT_DATE)
         assert str(ctx.value) == f'Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly.'

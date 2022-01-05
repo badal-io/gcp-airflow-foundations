@@ -3,10 +3,7 @@ import logging
 import uuid
 from datetime import datetime
 
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
-from airflow.contrib.hooks.gcs_hook import (
-    GoogleCloudStorageHook
-)
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from google.cloud import bigquery
 
@@ -44,12 +41,7 @@ class SchemaMigrationAudit:
         self.migration_id = uuid.uuid4().hex
         self.migration_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        logging.info("Creating audit table in BQ.")
-        self.create_audit_table()
-
-
     def insert_change_log_rows(
-        
         self, 
         change_log: list
     ):
@@ -57,7 +49,9 @@ class SchemaMigrationAudit:
         :param change_log: The schema migration operations executed by the MigrateSchema class
         :type change_log: list
         """
-        
+        logging.info("Creating audit table in BQ.")
+        self.create_audit_table()
+
         for i in change_log:
             i['schema_updated_at'] = self.migration_time
             i['migration_id'] = self.migration_id
@@ -72,10 +66,8 @@ class SchemaMigrationAudit:
 
     def create_audit_table(self):
             bq_hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to)
-            conn = bq_hook.get_conn()
-            cursor = conn.cursor()
 
-            cursor.c(
+            bq_hook.create_empty_table(
                 project_id=self.project_id,
                 dataset_id=self.dataset_id,
                 table_id=self.table_id,
