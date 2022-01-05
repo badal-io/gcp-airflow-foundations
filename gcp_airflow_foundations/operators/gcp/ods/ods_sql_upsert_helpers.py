@@ -77,13 +77,14 @@ class SqlHelperODS:
         rows, values = self.create_insert_sql()
 
         return f"""
-                MERGE `{self.target_dataset}.{self.target}` T
-                USING `{self.source_dataset}.{self.source}` S
-                ON {' AND '.join(
-            [f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])}
-                WHEN MATCHED THEN UPDATE
-                    SET {(','.join(f'`{self.column_mapping[col]}`=S.`{col}`' for col in self.columns )) + f'{comma}' + f'{self.update_time_column_name}=CURRENT_TIMESTAMP()' + f'{comma}' +  f'{self.hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }
-                WHEN NOT MATCHED THEN
-                    INSERT ({rows})
-                    VALUES ({values})
-            """
+            MERGE `{self.target_dataset}.{self.target}` T
+            USING `{self.source_dataset}.{self.source}` S
+            ON {' AND '.join(
+                [f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys]
+            )}
+            WHEN MATCHED THEN UPDATE
+                SET {(','.join(f'`{self.column_mapping[col]}`=S.`{col}`' for col in self.columns )) + f'{comma}' + f'{self.update_time_column_name}=CURRENT_TIMESTAMP()' + f'{comma}' +  f'{self.hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }
+            WHEN NOT MATCHED THEN
+                INSERT ({rows})
+                VALUES ({values})
+        """

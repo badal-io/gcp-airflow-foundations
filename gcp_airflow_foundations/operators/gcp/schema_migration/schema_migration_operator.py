@@ -7,7 +7,7 @@ from airflow.contrib.operators.bigquery_operator import (
 )
 
 from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
@@ -74,7 +74,7 @@ class MigrateSchema(BaseOperator):
             logging.info("Migrating new schema to target table")
 
             if sql_columns:
-                self.cursor.run_query(
+                self.hook.run_query(
                     sql=query,
                     use_legacy_sql=False,
                     destination_dataset_table=f"{self.dataset_id}.{self.table_id}",
@@ -113,7 +113,7 @@ class MigrateSchema(BaseOperator):
         :rtype: list
         """
 
-        self.current_schema_fields = self.cursor.get_schema(dataset_id=self.dataset_id, table_id=self.table_id).get("fields", None)
+        self.current_schema_fields = self.hook.get_schema(dataset_id=self.dataset_id, table_id=self.table_id).get("fields", None)
         
         logging.info(f"The current schema is: {self.current_schema_fields}")
 
