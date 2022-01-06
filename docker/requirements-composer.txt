@@ -1,3 +1,0 @@
-pytest==5.3.5
-pytest-testconfig>=0.2.0
-pytest-airflow>=0.0.3
