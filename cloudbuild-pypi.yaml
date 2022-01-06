@@ -14,7 +14,7 @@ steps:
       - |
         docker build -t gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
         --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
-        -f docker/pypi.Dockerfile .
+        -f docker/cloudbuild.Dockerfile .
     #env:
     #  - 'FOO=$_BAR'
     dir: '.'
@@ -41,10 +41,12 @@ steps:
     args:
       - '-c'
       - |
-          cd /opt/gcp-airflow-foundations/dist
-          ls
           pip install build wheel
           python3 -m pip install --user --upgrade twine
+          python3 setup.py sdist
+          ls
+          cd dist
+          ls
     id: "publish"
   # [END publish]
 
