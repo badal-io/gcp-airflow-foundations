@@ -30,6 +30,7 @@ See the [gcp-airflow-foundations documentation](https://gcp-airflow-foundations.
 
 - Authorize gcloud to access the Cloud Platform with Google user credentials: ```helpers/scripts/gcp-auth.sh```
 - Run Airflow locally (Airflow UI will be accessible at http://localhost:8080): ```docker-compose up```
-- Run unit test ```./tests/airflow  "pytest tests/unit``` 
+- Run unit tests ```./tests/airflow  "pytest tests/unit``` 
+- Run unit tests with coverage report ```./tests/airflow  "pytest --cov=gcp_airflow_foundations tests/unit``` 
 - Run integration tests ```./tests/airflow  "pytest tests/integration``` 
 - Rebuild docker image if requirements changed: ```docker-compose build```
