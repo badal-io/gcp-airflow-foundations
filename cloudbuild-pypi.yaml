@@ -32,3 +32,22 @@ steps:
           pytest tests/unit -vv
     id: "unit-test"
   # [END unit-test]
+
+# - Publish to PyPI.
+  # [START publish]
+  - name: python
+    waitFor: ['unit-test']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+          cd /opt/gcp-airflow-foundations/dist
+          ls
+          pip install build wheel
+          python3 -m pip install --user --upgrade twine
+    id: "publish"
+  # [END publish]
+
+timeout: 3600s
+images:
+  - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
