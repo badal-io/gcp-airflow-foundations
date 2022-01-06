@@ -41,8 +41,7 @@ steps:
     args:
       - '-c'
       - |
-          ls
-          cd dist
+          cd /opt
           ls
     id: "publish"
   # [END unit-test]
