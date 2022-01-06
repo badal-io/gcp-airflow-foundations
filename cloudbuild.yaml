@@ -41,7 +41,9 @@ steps:
     args:
       - '-c'
       - |
-          cd /opt
+          cd gcp-airflow-foundations
+          ls
+          cd dist
           ls
     id: "publish"
   # [END unit-test]
