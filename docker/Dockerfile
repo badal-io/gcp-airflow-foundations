@@ -10,9 +10,11 @@ ENV PATH $PATH:/home/airflow/google-cloud-sdk/bin
 #COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 # - install gcp_airflow_foundations package in EDITABLE mode.
+
 # The gcp_airflow_foundations folder is later mounted into the container, so the latest version is picked up
 RUN mkdir /opt/airflow/gcp_airflow_foundations
 
+# Copying only files essential for installing gcp_airflow_foundations
 COPY setup.py /opt/airflow/setup.py
 COPY setup.cfg /opt/airflow/setup.cfg
 COPY README.md /opt/airflow/README.md
