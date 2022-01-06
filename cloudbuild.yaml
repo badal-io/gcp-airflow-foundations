@@ -41,7 +41,7 @@ steps:
     args:
       - '-c'
       - |
-          cd gcp-airflow-foundations
+          cd gcp_airflow_foundations
           ls
           cd dist
           ls
