@@ -45,7 +45,7 @@ steps:
           python3 -m pip install --user --upgrade twine
           python3 setup.py sdist
           echo $$PYPI_TOKEN > ~/.pypirc
-          cat ~/.pypirc
+          python3 -m twine upload dist/*
     secretEnv: ['PYPI_TOKEN']
     id: "publish"
   # [END publish]
