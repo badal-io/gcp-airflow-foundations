@@ -33,20 +33,18 @@ steps:
     id: "unit-test"
   # [END unit-test]
 
-# - Unit tests.
-  # [START unit-test]
+# - Publish to PyPI.
+  # [START publish]
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['unit-test']
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-          cd /opt/gcp-airflow-foundations
-          ls
-          cd dist
+          cd /opt/gcp-airflow-foundations/dist
           ls
     id: "publish"
-  # [END unit-test]
+  # [END publish]
 
 timeout: 3600s
 images:
