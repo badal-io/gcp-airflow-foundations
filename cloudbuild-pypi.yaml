@@ -41,14 +41,20 @@ steps:
     args:
       - '-c'
       - |
+          echo $HOME
           pip install build wheel
           python3 -m pip install --user --upgrade twine
           python3 setup.py sdist
-          ls
-          cd dist
-          ls
+          echo $$PYPI_TOKEN > $HOME/.pypirc
+          cat $HOME/.pypirc
+    secretEnv: ['PYPI_TOKEN']
     id: "publish"
   # [END publish]
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/144161360649/secrets/PyPI/versions/1
+    env: 'PYPI_TOKEN'
 
 timeout: 3600s
 images:
