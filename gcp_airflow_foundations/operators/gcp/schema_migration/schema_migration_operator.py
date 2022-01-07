@@ -152,7 +152,8 @@ class MigrateSchema(BaseOperator):
             else:
                 column_type_new = self.bigQuery_mapping(next((i['type'] for i in self.new_schema_fields if i["name"] == column_name), None))
                 if (column_type_new is not None) and (column_type_new != column_type):
-                    assert self.allowed_casting(column_name, column_type, column_type_new), f"Data type of column {column_name} cannot be changed from {column_type} to {column_type_new}"
+                    if not self.allowed_casting(column_name, column_type, column_type_new):
+                        raise AirflowException(f"Data type of column {column_name} cannot be changed from {column_type} to {column_type_new}")
 
                     logging.info(f"Data type of column `{column_name}` was changed from {column_type} to {column_type_new}")
 

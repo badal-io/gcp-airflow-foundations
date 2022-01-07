@@ -50,7 +50,7 @@ def clear_db_dags():
         session.query(TaskInstance).delete()
 
     
-class TestCustomGCSToBigQueryOperator(unittest.TestCase):
+class TestParseSchema(unittest.TestCase):
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
         self.conf_location = os.path.join(here, "config")
