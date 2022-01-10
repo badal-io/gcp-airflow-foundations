@@ -1,5 +1,8 @@
 # gcp-airflow-foundations
-[![PyPI version](https://badge.fury.io/py/gcp-airflow-foundations.svg)](https://badge.fury.io/py/gcp-airflow-foundations) [![Documentation Status](https://readthedocs.org/projects/gcp-airflow-foundations/badge/?version=latest)](https://gcp-airflow-foundations.readthedocs.io/en/latest/?badge=latest)
+[![PyPI version](https://badge.fury.io/py/gcp-airflow-foundations.svg)](https://badge.fury.io/py/gcp-airflow-foundations) 
+[![Cloud Build Status](https://storage.googleapis.com/public-cloudbuild/build/cloudbuild_status.svg)](https://storage.googleapis.com/public-cloudbuild/build/cloudbuild_status.svg)
+[![Documentation Status](https://readthedocs.org/projects/gcp-airflow-foundations/badge/?version=latest)](https://gcp-airflow-foundations.readthedocs.io/en/latest/?badge=latest)
+
 
 ![airflow](./docs/_static/airflow_diagram.png)
 

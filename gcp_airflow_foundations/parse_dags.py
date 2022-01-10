@@ -2,6 +2,7 @@ import datetime
 
 from airflow.models.dag import DAG
 from airflow.models import Variable
+from airflow.exceptions import AirflowException
 from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
 from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.source_class import get_dag_builder
@@ -20,7 +21,7 @@ import logging
 class DagParser:
     """ Parsed Airflow DAGs from the user-provided YAML configuration files """
     def __init__(self):
-        self.conf_location = Variable.get("CONFIG_FILE_LOCATION", "/opt/airflow/gcp_airflow_foundations/examples/config")
+        self.conf_location = Variable.get("CONFIG_FILE_LOCATION", "/home/airflow/gcs/dags")
         self.max_task_retries = Variable.get("max_task_retries", 3)
 
     def parse_dags(self):
@@ -63,6 +64,9 @@ class DagParser:
                     # pick out the right source
                     builder = dag_builder(default_task_args, config)
                     dags = builder.build_dags()
+            
+            if builder == None:
+                raise AirflowException(f"Source \"{config.source.source_type}\" is not found in DagBuilder Class")
             
             for dag in dags:
                 parsed_dags[f"dags:source:{config.source.name}.{dag.dag_id}"] = dag
