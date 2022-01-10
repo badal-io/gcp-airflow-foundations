@@ -33,10 +33,11 @@ DEFAULT_DATE = pytz.utc.localize(datetime(2015, 1, 1))
 TEST_DAG_ID = 'test-bigquery-operators'
 SCHEMA_FIELDS = [{'name':'column', 'type':'STRING'}]
 TEST_TABLE_RESOURCES = {
-    "schema":{'fields': SCHEMA_FIELDS},
+    "schema":{"fields": SCHEMA_FIELDS},
     "timePartitioning":None,
     "encryptionConfiguration":None,
-    "labels":None
+    "labels":None,
+    "clustering": {"fields": None}
 }
 
 from airflow.utils.session import create_session, provide_session
