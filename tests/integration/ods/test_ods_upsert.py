@@ -31,6 +31,10 @@ from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
 
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
+PROJECT_ID = 'airflow-framework'
+STAGING_DATASET = 'af_test_landing_zone'
+DATASET = 'af_test_ods'
+TABLE_NAME = 'ga_sessions'
 TASK_ID = 'test-bq-generic-operator'
 DEFAULT_DATE = pytz.utc.localize(datetime(2017, 7, 31))
 TEST_DAG_ID = 'test-bigquery-operators'
@@ -79,17 +83,7 @@ class TestIncrementalUpsertODS(unittest.TestCase):
 
         self.template_context = self.ti.get_template_context()
 
-        here = os.path.abspath(os.path.dirname(__file__))
-        self.conf_location = os.path.join(here, "config")
-
-        configs = load_tables_config_from_dir(self.conf_location)
-
-        self.config = next((i for i in configs), None)
-
-        self.source_config = self.config.source
-        self.table_config = next((i for i in self.config.tables), None)
-
-        self.table_id = f'{self.table_config.table_name}_ODS'
+        self.table_id = f'{TABLE_NAME}_ODS'
 
     def doCleanups(self):
         cleanup_xcom()
@@ -97,7 +91,7 @@ class TestIncrementalUpsertODS(unittest.TestCase):
 
         BigQueryHook().run_copy(
             source_project_dataset_tables='airflow-framework.test_tables.ga_sessions_ODS',
-            destination_project_dataset_table=f'{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}',
+            destination_project_dataset_table=f'{PROJECT_ID}.{DATASET}.{self.table_id}',
             write_disposition='WRITE_TRUNCATE',
             create_disposition='CREATE_IF_NEEDED'
         )
@@ -105,10 +99,10 @@ class TestIncrementalUpsertODS(unittest.TestCase):
     def test_execute(self):
         ods_upsert_data = MergeBigQueryODS(
             task_id=f"upsert_ods",
-            project_id=self.source_config.gcp_project,
-            stg_dataset_name=self.source_config.landing_zone_options.landing_zone_dataset,
-            data_dataset_name=self.source_config.dataset_data_name,
-            stg_table_name=self.table_config.table_name,
+            project_id=PROJECT_ID,
+            stg_dataset_name=STAGING_DATASET,
+            data_dataset_name=DATASET,
+            stg_table_name=TABLE_NAME,
             data_table_name=self.table_id,
             surrogate_keys=SURROGATE_KEYS,
             columns=SOURCE_TABLE_COLUMNS,
@@ -125,7 +119,7 @@ class TestIncrementalUpsertODS(unittest.TestCase):
         original_rows = BigQueryHook().get_pandas_df(
             sql=f"""
                 SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])} 
-                    FROM `{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}`
+                    FROM `{PROJECT_ID}.{DATASET}.{self.table_id}`
                 WHERE date = '20170801'""",
             dialect='standard'
         )
@@ -133,7 +127,7 @@ class TestIncrementalUpsertODS(unittest.TestCase):
         added_rows = BigQueryHook().get_pandas_df(
             sql=f"""
                 SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])} 
-                    FROM `{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}`
+                    FROM `{PROJECT_ID}.{DATASET}.{self.table_id}`
                 WHERE date = '20170731'""",
             dialect='standard'
         )
@@ -155,17 +149,7 @@ class TestFullUpsertODS(unittest.TestCase):
 
         self.template_context = self.ti.get_template_context()
 
-        here = os.path.abspath(os.path.dirname(__file__))
-        self.conf_location = os.path.join(here, "config")
-
-        configs = load_tables_config_from_dir(self.conf_location)
-
-        self.config = next((i for i in configs), None)
-
-        self.source_config = self.config.source
-        self.table_config = next((i for i in self.config.tables), None)
-
-        self.table_id = f'{self.table_config.table_name}_ODS'
+        self.table_id = f'{TABLE_NAME}_ODS'
 
     def doCleanups(self):
         cleanup_xcom()
@@ -173,7 +157,7 @@ class TestFullUpsertODS(unittest.TestCase):
 
         BigQueryHook().run_copy(
             source_project_dataset_tables='airflow-framework.test_tables.ga_sessions_ODS',
-            destination_project_dataset_table=f'{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}',
+            destination_project_dataset_table=f'{PROJECT_ID}.{DATASET}.{self.table_id}',
             write_disposition='WRITE_TRUNCATE',
             create_disposition='CREATE_IF_NEEDED'
         )
@@ -181,10 +165,10 @@ class TestFullUpsertODS(unittest.TestCase):
     def test_execute(self):
         ods_upsert_data = MergeBigQueryODS(
             task_id=f"upsert_ods",
-            project_id=self.source_config.gcp_project,
-            stg_dataset_name=self.source_config.landing_zone_options.landing_zone_dataset,
-            data_dataset_name=self.source_config.dataset_data_name,
-            stg_table_name=self.table_config.table_name,
+            project_id=PROJECT_ID,
+            stg_dataset_name=STAGING_DATASET,
+            data_dataset_name=DATASET,
+            stg_table_name=TABLE_NAME,
             data_table_name=self.table_id,
             surrogate_keys=SURROGATE_KEYS,
             columns=SOURCE_TABLE_COLUMNS,
@@ -201,7 +185,7 @@ class TestFullUpsertODS(unittest.TestCase):
         original_rows = BigQueryHook().get_pandas_df(
             sql=f"""
                 SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])} 
-                    FROM `{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}`
+                    FROM `{PROJECT_ID}.{DATASET}.{self.table_id}`
                 WHERE date = '20170801'""",
             dialect='standard'
         )
@@ -209,7 +193,7 @@ class TestFullUpsertODS(unittest.TestCase):
         added_rows = BigQueryHook().get_pandas_df(
             sql=f"""
                 SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])} 
-                    FROM `{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}`
+                    FROM `{PROJECT_ID}.{DATASET}.{self.table_id}`
                 WHERE date = '20170731'""",
             dialect='standard'
         )

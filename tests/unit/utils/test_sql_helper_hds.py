@@ -26,51 +26,51 @@ class TestSqlHelperHDS(unittest.TestCase):
 
     def test_incremental_scd2(self):
         ingestion_type = IngestionType.INCREMENTAL
-        print(self.sql_helper.create_scd2_sql_with_hash(ingestion_type))
+        
         assert self.sql_helper.create_scd2_sql_with_hash(ingestion_type) == """
             MERGE `target_dataset.target` T
             USING (SELECT  key AS join_key_key, key,column_a
             FROM `source_dataset.source`
             UNION ALL 
             SELECT
-                source.`key`,
-                NULL,source.`column_a`
+                NULL,
+                source.`key`,source.`column_a`
                 FROM `source_dataset.source` source
                 JOIN `target_dataset.target` target
                 ON target.key=source.key
                 WHERE ( 
-                        MD5(TO_JSON_STRING(target.`column_b`)) != MD5(TO_JSON_STRING(source.`column_a`))
+                        (MD5(TO_JSON_STRING(target.`column_b`)) != MD5(TO_JSON_STRING(source.`column_a`)))
                         AND target.af_metadata_expired_at IS NULL
                     )) S
-            ON T.key=S.key
-            WHEN MATCHED AND MD5(TO_JSON_STRING(T.`column_b`)) != MD5(TO_JSON_STRING(S.`column_a`)) THEN UPDATE SET af_metadata_expired_at = CURRENT_TIMESTAMP()
+            ON T.`key`=S.`join_key_key`
+            WHEN MATCHED AND (MD5(TO_JSON_STRING(T.`column_b`)) != MD5(TO_JSON_STRING(S.`column_a`))) THEN UPDATE SET af_metadata_expired_at = CURRENT_TIMESTAMP()
             WHEN NOT MATCHED BY TARGET THEN INSERT (`key`,`column_b`, af_metadata_created_at, af_metadata_expired_at, af_metadata_row_hash)
-            VALUES (join_key_key,`column_a`, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S)))) 
+            VALUES (`key`,`column_a`, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S)))) 
             
         """
 
     def test_full_scd2(self):
         ingestion_type = IngestionType.FULL
-        print(self.sql_helper.create_scd2_sql_with_hash(ingestion_type=ingestion_type))
+
         assert self.sql_helper.create_scd2_sql_with_hash(ingestion_type=ingestion_type) == """
             MERGE `target_dataset.target` T
             USING (SELECT  key AS join_key_key, key,column_a
             FROM `source_dataset.source`
             UNION ALL 
             SELECT
-                source.`key`,
-                NULL,source.`column_a`
+                NULL,
+                source.`key`,source.`column_a`
                 FROM `source_dataset.source` source
                 JOIN `target_dataset.target` target
                 ON target.key=source.key
                 WHERE ( 
-                        MD5(TO_JSON_STRING(target.`column_b`)) != MD5(TO_JSON_STRING(source.`column_a`))
+                        (MD5(TO_JSON_STRING(target.`column_b`)) != MD5(TO_JSON_STRING(source.`column_a`)))
                         AND target.af_metadata_expired_at IS NULL
                     )) S
-            ON T.key=S.key
-            WHEN MATCHED AND MD5(TO_JSON_STRING(T.`column_b`)) != MD5(TO_JSON_STRING(S.`column_a`)) THEN UPDATE SET af_metadata_expired_at = CURRENT_TIMESTAMP()
+            ON T.`key`=S.`join_key_key`
+            WHEN MATCHED AND (MD5(TO_JSON_STRING(T.`column_b`)) != MD5(TO_JSON_STRING(S.`column_a`))) THEN UPDATE SET af_metadata_expired_at = CURRENT_TIMESTAMP()
             WHEN NOT MATCHED BY TARGET THEN INSERT (`key`,`column_b`, af_metadata_created_at, af_metadata_expired_at, af_metadata_row_hash)
-            VALUES (join_key_key,`column_a`, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S)))) 
+            VALUES (`key`,`column_a`, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S)))) 
             WHEN NOT MATCHED BY SOURCE THEN UPDATE SET T.af_metadata_expired_at = CURRENT_TIMESTAMP()
         """
 

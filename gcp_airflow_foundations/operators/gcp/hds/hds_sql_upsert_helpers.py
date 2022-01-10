@@ -116,6 +116,6 @@ class SqlHelperHDS:
                 CURRENT_TIMESTAMP() AS {self.eff_start_time_column_name},
                 TIMESTAMP_TRUNC('{partition_timestamp}', {self.time_partitioning}) AS {self.partition_column_name},
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS {self.hash_column_name}
-            FROM {self.source_dataset}.{self.source} S
+            FROM `{self.source_dataset}.{self.source}` S
         """
         return sql
