@@ -79,12 +79,12 @@ class TestSqlHelperHDS(unittest.TestCase):
 
         self.sql_helper.partition_column_name = 'partition_column'
         self.sql_helper.time_partitioning = 'DAY'
-        print(self.sql_helper.create_snapshot_sql_with_hash(partition_timestamp=partition_timestamp))
+
         assert self.sql_helper.create_snapshot_sql_with_hash(partition_timestamp=partition_timestamp) == """
             SELECT
                 `key` AS `key`,`column_a` AS `column_b`,
                 CURRENT_TIMESTAMP() AS af_metadata_created_at,
                 TIMESTAMP_TRUNC('2021-01-01T00:00:00', DAY) AS partition_column,
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS af_metadata_row_hash
-            FROM source_dataset.source S
+            FROM `source_dataset.source` S
         """

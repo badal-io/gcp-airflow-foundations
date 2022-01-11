@@ -107,7 +107,7 @@ class TestMergeBigQuerySnapshotHDS(unittest.TestCase):
                 CURRENT_TIMESTAMP() AS af_metadata_created_at,
                 TIMESTAMP_TRUNC('2021-01-01T00:00:00+00:00', DAY) AS partition_time,
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS af_metadata_row_hash
-            FROM {TEST_DATASET}.{TEST_STG_TABLE_ID} S
+            FROM `{TEST_DATASET}.{TEST_STG_TABLE_ID}` S
         """
 
         mock_hook.return_value.run_query.assert_called_once_with(
