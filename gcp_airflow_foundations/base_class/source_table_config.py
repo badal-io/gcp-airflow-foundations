@@ -3,7 +3,7 @@ from airflow.exceptions import AirflowException
 from dacite import Config
 from dataclasses import dataclass, field
 
-from pydantic import validator
+from pydantic import validator, root_validator
 
 from datetime import datetime
 from typing import List, Optional
@@ -30,6 +30,7 @@ class SourceTableConfig:
         dest_table_override: Optional target table name. If None, use table_name instead.
         surrogate_keys : Keys used to identify unique records when merging into ODS.
         column_mapping : Mapping used to rename columns.
+        column_casting : Mapping used to cast columns into a specific data type. Note column name uses that of the landing zone table.
         ods_config : ODS table configuration. See :class:`gcp_airflow_foundations.base_class.ods_table_config.OdsTableConfig`.
         hds_config : HDS table configuration. See :class:`gcp_airflow_foundations.base_class.hds_table_config.HdsTableConfig`.
         facebook_table_config: Extra options for ingesting data from the Facebook API.
@@ -45,6 +46,7 @@ class SourceTableConfig:
     dest_table_override: Optional[str]
     surrogate_keys: List[str]
     column_mapping: Optional[dict]
+    column_casting: Optional[dict]
     hds_config: Optional[HdsTableConfig]
     facebook_table_config: Optional[FacebookTableConfig]
     extra_options: dict = field(default_factory=dict)
@@ -66,3 +68,12 @@ class SourceTableConfig:
         assert v, "Source table name must not be empty"
         assert "." not in v, "Source table name cannot contain the period character"
         return v
+
+    @root_validator(pre=True)
+    def valid_column_casting(cls, values):
+        if values['column_casting'] is not None:
+            assert all([key not in values['surrogate_keys'] for key in values['column_casting']]), "Column casting is available only for non-key columns."
+
+            if values['hds_config'] is not None:
+                assert values['hds_config'].hds_table_type != HdsTableType.SCD2, "Column casting is not currently supported for HDS SCD2 tables."
+        return values
