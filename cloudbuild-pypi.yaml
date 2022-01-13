@@ -32,3 +32,29 @@ steps:
           pytest tests/unit -vv
     id: "unit-test"
   # [END unit-test]
+
+# - Publish to PyPI.
+  # [START publish]
+  - name: python
+    waitFor: ['unit-test']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+          pip install build wheel
+          python3 -m pip install --user --upgrade twine
+          python3 setup.py sdist
+          echo $$PYPI_TOKEN > ~/.pypirc
+          python3 -m twine upload dist/*
+    secretEnv: ['PYPI_TOKEN']
+    id: "publish"
+  # [END publish]
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/144161360649/secrets/PyPI/versions/1
+    env: 'PYPI_TOKEN'
+
+timeout: 3600s
+images:
+  - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'

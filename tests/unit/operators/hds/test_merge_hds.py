@@ -91,6 +91,7 @@ class TestMergeBigQuerySnapshotHDS(unittest.TestCase):
             columns=['column'],
             surrogate_keys=['column'],
             column_mapping={'column':'column'},
+            column_casting=None,
             ingestion_type=IngestionType.FULL,
             hds_table_config=hds_table_config
         )
@@ -168,6 +169,7 @@ class TestMergeBigQuerySCD2HDS(unittest.TestCase):
             columns=['column_a','column_b'],
             surrogate_keys=['column_a'],
             column_mapping={'column_a':'column_a', 'column_b':'column_b'},
+            column_casting=None,
             ingestion_type=IngestionType.FULL,
             hds_table_config=hds_table_config
         )

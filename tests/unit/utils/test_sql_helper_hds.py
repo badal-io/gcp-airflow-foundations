@@ -16,6 +16,7 @@ class TestSqlHelperHDS(unittest.TestCase):
             'target': 'target',
             'surrogate_keys': ['key'],
             'column_mapping': {'key':'key', 'column_a':'column_b'},
+            'column_casting': None,
             'hds_metadata': HdsTableMetadataConfig(),
             'columns': ['key', 'column_a']
         }
@@ -26,7 +27,7 @@ class TestSqlHelperHDS(unittest.TestCase):
 
     def test_incremental_scd2(self):
         ingestion_type = IngestionType.INCREMENTAL
-        
+
         assert self.sql_helper.create_scd2_sql_with_hash(ingestion_type) == """
             MERGE `target_dataset.target` T
             USING (SELECT  key AS join_key_key, key,column_a
