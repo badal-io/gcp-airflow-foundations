@@ -29,6 +29,7 @@ class ParseSchema(BaseOperator):
         *,
         schema_config,
         column_mapping=None,
+        column_casting=None,
         data_source=None,
         table_config=None,
         **kwargs
@@ -37,6 +38,7 @@ class ParseSchema(BaseOperator):
 
         self.schema_config = schema_config
         self.column_mapping = column_mapping
+        self.column_casting = column_casting
         self.data_source = data_source
         self.table_config = table_config
 
@@ -55,10 +57,15 @@ class ParseSchema(BaseOperator):
 
         schema_xcom = {'source_table_columns':[field["name"] for field in source_schema_fields]}
 
+        if self.column_casting:
+            for field in source_schema_fields:
+                if field["name"] in self.column_casting:
+                    field["type"] = self.column_casting[field["name"]]["output_type"]
+
         if self.column_mapping:
-                for field in source_schema_fields:
-                    if field["name"] in self.column_mapping.keys():
-                        field["name"] = self.column_mapping[field["name"]]
+            for field in source_schema_fields:
+                if field["name"] in self.column_mapping:
+                    field["name"] = self.column_mapping[field["name"]]
 
         if self.ods_table_config:
             schema_xcom[self.ods_table_config.table_id] = parse_ods_schema(

@@ -32,6 +32,7 @@ class SqlHelperODS:
         target,
         surrogate_keys,
         column_mapping,
+        column_casting,
         columns,
         ods_metadata,
         gcp_conn_id='google_cloud_default'):
@@ -42,6 +43,7 @@ class SqlHelperODS:
         self.target = target
         self.surrogate_keys = surrogate_keys
         self.column_mapping = column_mapping
+        self.column_casting = column_casting
         self.ods_metadata = ods_metadata
         self.gcp_conn_id = gcp_conn_id
         self.columns = columns
@@ -50,7 +52,15 @@ class SqlHelperODS:
         self.ingestion_time_column_name = ods_metadata.ingestion_time_column_name
         self.update_time_column_name = ods_metadata.update_time_column_name
 
-        self.columns_str_source: str = ",".join(["`{}`".format(col) for col in columns])
+        if column_casting:
+            self.columns_str_source: str = ",".join(
+                [column_casting[col]["function"].format(column=col) if col in column_casting \
+                    else "`{}`".format(col) for col in columns]
+            )
+
+        else:
+            self.columns_str_source: str = ",".join(["`{}`".format(col) for col in columns])
+
         self.columns_str_keys: str = ",".join(surrogate_keys)
         self.columns_str_target: str = ",".join(["`{}`".format(self.column_mapping[i]) for i in columns])
 
@@ -60,10 +70,17 @@ class SqlHelperODS:
         return rows, values
 
     def create_full_sql(self):
-        rows, values = self.create_insert_sql()
+        if self.column_casting:
+            COLUMNS = ",".join(
+                f"{self.column_casting[col]['function'].format(column=f'`{col}`')} AS `{self.column_mapping[col]}`" if col in self.column_casting \
+                    else f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns
+            )
+
+        else:
+            COLUMNS = ','.join(f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns)
 
         return f"""
-            SELECT {",".join([f"`{i}` AS `{self.column_mapping[i]}`" for i in self.columns])},
+            SELECT {COLUMNS},
                 CURRENT_TIMESTAMP() AS {self.ingestion_time_column_name},
                 CURRENT_TIMESTAMP() AS {self.update_time_column_name}, 
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS {self.hash_column_name}, 
@@ -72,6 +89,12 @@ class SqlHelperODS:
         """
 
     def create_upsert_sql_with_hash(self):
+        if self.column_casting:
+            UPDATE_COLUMNS = ','.join(f"`{self.column_mapping[col]}`={self.column_casting[col]['function'].format(column=f'S.{col}')}" if col in self.column_casting \
+                else f"`{self.column_mapping[col]}`=S.`{col}`" for col in self.columns)
+        else:
+            UPDATE_COLUMNS = ','.join(f"`{self.column_mapping[col]}`=S.`{col}`" for col in self.columns)
+
         comma = ","
 
         rows, values = self.create_insert_sql()
@@ -83,7 +106,7 @@ class SqlHelperODS:
                 [f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys]
             )}
             WHEN MATCHED THEN UPDATE
-                SET {(','.join(f'`{self.column_mapping[col]}`=S.`{col}`' for col in self.columns )) + f'{comma}' + f'{self.update_time_column_name}=CURRENT_TIMESTAMP()' + f'{comma}' +  f'{self.hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }
+                SET {UPDATE_COLUMNS + f'{comma}' + f'{self.update_time_column_name}=CURRENT_TIMESTAMP()' + f'{comma}' +  f'{self.hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }
             WHEN NOT MATCHED THEN
                 INSERT ({rows})
                 VALUES ({values})

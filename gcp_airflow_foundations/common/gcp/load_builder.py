@@ -27,6 +27,7 @@ def load_builder(
     landing_zone_table_name_override = table_config.landing_zone_table_name_override
     surrogate_keys = table_config.surrogate_keys
     column_mapping = table_config.column_mapping
+    column_casting = table_config.column_casting
     ingestion_type = table_config.ingestion_type
     partition_expiration = data_source.partition_expiration
     ods_table_config = table_config.ods_config
@@ -39,6 +40,7 @@ def load_builder(
         task_id="schema_parsing",
         schema_config=schema_config,
         column_mapping=column_mapping,
+        column_casting=column_casting,
         data_source=data_source,
         table_config=table_config,
         dag=dag
@@ -52,6 +54,7 @@ def load_builder(
         landing_zone_table_name_override=landing_zone_table_name_override,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
+        column_casting=column_casting,
         ingestion_type=ingestion_type,
         ods_table_config=ods_table_config,
         location=location,
@@ -74,6 +77,7 @@ def load_builder(
             landing_zone_table_name_override=ods_table_config.table_id,
             surrogate_keys=surrogate_keys,
             column_mapping=column_mapping,
+            column_casting=column_casting,
             ingestion_type=ingestion_type,
             partition_expiration=partition_expiration,
             hds_table_config=hds_table_config,

@@ -70,6 +70,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
+        column_casting: dict,
         ingestion_type: IngestionType,
         hds_table_config: HdsTableConfig,
         location: Optional[str] = None,
@@ -96,6 +97,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         self.delegate_to = delegate_to
         self.columns = columns
         self.column_mapping = column_mapping
+        self.column_casting = column_casting
         self.ingestion_type = ingestion_type
         self.hds_table_config = hds_table_config
 
@@ -132,6 +134,7 @@ class MergeBigQueryHDS(BigQueryOperator):
             columns=source_columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
+            column_casting=self.column_casting,
             hds_metadata=self.hds_table_config.hds_metadata
         )
 
