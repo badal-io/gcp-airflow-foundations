@@ -68,6 +68,7 @@ class MergeBigQueryODS(BigQueryOperator):
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
+        column_casting: dict,
         ingestion_type: IngestionType,
         ods_table_config: OdsTableConfig,
         location: Optional[str] = None,
@@ -93,6 +94,7 @@ class MergeBigQueryODS(BigQueryOperator):
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
+        self.column_casting = column_casting
         self.ingestion_type = ingestion_type
         self.ods_table_config = ods_table_config
 
@@ -128,6 +130,7 @@ class MergeBigQueryODS(BigQueryOperator):
             columns=source_columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
+            column_casting=self.column_casting,
             ods_metadata=self.ods_table_config.ods_metadata
         )
 

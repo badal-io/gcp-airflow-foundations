@@ -15,6 +15,7 @@ class TestSqlHelperODS(unittest.TestCase):
             'target': 'target',
             'surrogate_keys': ['key'],
             'column_mapping': {'key':'key', 'column_a':'column_b'},
+            'column_casting': None,
             'ods_metadata': OdsTableMetadataConfig(),
             'columns': ['key', 'column_a']
         }

@@ -52,6 +52,7 @@ class TestTaskGroupBuilder(unittest.TestCase):
                         landing_zone_table_name_override=None,
                         surrogate_keys=table.surrogate_keys,
                         column_mapping=table.column_mapping,
+                        column_casting=table.column_casting,
                         ingestion_type=table.ingestion_type,
                         ods_table_config=table.ods_config,
                         partition_expiration=None,
@@ -75,6 +76,7 @@ class TestTaskGroupBuilder(unittest.TestCase):
                         landing_zone_table_name_override=None,
                         surrogate_keys=table.surrogate_keys,
                         column_mapping=table.column_mapping,
+                        column_casting=table.column_casting,
                         ingestion_type=table.ingestion_type,
                         hds_table_config=table.hds_config,
                         partition_expiration=None,
@@ -82,4 +84,4 @@ class TestTaskGroupBuilder(unittest.TestCase):
                         dag=dag
                     )
 
-                assert hds_task_group is not None, "Clould not load the ODS task group"
+                assert hds_task_group is not None, "Could not load the ODS task group"

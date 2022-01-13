@@ -84,6 +84,7 @@ class TestMergeBigQueryODS(unittest.TestCase):
             columns=['column'],
             surrogate_keys=['column'],
             column_mapping={'column':'column'},
+            column_casting=None,
             ingestion_type=IngestionType.FULL,
             ods_table_config=OdsTableConfig(ods_metadata=OdsTableMetadataConfig(), ods_table_time_partitioning=None, partition_column_name=None)
         )

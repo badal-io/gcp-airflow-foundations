@@ -35,6 +35,7 @@ class SqlHelperHDS:
         columns,
         surrogate_keys,
         column_mapping,
+        column_casting,
         hds_metadata,
         time_partitioning=None,
         gcp_conn_id='google_cloud_default'):
@@ -45,6 +46,7 @@ class SqlHelperHDS:
         self.target = target
         self.surrogate_keys = surrogate_keys
         self.column_mapping = column_mapping
+        self.column_casting = column_casting
         self.hds_metadata = hds_metadata
         self.gcp_conn_id = gcp_conn_id
         self.time_partitioning = time_partitioning
@@ -110,9 +112,19 @@ class SqlHelperHDS:
         return sql
 
     def create_snapshot_sql_with_hash(self, partition_timestamp):
+
+        if self.column_casting:
+            COLUMNS = ",".join(
+                f"{self.column_casting[col]['function'].format(column=f'`{col}`')} AS `{self.column_mapping[col]}`" if col in self.column_casting \
+                    else f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns
+            )
+
+        else:
+            COLUMNS = ','.join(f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns)
+        
         sql = f"""
             SELECT
-                {(','.join(f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns))},
+                {COLUMNS},
                 CURRENT_TIMESTAMP() AS {self.eff_start_time_column_name},
                 TIMESTAMP_TRUNC('{partition_timestamp}', {self.time_partitioning}) AS {self.partition_column_name},
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS {self.hash_column_name}
