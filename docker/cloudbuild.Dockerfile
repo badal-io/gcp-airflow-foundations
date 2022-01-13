@@ -28,9 +28,5 @@ WORKDIR /opt/gcp-airflow-foundations
 RUN pip install --upgrade pip
 RUN pip install -e .
 
-# - Create distribution file
-RUN pip install build wheel
-RUN python3 setup.py sdist
-
 # Initiaize Airflow DB
 RUN airflow db init
