@@ -2,7 +2,7 @@ from typing import Optional
 
 from airflow.models import BaseOperator, BaseOperatorLink
 from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 import logging
 
@@ -31,6 +31,7 @@ class DlpBQInspectionResultsOperator(BaseOperator):
             table_id,
             project_id,
             min_match_count=0,
+            do_xcom_push=True,
             gcp_conn_id='google_cloud_default',
             impersonation_chain=None,
             **kwargs
@@ -42,7 +43,7 @@ class DlpBQInspectionResultsOperator(BaseOperator):
         self.table_id = table_id
         self.min_match_count = min_match_count
 
-        self.hook =  BigQueryHook(
+        self.hook = BigQueryHook(
             gcp_conn_id=gcp_conn_id,
             use_legacy_sql=False,
             impersonation_chain=impersonation_chain
@@ -55,4 +56,6 @@ class DlpBQInspectionResultsOperator(BaseOperator):
         results = self.hook.get_records(sql)
 
         logging.debug("DLP Results are", results)
+        if self.do_xcom_push:
+            self.xcom_push(context, 'results', results)
         return results

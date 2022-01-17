@@ -11,4 +11,6 @@ class DlpSourceConfig:
     results_dataset_id: str
     template_name: str
     rows_limit_percent: int
-    min_match_count:int
+    min_match_count:int = 1
+    recurrence: str = "30d"
+

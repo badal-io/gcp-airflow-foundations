@@ -10,9 +10,10 @@ class DlpTableConfig:
     Attributes:
     """
 
-    template_name_override: Optional[str]
-    rows_limit_percent_override: Optional[int]
-    min_match_count_override: Optional[int]
+    template_name_override: Optional[str] = None
+    rows_limit_percent_override: Optional[int] = None
+    min_match_count_override: Optional[int] = None
+    recurrence_override: Optional[str] = None
 
 
     def get_template_name(self, source_config: DlpSourceConfig):
@@ -25,3 +26,7 @@ class DlpTableConfig:
     def get_min_match_count(self, source_config: DlpSourceConfig):
         return self.min_match_count_override if self.min_match_count_override \
             else source_config.min_match_count
+
+    def get_recurrence(self, source_config: DlpSourceConfig):
+        return self.recurrence_override if self.recurrence_override \
+            else source_config.recurrence

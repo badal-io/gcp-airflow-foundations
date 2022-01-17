@@ -1,10 +1,7 @@
 import logging
 import unittest
-from datetime import timedelta
-import time
 import pytest
 
-from airflow import exceptions
 from airflow.exceptions import AirflowException
 
 from airflow.models import (

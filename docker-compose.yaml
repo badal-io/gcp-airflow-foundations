@@ -7,6 +7,7 @@ x-airflow-common:
     dockerfile: ./docker/Dockerfile
   environment:
     &airflow-common-env
+    #AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://user:password@host/schema?extra__google_cloud_platform__scope=${GCP_AUTH_SCOPE}&extra__google_cloud_platform__project=${GCP_PROJECT_ID}'
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
   env_file:
     - ./variables/docker-env-vars
@@ -17,7 +18,7 @@ x-airflow-common:
     - ./plugins:/opt/airflow/plugins
     - ./variables:/opt/airflow/variables
     - ./data:/opt/airflow/data
-    - ./helpers:/opt/airflow/helpers
+    - ./helpers/keys:/private_keys
     - ./tests:/opt/airflow/tests
     - ./gcp_airflow_foundations:/opt/airflow/gcp_airflow_foundations # to make it easier to run unit tests from inside the container
     - ~/.config/gcloud:/home/airflow/.config/gcloud  # GCP auth keys
@@ -68,6 +69,11 @@ services:
     <<: *airflow-common
     command: version
     user: "0:${AIRFLOW_GID:-0}"
+    deploy:
+      resources:
+        reservations:
+          cpus: 2
+          memory: 512M
 
   airflow-helper:
     <<: *airflow-common

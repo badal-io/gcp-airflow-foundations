@@ -6,9 +6,6 @@ from datetime import datetime
 import pandas as pd
 from time import sleep
 
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
-from airflow import DAG
-
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateEmptyTableOperator
 )
