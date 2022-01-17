@@ -73,6 +73,7 @@ class TestDlp(object):
         # run_task(delete_old_dlp_results_task)
         # run_task(scan_table_task)
         t1 = run_task(read_dlp_results_task)
+        t1.xcom_push(key="test_key", value="123")
         print_xcom()
         scan_results = t1.xcom_pull(task_ids="dlp_scan_table.read_dlp_results", key="results")
         logging.info(f"scan_results = {scan_results}")

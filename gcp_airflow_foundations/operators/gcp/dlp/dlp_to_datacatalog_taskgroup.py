@@ -26,12 +26,23 @@ def dlp_to_datacatalog_builder(
     taskgroup = TaskGroup(group_id="dlp_scan_table", dag=dag)
 
     def update_bq_policy_tags(dataset_id, table_id, tag, gcp_conn_id='google_cloud_default', delegate_to=None, **context):
-        logging.info(f"context = {context}")
+        from airflow import settings
+        from airflow.models import XCom
+
+        session = settings.Session()
+        logging.info(f"update_bq_policy_tags: XCOM content is : {session.query(XCom).all()}")
+
+        dlp_results_1 = context['ti'].xcom_pull(task_ids='dlp_scan_table.read_dlp_results',  key='results')
+        test = context['ti'].xcom_pull(task_ids="dlp_scan_table.read_dlp_results", key="test_key")
+
         dlp_results = context['templates_dict']['dlp_results']
         hook = BigQueryHook(
             gcp_conn_id=gcp_conn_id,
             delegate_to=delegate_to,
         )
+        logging.info(f" xcom_pull_test  {test}")
+
+        logging.info(f" context['ti'].xcom_pull  {dlp_results_1}")
 
         schema_fields_updates = results_to_bq_policy_tags(dlp_results, tag)
         logging.info(f" update tags for table {dataset_id}.{table_id} - {schema_fields_updates}")
@@ -117,6 +128,7 @@ def dlp_to_datacatalog_builder(
             'tag':"pii",
             'dataset_id':table_ref.dataset_id,
              'table_id': table_ref.table_id,
+            "dlp_results" : "{{ti.xcom_pull(task_ids='dlp_scan_table.read_dlp_results', key='results')}}",
         },
         provide_context=True
     )
