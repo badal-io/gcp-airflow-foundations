@@ -17,6 +17,7 @@ class FileSourceConfig:
         delimiter: delimiter used in the file
         source_format: format of the files
         delete_gcs_files: whether to delete the GCS after transferring them to BigQuery
+        sensor_timeout: time, in seconds, before the sensors time out: default is 10800 (3 hours)
     """
     file_name_template: Optional[str]
     file_prefix_filtering: bool
@@ -25,3 +26,4 @@ class FileSourceConfig:
     delimeter: str
     source_format: str
     delete_gcs_files: bool
+    sensor_timeout: int = 10800

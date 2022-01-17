@@ -62,11 +62,14 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         if "metadata_file" in table_config.extra_options.get("ftp_table_config"):
             metadata_file_name = table_config.extra_options.get("ftp_table_config")["metadata_file"]
             bucket = self.config.source.extra_options["gcs_bucket"]
+            timeout = self.config.source.extra_options["ftp_source_config"]["sensor_timeout"]
+
             return GCSObjectExistenceSensor(
                 task_id="wait_for_metadata_file",
                 bucket=bucket,
                 object=metadata_file_name,
-                task_group=taskgroup
+                task_group=taskgroup,
+                timeout=timeout
             )
         else:
             return None
@@ -85,13 +88,15 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         """
         bucket = self.config.source.extra_options["gcs_bucket"]
         schema_file_name = None
+        timeout = self.config.source.extra_options["ftp_source_config"]["sensor_timeout"]
         if "schema_file" in table_config.extra_options.get("ftp_table_config"):
             schema_file_name = table_config.extra_options.get("ftp_table_config")["schema_file"]
             return GCSObjectExistenceSensor(
                 task_id="wait_for_schema_file",
                 bucket=bucket,
                 object=schema_file_name,
-                task_group=taskgroup
+                task_group=taskgroup,
+                timeout=timeout
             )
         else:
             return None

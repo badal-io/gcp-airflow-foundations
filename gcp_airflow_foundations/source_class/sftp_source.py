@@ -15,7 +15,7 @@ from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.sensors.python import PythonSensor
 from airflow.models import Variable
 
-from gcp_airflow_foundations.operators.api.hooks.sftp_hook import SFTPHook
+from airflow.providers.sftp.hooks.sftp import SFTPHook
 from gcp_airflow_foundations.operators.api.sensors.sftp_sensor import SFTPFilesExistenceSensor
 from gcp_airflow_foundations.source_class.generic_file_source import GenericFileIngestionDagBuilder
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
@@ -87,12 +87,14 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
 
         bucket = self.config.source.extra_options["gcs_bucket"]
         files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
+        timeout = self.config.source.extra_options["ftp_source_config"]["sensor_timeout"]
 
         return SFTPFilesExistenceSensor(
             task_id="wait_for_files_to_ingest",
             bucket=bucket,
             objects=files_to_wait_for,
-            task_group=taskgroup
+            task_group=taskgroup,
+            timeout=timeout
         )
 
     def get_sftp_sensor(self, table_config, taskgroup, dir_prefix, flag_file_path):
@@ -108,6 +110,8 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
     def sftp_flag_sensor(self, table_config, dir_prefix, flag_file_path, **kwargs):
         # Check if the flag file is dated with the execution date or later - if yes, then the files are ready for ingestion.
         # allows backfilling                    
+        sftp_conn = self.config.source.extra_options["sftp_source_config"]["sftp_connection_name"]
+
         ds = kwargs["ds"]
         logging.info(os.getcwd())
         logging.info(os.listdir())
@@ -116,7 +120,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             self.save_id_to_file(private_key_name)
         logging.info(os.getcwd())
         logging.info(os.listdir())
-        sftp_hook = SFTPHook()
+        sftp_hook = SFTPHook(ssh_conn_id=sftp_conn)
         dir_prefix = dir_prefix.replace("{{ ds }}", ds)
         mod_time = sftp_hook.get_mod_time(flag_file_path)
         mod_time = datetime.strptime(mod_time, '%Y%m%d%H%M%S').strftime('%Y-%m-%d')
@@ -153,6 +157,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
     def load_sftp_to_gcs(self, table_config, dir_prefix, gcs_bucket_prefix, bucket, **kwargs):
         ds = kwargs["ds"]
         ti = kwargs["ti"]
+        sftp_conn = self.config.source.extra_options["sftp_source_config"]["sftp_connection_name"]
 
         if not os.path.isdir("sftp_data"):
             os.mkdir("sftp_data")
@@ -171,7 +176,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
             private_key_name = self.config.source.extra_options["sftp_source_config"]["sftp_private_key_secret_name"]
             self.save_id_to_file(private_key_name)
-        sftp_hook = SFTPHook()
+        sftp_hook = SFTPHook(ssh_conn_id=sftp_conn)
         files_to_load = ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list')
 
         for file in files_to_load:
