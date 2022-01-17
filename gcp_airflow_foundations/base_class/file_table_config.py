@@ -4,7 +4,7 @@ from pydantic.dataclasses import dataclass
 from typing import List, Optional
 
 @dataclass
-class FTPTableConfig:
+class FileTableConfig:
     """
     Attributes:
         directory_prefix: optional directory prefix override per table

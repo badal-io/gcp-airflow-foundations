@@ -17,7 +17,7 @@ from airflow.models import Variable
 
 from gcp_airflow_foundations.operators.api.hooks.sftp_hook import SFTPHook
 from gcp_airflow_foundations.operators.api.sensors.sftp_sensor import SFTPFilesExistenceSensor
-from gcp_airflow_foundations.source_class.ftp_source import GenericFileIngestionDagBuilder
+from gcp_airflow_foundations.source_class.generic_file_source import GenericFileIngestionDagBuilder
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 from gcp_airflow_foundations.base_class.sftp_table_config import SFTPTableConfig
 
@@ -54,10 +54,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             flag_file_path = table_config.extra_options.get("ftp_table_config")["flag_file_path"]
             return self.get_sftp_sensor(table_config, taskgroup, dir_prefix, flag_file_path)
         else:
-            return DummyOperator(
-                task_id="dummy_flag_file_sensor",
-                task_group=taskgroup
-            )
+            return None
 
     def file_ingestion_task(self, table_config, taskgroup):
         """
@@ -86,10 +83,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         """
         # If we have a flag file for ingestion, there is no need to check the files specifically
         if "flag_file_path" in table_config.extra_options.get("ftp_table_config"):
-            return DummyOperator(
-                task_id="dummy_sftp_file_existence_sensor",
-                task_group=taskgroup
-            )
+            return None
 
         bucket = self.config.source.extra_options["gcs_bucket"]
         files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
@@ -113,15 +107,24 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
 
     def sftp_flag_sensor(self, table_config, dir_prefix, flag_file_path, **kwargs):
         # Check if the flag file is dated with the execution date or later - if yes, then the files are ready for ingestion.
-        # allows backfilling
+        # allows backfilling                    
         ds = kwargs["ds"]
+        logging.info(os.getcwd())
+        logging.info(os.listdir())
         if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
             private_key_name = self.config.source.extra_options["sftp_source_config"]["sftp_private_key_secret_name"]
             self.save_id_to_file(private_key_name)
+        logging.info(os.getcwd())
+        logging.info(os.listdir())
         sftp_hook = SFTPHook()
         dir_prefix = dir_prefix.replace("{{ ds }}", ds)
         mod_time = sftp_hook.get_mod_time(flag_file_path)
         mod_time = datetime.strptime(mod_time, '%Y%m%d%H%M%S').strftime('%Y-%m-%d')
+        logging.info(mod_time)
+        if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
+            if os.path.isfile("id_rsa"):
+                os.remove("id_rsa")
+
         return ds <= mod_time
     
     def get_sftp_ingestion_operator(self, table_config, taskgroup, dir_prefix, gcs_bucket_prefix, flag_file_path, bucket):
@@ -155,9 +158,15 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             os.mkdir("sftp_data")
         my_path = "sftp_data"
 
+        logging.info
+        if gcs_bucket_prefix is None:
+            gcs_bucket_prefix = ""
+        if not gcs_bucket_prefix == "":
+            gcs_bucket_prefix += "/"
+
         table_name = table_config.table_name
         source_path_prefix = dir_prefix + "/*"
-        destination_path_prefix = gcs_bucket_prefix + "/" + table_name + "/" + ds 
+        destination_path_prefix = gcs_bucket_prefix + table_name + "/" + ds 
 
         if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
             private_key_name = self.config.source.extra_options["sftp_source_config"]["sftp_private_key_secret_name"]
@@ -169,7 +178,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             sftp_hook.retrieve_file(dir_prefix + "/" + file, my_path + "/" + file)
 
         gcs_hook = GCSHook()
-        local_files = [f for f in os.listdir(my_path) if os.isfile(os.join(my_path, f))]
+        local_files = [f for f in os.listdir(my_path) if os.path.isfile(os.join(my_path, f))]
         for file in files_to_load:
             obj = destination_path_prefix + "/" + file
             gcs_hook.upload(
@@ -180,12 +189,21 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         # delete data
         shutil.rmtree(my_path)
 
+        if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
+            if os.path.isfile("id_rsa"):
+                os.remove("id_rsa")
+
 
     def load_sftp_to_gcs_flag(self, table_config, dir_prefix, gcs_bucket_prefix, bucket, flag_file_path, **kwargs):
         ds = kwargs["ds"]
         ti = kwargs["ti"]
 
         airflow_date_template = self.config.source.extra_options["ftp_source_config"]["airflow_date_template"]
+
+        if gcs_bucket_prefix is None:
+            gcs_bucket_prefix =  ""
+        if not gcs_bucket_prefix == "":
+            gcs_bucket_prefix += "/"
         
         # flag to check whether we are loading dates named with {{ prev_ds }} or {{ ds }}
         # landing zone table creation will still use {{ ds }}
@@ -197,7 +215,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         full_dir_download = table_config.extra_options.get("sftp_table_config")["full_dir_download"]
         table_name = table_config.table_name
         source_path_prefix = dir_prefix + "/*"
-        destination_path_prefix = gcs_bucket_prefix + "/" + table_name + "/" + ds 
+        destination_path_prefix = gcs_bucket_prefix + table_name + "/" + ds 
 
         if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
             private_key_name = self.config.source.extra_options["sftp_source_config"]["sftp_private_key_secret_name"]
@@ -211,21 +229,36 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         os.chmod(my_path, 0o777)
 
         # get recursive sftp structure w/ full paths
-        map = sftp_hook.get_tree_map(dir_prefix)
+        tree_map_prefix = dir_prefix
+        upload_option = table_config.extra_options.get("ftp_table_config")["parquet_upload_option"]
+        if not full_dir_download and upload_option == "BASH":
+            tree_map_prefix += f"/{date_column}={source_file_date}"
+        logging.info(tree_map_prefix)
+        map = sftp_hook.get_tree_map(tree_map_prefix)
         if isinstance(map[0], list):
             map = map[0]
 
         # get list of files, create local directory structure, download
-        if full_dir_download:
-            files_to_upload = [x for x in map]
-        else:
-            files_to_upload = [x for x in map if f"{date_column}={source_file_date}" in x]
+        #if full_dir_download:
+        files_to_upload = [x for x in map]
+        #else:
+        #    files_to_upload = [x for x in map if f"{date_column}={source_file_date}" in x]
 
+        flag_file = flag_file_path.split("/")[-1]
+        # delete prefix up until the external partitions
+        local_file_prefix_to_drop = ""
+        if not files_to_upload == []:
+            local_file_prefix_to_drop = my_path + "/" + dir_prefix + "/"
+
+        gcs_hook = GCSHook()
         logging.info(files_to_upload)
+
+        local_files_list = [my_path + "/" + file for file in files_to_upload]
+
         for remote_file in files_to_upload:
             conn = sftp_hook.get_conn()
-            path_to_create = my_path + "/" + remote_file
-            path_to_create = path_to_create.rsplit('/', 1)[0]
+            file = my_path + "/" + remote_file
+            path_to_create = file.rsplit('/', 1)[0]
             if not os.path.exists(path_to_create):
                 folders = path_to_create.split("/")
                 for i in range(len(folders)):
@@ -233,21 +266,9 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
                     if not os.path.exists(folder_to_create):
                         os.mkdir(folder_to_create)
                         os.chmod(folder_to_create, 0o777)
-            sftp_hook.retrieve_file(remote_file, my_path + "/" + remote_file)
 
-        # get list of local files
-        files = glob.glob(my_path + '/**/*.parquet', recursive=True)
-        logging.info(files)
-
-        # delete prefix up until the external partitions
-        local_file_prefix_to_drop = ""
-        if not files_to_upload == []:
-            local_file_prefix_to_drop = my_path + "/" + dir_prefix + "/"
-
-        flag_file = flag_file_path.split("/")[-1]
-        gcs_hook = GCSHook()
-        for file in files:
-            if not file == flag_file:
+            if not remote_file == flag_file_path:
+                sftp_hook.retrieve_file(remote_file, file)
                 # Get correct GCS file names to upload
                 obj = destination_path_prefix + "/" + file.replace(local_file_prefix_to_drop, "")
                 logging.info(obj)
@@ -256,20 +277,39 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
                     object_name=obj,
                     filename=file
                     )
+                os.remove(file)
+
+        # get list of local files
+        #files = glob.glob(my_path + '/**/*.parquet', recursive=True)
+        #logging.info(files)
+
+        #for file in files:
+        #    if not file == flag_file:
+        #        # Get correct GCS file names to upload
+        #        obj = destination_path_prefix + "/" + file.replace(local_file_prefix_to_drop, "")
+        #        logging.info(obj)
+        #        gcs_hook.upload(
+        #            bucket_name=bucket,
+        #            object_name=obj,
+        #            filename=file
+        #            )
         # delete data
-        shutil.rmtree(my_path)
+        #shutil.rmtree(my_path)
+
+        if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
+            if os.path.isfile("id_rsa"):
+                os.remove("id_rsa")
     
         # xcom push the prefix of external partitions, e.g. "par1=val1/par2=val/par3=val3"
-        partition_prefix = files[0].replace(local_file_prefix_to_drop, "").rsplit('/', 1)[0]
+        partition_prefix = local_files_list[0].rsplit('/', 1)[0].replace(my_path + "/" + dir_prefix, "").lstrip("/")
         logging.info(partition_prefix)
         kwargs['ti'].xcom_push(key='partition_prefix', value=partition_prefix)
 
     def save_id_to_file(self, private_key_var):
         key = Variable.get(private_key_var)
-        if not os.path.isfile("id_rsa"):
-            with open("id_rsa", "w") as f:
-                f.write(key)
-        
+        secret_path = "id_rsa"
+        with open(secret_path, "w") as f:
+            f.write(key)
 
     def validate_extra_options(self):
         super().validate_extra_options()

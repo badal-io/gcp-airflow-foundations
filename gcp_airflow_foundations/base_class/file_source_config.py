@@ -6,7 +6,7 @@ from typing import List, Optional
 from pydantic.networks import stricturl
 
 @dataclass
-class FTPSourceConfig:
+class FileSourceConfig:
     """
     Attributes:
         file_name_template: a templated file name that applies to all tables. The DAGs will search for one file per table accordingly,
@@ -16,6 +16,7 @@ class FTPSourceConfig:
         date_format: The date format expected in the file naming convention
         delimiter: delimiter used in the file
         source_format: format of the files
+        delete_gcs_files: whether to delete the GCS after transferring them to BigQuery
     """
     file_name_template: Optional[str]
     file_prefix_filtering: bool
@@ -23,3 +24,4 @@ class FTPSourceConfig:
     airflow_date_template: str
     delimeter: str
     source_format: str
+    delete_gcs_files: bool

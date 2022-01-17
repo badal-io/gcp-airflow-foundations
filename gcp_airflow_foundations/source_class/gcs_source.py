@@ -5,11 +5,13 @@ from dacite import from_dict
 from dataclasses import dataclass
 
 from airflow.operators.dummy import DummyOperator
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
+from airflow.operators.python_operator import PythonOperator
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 
 from gcp_airflow_foundations.operators.api.sensors.gcs_sensor import GCSObjectListExistenceSensor
 from gcp_airflow_foundations.operators.api.sensors.gcs_prefix_sensor import GCSObjectPrefixListExistenceSensor
-from gcp_airflow_foundations.source_class.ftp_source import GenericFileIngestionDagBuilder
+from gcp_airflow_foundations.source_class.generic_file_source import GenericFileIngestionDagBuilder
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
 
@@ -42,20 +44,14 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
                 task_group=taskgroup
             )
         else:
-            return DummyOperator(
-                task_id="dummy_flag_file_sensor",
-                task_group=taskgroup
-            )
+            return None
 
     def file_ingestion_task(self, table_config, taskgroup):
         """
         No ingestion is needed - data is already in GCS, so return a dummy operator.
         """
-        return DummyOperator(
-            task_id="dummy_file_ingestion_operator",
-            task_group=taskgroup
-        )
-
+        return None
+        
     def file_sensor(self, table_config, taskgroup):
         """
         Returns an Airflow sensor that waits for the list of files specified by the metadata file provided.
@@ -77,4 +73,26 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
                 objects=files_to_wait_for,
                 task_group=taskgroup
             )
-            
+
+    def delete_files(self, table_config, **kwargs):
+        ti = kwargs["ti"]
+        files_to_load = ti.xcom_pull(key='loaded_files', task_ids='ftp_taskgroup.load_gcs_to_landing_zone')
+        data_source = self.config.source
+        bucket = data_source.extra_options["gcs_bucket"]
+        gcs_hook = GCSHook()
+
+        for file in files_to_load:
+            gcs_hook.delete(bucket_name=bucket, object_name=file)
+    
+    def delete_gcs_files(self, table_config, taskgroup)
+        return PythonOperator(
+            task_id="delete_gcs_files",
+            op_kwargs={"table_config": table_config},
+            python_callable=self.delete_files,
+            task_group=taskgroup
+        )
+
+    def validate_extra_options(self):
+        # GCS Source only requires the checks for the base file_source_config and file_table_configs: 
+        # other sources like SFTP require extra checks
+        super().validate_extra_options()
