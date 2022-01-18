@@ -49,9 +49,9 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
     source_type = "SFTP"
 
     def flag_file_sensor(self, table_config, taskgroup):
-        if "flag_file_path" in table_config.extra_options.get("ftp_table_config"):
-            dir_prefix = table_config.extra_options.get("ftp_table_config")["directory_prefix"]
-            flag_file_path = table_config.extra_options.get("ftp_table_config")["flag_file_path"]
+        if "flag_file_path" in table_config.extra_options.get("file_table_config"):
+            dir_prefix = table_config.extra_options.get("file_table_config")["directory_prefix"]
+            flag_file_path = table_config.extra_options.get("file_table_config")["flag_file_path"]
             return self.get_sftp_sensor(table_config, taskgroup, dir_prefix, flag_file_path)
         else:
             return None
@@ -60,12 +60,12 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         """
         Ingest from SFTP
         """
-        dir_prefix = table_config.extra_options.get("ftp_table_config")["directory_prefix"]
-        if "flag_file_path" in table_config.extra_options.get("ftp_table_config"):
-            flag_file_path = table_config.extra_options.get("ftp_table_config")["flag_file_path"]
+        dir_prefix = table_config.extra_options.get("file_table_config")["directory_prefix"]
+        if "flag_file_path" in table_config.extra_options.get("file_table_config"):
+            flag_file_path = table_config.extra_options.get("file_table_config")["flag_file_path"]
         else: 
             flag_file_path = ""
-        gcs_bucket_prefix = self.config.source.extra_options["ftp_source_config"]["gcs_bucket_prefix"]
+        gcs_bucket_prefix = self.config.source.extra_options["file_source_config"]["gcs_bucket_prefix"]
         bucket = self.config.source.extra_options["gcs_bucket"]
         return self.get_sftp_ingestion_operator(table_config, taskgroup, dir_prefix, gcs_bucket_prefix, flag_file_path, bucket)
 
@@ -82,12 +82,12 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         Returns an Airflow sensor that waits for the list of files specified by the metadata file provided.
         """
         # If we have a flag file for ingestion, there is no need to check the files specifically
-        if "flag_file_path" in table_config.extra_options.get("ftp_table_config"):
+        if "flag_file_path" in table_config.extra_options.get("file_table_config"):
             return None
 
         bucket = self.config.source.extra_options["gcs_bucket"]
         files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
-        timeout = self.config.source.extra_options["ftp_source_config"]["sensor_timeout"]
+        timeout = self.config.source.extra_options["file_source_config"]["sensor_timeout"]
 
         return SFTPFilesExistenceSensor(
             task_id="wait_for_files_to_ingest",
@@ -203,7 +203,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         ds = kwargs["ds"]
         ti = kwargs["ti"]
 
-        airflow_date_template = self.config.source.extra_options["ftp_source_config"]["airflow_date_template"]
+        airflow_date_template = self.config.source.extra_options["file_source_config"]["airflow_date_template"]
 
         if gcs_bucket_prefix is None:
             gcs_bucket_prefix =  ""
@@ -235,7 +235,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
 
         # get recursive sftp structure w/ full paths
         tree_map_prefix = dir_prefix
-        upload_option = table_config.extra_options.get("ftp_table_config")["parquet_upload_option"]
+        upload_option = table_config.extra_options.get("file_table_config")["parquet_upload_option"]
         if not full_dir_download and upload_option == "BASH":
             tree_map_prefix += f"/{date_column}={source_file_date}"
         logging.info(tree_map_prefix)
@@ -315,6 +315,9 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         secret_path = "id_rsa"
         with open(secret_path, "w") as f:
             f.write(key)
+
+    def delete_gcs_files(self, table_config, taskgroup):
+         pass
 
     def validate_extra_options(self):
         super().validate_extra_options()

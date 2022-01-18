@@ -26,4 +26,5 @@ class FileSourceConfig:
     delimeter: str
     source_format: str
     delete_gcs_files: bool
+    gcs_bucket_prefix: str
     sensor_timeout: int = 10800

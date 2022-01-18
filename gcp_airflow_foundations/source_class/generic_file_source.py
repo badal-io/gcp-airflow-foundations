@@ -40,7 +40,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         tasks.append(self.file_ingestion_task(table_config, taskgroup))
         tasks.append(self.load_to_landing_task(table_config, taskgroup))
 
-        if self.config.source.extra_options["file_source_config"]["delete_gcs_file"]:
+        if self.config.source.extra_options["file_source_config"]["delete_gcs_files"]:
             tasks.append(self.delete_gcs_files(table_config, taskgroup))
 
         for task in tasks:
@@ -59,10 +59,10 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         Implements a sensor for either the metadata file specified in the table config, which specifies 
         the parameterized file names to ingest.
         """
-        if "metadata_file" in table_config.extra_options.get("ftp_table_config"):
-            metadata_file_name = table_config.extra_options.get("ftp_table_config")["metadata_file"]
+        if "metadata_file" in table_config.extra_options.get("file_table_config"):
+            metadata_file_name = table_config.extra_options.get("file_table_config")["metadata_file"]
             bucket = self.config.source.extra_options["gcs_bucket"]
-            timeout = self.config.source.extra_options["ftp_source_config"]["sensor_timeout"]
+            timeout = self.config.source.extra_options["file_source_config"]["sensor_timeout"]
 
             return GCSObjectExistenceSensor(
                 task_id="wait_for_metadata_file",
@@ -88,9 +88,9 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         """
         bucket = self.config.source.extra_options["gcs_bucket"]
         schema_file_name = None
-        timeout = self.config.source.extra_options["ftp_source_config"]["sensor_timeout"]
-        if "schema_file" in table_config.extra_options.get("ftp_table_config"):
-            schema_file_name = table_config.extra_options.get("ftp_table_config")["schema_file"]
+        timeout = self.config.source.extra_options["file_source_config"]["sensor_timeout"]
+        if "schema_file" in table_config.extra_options.get("file_table_config"):
+            schema_file_name = table_config.extra_options.get("file_table_config")["schema_file"]
             return GCSObjectExistenceSensor(
                 task_id="wait_for_schema_file",
                 bucket=bucket,
@@ -121,7 +121,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         pass
 
     @abstractmethod
-    def delete_gcs_files(table_config, taskgroup)
+    def delete_gcs_files(table_config, taskgroup):
         pass
 
     def get_file_list_task(self, table_config, taskgroup):
@@ -134,32 +134,32 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
     def get_list_of_files(self, table_config, **kwargs):
         gcs_hook = GCSHook()
-        airflow_date_template = self.config.source.extra_options["ftp_source_config"]["airflow_date_template"]
+        airflow_date_template = self.config.source.extra_options["file_source_config"]["airflow_date_template"]
         if airflow_date_template == "ds":
             ds = kwargs["ds"]
         else:
             ds = kwargs["prev_ds"]
-        ds = datetime.strptime(ds, "%Y-%m-%d").strftime(self.config.source.extra_options["ftp_source_config"]["date_format"])
+        ds = datetime.strptime(ds, "%Y-%m-%d").strftime(self.config.source.extra_options["file_source_config"]["date_format"])
         # XCom push the list of files
         # overwrite if in table_config
-        dir_prefix = table_config.extra_options.get("ftp_table_config")["directory_prefix"]
+        dir_prefix = table_config.extra_options.get("file_table_config")["directory_prefix"]
         dir_prefix = dir_prefix.replace("{{ ds }}", ds)
         
-        if self.config.source.extra_options["ftp_source_config"]["source_format"] == "PARQUET":
+        if self.config.source.extra_options["file_source_config"]["source_format"] == "PARQUET":
             file_list = [dir_prefix]
             kwargs['ti'].xcom_push(key='file_list', value=file_list)
             return
         else:
             bucket = self.config.source.extra_options["gcs_bucket"]
-            if "metadata_file" in table_config.extra_options.get("ftp_table_config"):
-                metadata_file_name = table_config.extra_options.get("ftp_table_config")["metadata_file"]
+            if "metadata_file" in table_config.extra_options.get("file_table_config"):
+                metadata_file_name = table_config.extra_options.get("file_table_config")["metadata_file"]
                 metadata_file = gcs_hook.download(bucket_name=bucket, object_name=metadata_file_name, filename="metadata.csv")
                 file_list = []
                 with open('metadata.csv', newline='') as f:
                     for line in f:
                         file_list.append(line.strip())
             else:
-                templated_file_name = self.config.source.extra_options["ftp_source_config"]["file_name_template"]
+                templated_file_name = self.config.source.extra_options["file_source_config"]["file_name_template"]
                 templated_file_name = templated_file_name.replace("{{ TABLE_NAME }}", table_config.table_name)
                 file_list = [templated_file_name]
 
@@ -188,15 +188,15 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
         data_source = self.config.source
         bucket = data_source.extra_options["gcs_bucket"]
-        source_format = data_source.extra_options["ftp_source_config"]["source_format"]
-        field_delimeter = data_source.extra_options["ftp_source_config"]["delimeter"]
+        source_format = data_source.extra_options["file_source_config"]["source_format"]
+        field_delimeter = data_source.extra_options["file_source_config"]["delimeter"]
         gcp_project = data_source.gcp_project
         landing_dataset = data_source.landing_zone_options.landing_zone_dataset 
         landing_table_name = table_config.landing_zone_table_name_override
         table_name = table_config.table_name
         destination_table = f"{gcp_project}:{landing_dataset}.{table_config.landing_zone_table_name_override}" + f"_{ds}"
         files_to_load = ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list')
-        gcs_bucket_prefix = data_source.extra_options["ftp_source_config"]["gcs_bucket_prefix"]
+        gcs_bucket_prefix = data_source.extra_options["file_source_config"]["gcs_bucket_prefix"]
         if gcs_bucket_prefix is None:
             gcs_bucket_prefix =  ""
         if not gcs_bucket_prefix == "":
@@ -204,15 +204,15 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         destination_path_prefix = gcs_bucket_prefix + table_name + "/" + ds 
         logging.info(destination_path_prefix)
 
-        if "parquet_upload_option" in table_config.extra_options.get("ftp_table_config"):
-            parquet_upload_option = table_config.extra_options.get("ftp_table_config")["parquet_upload_option"]
+        if "parquet_upload_option" in table_config.extra_options.get("file_table_config"):
+            parquet_upload_option = table_config.extra_options.get("file_table_config")["parquet_upload_option"]
         else:
             parquet_upload_option = "BASH"
 
-        source_format = self.config.source.extra_options["ftp_source_config"]["source_format"]
+        source_format = self.config.source.extra_options["file_source_config"]["source_format"]
         if source_format == "PARQUET" and parquet_upload_option == "BASH":
             date_column = table_config.extra_options.get("sftp_table_config")["date_column"]
-            gcs_bucket_prefix = data_source.extra_options["ftp_source_config"]["gcs_bucket_prefix"]
+            gcs_bucket_prefix = data_source.extra_options["file_source_config"]["gcs_bucket_prefix"]
             # bq load command if parquet
             partition_prefix = ti.xcom_pull(key='partition_prefix', task_ids='ftp_taskgroup.load_sftp_to_gcs')
             command = self.get_load_script(gcp_project, landing_dataset, landing_table_name + f"_{ds}", bucket, gcs_bucket_prefix, partition_prefix, table_name, date_column, ds)
@@ -227,7 +227,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                 logging.info(f"Load into BQ landing zone failed.")
         else:
             # gcs->bq operator else
-            if self.config.source.extra_options["ftp_source_config"]["file_prefix_filtering"]:
+            if self.config.source.extra_options["file_source_config"]["file_prefix_filtering"]:
                 for i in range(len(files_to_load)):
                     matching_gcs_files = gcs_hook.list(bucket_name=bucket, prefix=files_to_load[i]) 
                     if len(matching_gcs_files) > 1:
@@ -235,12 +235,12 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                     files_to_load[i] = matching_gcs_files[0]
 
             schema_file_name = None
-            if "schema_file" in table_config.extra_options.get("ftp_table_config"):
-                schema_file_name = table_config.extra_options.get("ftp_table_config")["schema_file"]
+            if "schema_file" in table_config.extra_options.get("file_table_config"):
+                schema_file_name = table_config.extra_options.get("file_table_config")["schema_file"]
 
             allow_quoted_newlines = False
-            if "allow_quoted_newlines" in table_config.extra_options.get("ftp_table_config"):
-                allow_quoted_newlines = table_config.extra_options.get("ftp_table_config")["allow_quoted_newlines"]
+            if "allow_quoted_newlines" in table_config.extra_options.get("file_table_config"):
+                allow_quoted_newlines = table_config.extra_options.get("file_table_config")["allow_quoted_newlines"]
 
             if parquet_upload_option == "GCS" and source_format == "PARQUET":
                 # overwrite files_to_upload

@@ -7,9 +7,9 @@ from typing import List, Optional
 class SFTPTableConfig:
     """
     Attributes:
-        sftp_connection_name: name of the connection in Airflow
+        full_dir_download: 
         date_column: optional date column name for scanning/replacing in external partitions for .PARQUET uploads
     """
-    sftp_private_key_secret_name: Optional[str]
+    full_dir_download: bool
     date_column: Optional[str]
     

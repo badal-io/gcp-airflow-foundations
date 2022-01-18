@@ -6,12 +6,14 @@ from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
 from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.source_class import get_dag_builder
 from gcp_airflow_foundations.source_class import (
-    ftp_source,
-    ftp_gcs_source,
+    generic_file_source,
+    gcs_source,
+    sftp_source,
     jdbc_dataflow_source,
     oracle_dataflow_source,
     salesforce_source,
-    twilio_source
+    twilio_source,
+    mysql_dataflow_source
 )
 
 import logging

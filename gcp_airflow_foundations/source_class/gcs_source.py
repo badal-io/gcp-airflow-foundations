@@ -34,8 +34,8 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
     source_type = "GCS"
 
     def flag_file_sensor(self, table_config, taskgroup):
-        if "flag_file_path" in table_config.extra_options.get("ftp_table_config"):
-            flag_file_path = table_config.extra_options.get("ftp_table_config")["flag_file_path"]
+        if "flag_file_path" in table_config.extra_options.get("file_table_config"):
+            flag_file_path = table_config.extra_options.get("file_table_config")["flag_file_path"]
             bucket = self.config.source.extra_options["gcs_bucket"]
             return GCSObjectExistenceSensor(
                 task_id="wait_for_flag_file",
@@ -59,7 +59,7 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         bucket = self.config.source.extra_options["gcs_bucket"]
         files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
 
-        if self.config.source.extra_options["ftp_source_config"]["file_prefix_filtering"]:
+        if self.config.source.extra_options["file_source_config"]["file_prefix_filtering"]:
             return GCSObjectPrefixListExistenceSensor(
                 task_id="wait_for_files_to_ingest",
                 bucket=bucket,
@@ -84,7 +84,7 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         for file in files_to_load:
             gcs_hook.delete(bucket_name=bucket, object_name=file)
     
-    def delete_gcs_files(self, table_config, taskgroup)
+    def delete_gcs_files(self, table_config, taskgroup):
         return PythonOperator(
             task_id="delete_gcs_files",
             op_kwargs={"table_config": table_config},
