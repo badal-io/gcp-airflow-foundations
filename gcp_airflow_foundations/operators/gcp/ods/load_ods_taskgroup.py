@@ -38,9 +38,11 @@ def ods_builder(
     taskgroup = TaskGroup(group_id="create_ods_merge_taskgroup")
 
     if ods_table_config.ods_table_time_partitioning is not None:
+        field = column_mapping[ods_table_config.partition_column_name] if column_mapping else ods_table_config.partition_column_name
+
         time_partitioning = {
             "type":ods_table_config.ods_table_time_partitioning.value,
-            "field":column_mapping[ods_table_config.partition_column_name],
+            "field":field,
             "expirationMs":partition_expiration
         }
     
