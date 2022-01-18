@@ -140,21 +140,17 @@ class MergeBigQueryODS(BigQueryOperator):
             sql_helper.partition_column_name =  self.ods_table_config.partition_column_name
         
             ts = context['ts']
-            now = datetime.strptime(ts, '%Y-%m-%dT%H:%M:%S%z')
-            if partitioning_dimension == "HOUR":
-                partition_id = now.strftime("%Y%m%d%H")
-            elif partitioning_dimension == "DAY":
-                partition_id = now.strftime("%Y%m%d")
-            elif partitioning_dimension == "MONTH":
-                partition_id = now.strftime("%Y%m")
-            else:
-                raise AirflowException(f"Could not determine partition ID format from `{partitioning_dimension}`")   
 
             sql_helper.partition_timestamp = ts
 
         if self.ingestion_type == IngestionType.INCREMENTAL:
-            # Append staging table to ODS table
-            sql = sql_helper.create_upsert_sql_with_hash()
+            if self.surrogate_keys:
+                # Append staging table to ODS table
+                sql = sql_helper.create_upsert_sql_with_hash()
+            else:
+                sql = sql_helper.create_full_sql()
+                self.write_disposition = "WRITE_APPEND"
+                self.destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}"
 
         elif self.ingestion_type == IngestionType.FULL:
             # Overwrite ODS table with the staging table data

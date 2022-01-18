@@ -7,8 +7,8 @@ import datetime
 from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
 from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.source_class import (
-    ftp_source,
-    ftp_gcs_source,
+    sftp_source,
+    gcs_source,
     jdbc_dataflow_source,
     oracle_dataflow_source,
     salesforce_source,

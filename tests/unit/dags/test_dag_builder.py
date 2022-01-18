@@ -5,8 +5,8 @@ import unittest
 from gcp_airflow_foundations.source_class.source import DagBuilder
 
 from gcp_airflow_foundations.source_class import (
-    ftp_source,
-    ftp_gcs_source,
+    sftp_source,
+    gcs_source,
     jdbc_dataflow_source,
     oracle_dataflow_source,
     salesforce_source,
@@ -20,8 +20,8 @@ class TestDagBuilder(unittest.TestCase):
         self.sources = [
             twilio_source.TwilioToBQDagBuilder,
             facebook.FacebooktoBQDagBuilder,
-            ftp_source.FTPtoBQDagBuilder,
-            ftp_gcs_source.GCSFiletoBQDagBuilder,
+            sftp_source.SFTPFileIngestionDagBuilder,
+            gcs_source.GCSFileIngestionDagBuilder,
             jdbc_dataflow_source.JdbcToBQDataflowDagBuilder,
             oracle_dataflow_source.OracleToBQDataflowDagBuilder,
             salesforce_source.SalesforcetoBQDagBuilder

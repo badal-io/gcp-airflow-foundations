@@ -21,6 +21,12 @@ facebook-business>=6.0.2
 
 apache-airflow-providers-salesforce==1.0.0
 apache-airflow-providers-apache-beam==3.1.0
+apache-airflow-providers-sftp==2.0.0
+apache-airflow-providers-ssh==2.1.0
+
+paramiko>=2.6.0
+pysftp>=0.2.9
+sshtunnel>=0.1.4,<0.2
 
 apache-airflow-providers-facebook==2.1.0
 pyarrow==4.0.1
