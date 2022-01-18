@@ -55,6 +55,7 @@ class TestTaskGroupBuilder(unittest.TestCase):
                         column_casting=table.column_casting,
                         ingestion_type=table.ingestion_type,
                         ods_table_config=table.ods_config,
+                        partition_expiration=None,
                         location=data_source.location,
                         dag=dag
                     )

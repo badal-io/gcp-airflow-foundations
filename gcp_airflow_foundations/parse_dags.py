@@ -39,7 +39,6 @@ class DagParser:
                 "retry_exponential_backoff": True,
                 "retry_delay": datetime.timedelta(seconds=300),
                 "project_id": config.source.gcp_project,
-                "start_date": config.source_start_date(),
                 "email": config.source.notification_emails,
                 "email_on_failure": True,
                 "email_on_retry": False,

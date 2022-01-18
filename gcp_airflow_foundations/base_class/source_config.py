@@ -37,6 +37,8 @@ class SourceConfig:
         owner : Airflow user owning the DAG
         partition_expiration: Expiration time for HDS Snapshot partitions in days.
         facebook_options: Extra options for ingesting data from Facebook Marketing API.
+        dag_args: Optional dictionary of parameters to be passed as keyword arguments to the ingestion DAG. 
+                    Refer to :class:`airflow.models.dag.DAG` for the available parameters.
         location: BigQuery job location.
         start_date : Start date for DAG
         start_date_tz : Timezone
@@ -59,6 +61,7 @@ class SourceConfig:
     partition_expiration: Optional[int]
     schema_options: SchemaOptionsConfig
     facebook_options: Optional[FacebookConfig]
+    dag_args: Optional[dict]
     location: str
     start_date: str
     start_date_tz: str = "EST"
