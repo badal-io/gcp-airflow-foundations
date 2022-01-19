@@ -233,6 +233,7 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
             fields=[
                 'account_id',
                 'name',
+                'campaign_id',
                 'daily_budget',
                 'effective_status',
                 'lifetime_budget',
