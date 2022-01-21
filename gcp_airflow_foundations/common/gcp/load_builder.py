@@ -34,8 +34,10 @@ def load_builder(
     hds_table_config = table_config.hds_config
     location = data_source.location
     cluster_fields = table_config.cluster_fields
+    ods_suffix = data_source.ods_suffix
+    hds_suffix = data_source.hds_suffix
 
-    ods_table_config.table_id = f"{landing_zone_table_name_override}_ODS"
+    ods_table_config.table_id = f"{landing_zone_table_name_override}{ods_suffix}"
 
     parse_schema = ParseSchema(
         task_id="schema_parsing",
@@ -66,12 +68,8 @@ def load_builder(
     
     hds_task_group = None
     if hds_table_config:
-        if hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
-            hds_table_config.table_id = f"{landing_zone_table_name_override}_HDS_Snapshot"
+        hds_table_config.table_id = f"{landing_zone_table_name_override}{hds_suffix}"
         
-        elif hds_table_config.hds_table_type == HdsTableType.SCD2:
-            hds_table_config.table_id = f"{landing_zone_table_name_override}_HDS_SCD2"
-
         hds_task_group = hds_builder(
             project_id=project_id,
             table_id=hds_table_config.table_id,

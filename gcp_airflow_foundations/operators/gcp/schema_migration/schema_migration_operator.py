@@ -66,7 +66,7 @@ class MigrateSchema(BaseOperator):
 
     def execute(self, context):
         if not self.new_schema_fields:
-            self.new_schema_fields = self.xcom_pull(context=context, task_ids="schema_parsing")[self.table_id]
+            self.new_schema_fields = self.xcom_pull(context=context, task_ids="schema_parsing")[f"{self.dataset_id}.{self.table_id}"]
 
         query, schema_fields_updates, sql_columns, change_log = self.build_schema_query()
 
