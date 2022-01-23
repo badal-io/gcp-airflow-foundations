@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
 from airflow.contrib.operators.bigquery_operator import (
@@ -67,6 +68,7 @@ class MergeBigQueryODS(BigQueryOperator):
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
+        column_casting: dict,
         ingestion_type: IngestionType,
         ods_table_config: OdsTableConfig,
         location: Optional[str] = None,
@@ -92,6 +94,7 @@ class MergeBigQueryODS(BigQueryOperator):
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
+        self.column_casting = column_casting
         self.ingestion_type = ingestion_type
         self.ods_table_config = ods_table_config
 
@@ -127,12 +130,27 @@ class MergeBigQueryODS(BigQueryOperator):
             columns=source_columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
+            column_casting=self.column_casting,
             ods_metadata=self.ods_table_config.ods_metadata
         )
 
+        if self.ods_table_config.ods_table_time_partitioning:
+            partitioning_dimension = self.ods_table_config.ods_table_time_partitioning.value
+            sql_helper.time_partitioning = partitioning_dimension
+            sql_helper.partition_column_name =  self.ods_table_config.partition_column_name
+        
+            ts = context['ts']
+
+            sql_helper.partition_timestamp = ts
+
         if self.ingestion_type == IngestionType.INCREMENTAL:
-            # Append staging table to ODS table
-            sql = sql_helper.create_upsert_sql_with_hash()
+            if self.surrogate_keys:
+                # Append staging table to ODS table
+                sql = sql_helper.create_upsert_sql_with_hash()
+            else:
+                sql = sql_helper.create_full_sql()
+                self.write_disposition = "WRITE_APPEND"
+                self.destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}"
 
         elif self.ingestion_type == IngestionType.FULL:
             # Overwrite ODS table with the staging table data

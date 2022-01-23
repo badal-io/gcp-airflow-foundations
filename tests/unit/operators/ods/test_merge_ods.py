@@ -26,6 +26,7 @@ from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import M
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.base_class.ods_metadata_config import OdsTableMetadataConfig
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
+from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
 
 TASK_ID = 'test-bq-generic-operator'
 TEST_DATASET = 'test-dataset'
@@ -83,8 +84,9 @@ class TestMergeBigQueryODS(unittest.TestCase):
             columns=['column'],
             surrogate_keys=['column'],
             column_mapping={'column':'column'},
+            column_casting=None,
             ingestion_type=IngestionType.FULL,
-            ods_table_config=OdsTableConfig(ods_metadata=OdsTableMetadataConfig())
+            ods_table_config=OdsTableConfig(ods_metadata=OdsTableMetadataConfig(), ods_table_time_partitioning=None, partition_column_name=None)
         )
 
         operator.pre_execute(context=self.template_context)

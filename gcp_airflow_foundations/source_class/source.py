@@ -52,13 +52,16 @@ class DagBuilder(ABC):
             logging.info(f"table_default_task_args {table_default_task_args}")
 
             start_date = table_default_task_args["start_date"]
-
+            
+            kwargs = data_source.dag_args if data_source.dag_args else {}
+            
             with DAG(
                 dag_id=f"{data_source.name}.{table_config.table_name}",
                 description=f"{data_source.name} to BigQuery load for {table_config.table_name}",
                 schedule_interval=data_source.ingest_schedule,
                 default_args=table_default_task_args,
-                render_template_as_native_obj=True
+                render_template_as_native_obj=True,
+                **kwargs
             ) as dag:    
 
                 load_to_bq_landing = self.get_bq_ingestion_task(dag, table_config)

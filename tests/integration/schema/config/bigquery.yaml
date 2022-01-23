@@ -1,0 +1,30 @@
+---
+source:
+  name: SampleBigQuery
+  source_type: BIGQUERY
+  ingest_schedule: "@daily"
+  start_date: "2021-01-01"
+  acceptable_delay_minutes: 5
+  gcp_project: airflow-framework
+  location: US
+  dataset_data_name: af_test_ods
+  dataset_hds_override: af_test_hds
+  connection: google_cloud_default
+  notification_emails:
+    - ''
+  owner: owner
+  version: 1
+  landing_zone_options:
+    landing_zone_dataset: af_test_landing_zone
+  schema_options:
+    schema_source_type: AUTO 
+tables:
+  - table_name: ga_sessions
+    ingestion_type: FULL
+    surrogate_keys: []
+    hds_config:
+      hds_table_type: SCD2
+      hds_metadata:
+        eff_start_time_column_name: af_metadata_created_at
+        eff_end_time_column_name: af_metadata_expired_at
+        hash_column_name: af_metadata_row_hash

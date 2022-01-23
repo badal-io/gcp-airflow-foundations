@@ -47,7 +47,12 @@ class DataSourceTablesConfig:
         return timedelta(minutes=self.source.acceptable_delay_minutes)
 
     def table_start_date(self, table_config: SourceTableConfig):
-        return datetime.strptime(self.source.start_date, "%Y-%m-%d")
+        if table_config.start_date:
+            start_date = table_config.start_date
+        else:
+            start_date = self.source.start_date
+
+        return datetime.strptime(start_date, "%Y-%m-%d")
 
     def source_start_date(self):
         return datetime.strptime(self.source.start_date, "%Y-%m-%d")

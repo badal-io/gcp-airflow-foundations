@@ -21,12 +21,14 @@ def ods_builder(
     landing_zone_dataset,
     landing_zone_table_name_override,
     column_mapping,
+    column_casting,
     surrogate_keys,
     ingestion_type,
     ods_table_config,
+    partition_expiration,
     location,
     dag,
-    time_partitioning=None,
+    cluster_fields=None,
     labels=None,
     encryption_configuration=None) -> TaskGroup:
 
@@ -35,13 +37,26 @@ def ods_builder(
     """
     taskgroup = TaskGroup(group_id="create_ods_merge_taskgroup")
 
+    if ods_table_config.ods_table_time_partitioning is not None:
+        field = column_mapping.get(ods_table_config.partition_column_name, ods_table_config.partition_column_name) if column_mapping else ods_table_config.partition_column_name
+
+        time_partitioning = {
+            "type":ods_table_config.ods_table_time_partitioning.value,
+            "field":field,
+            "expirationMs":partition_expiration
+        }
+    
+    else:
+        time_partitioning = None
+    
     #1 Check if ODS table exists and if not create an empty table
     create_table = CustomBigQueryCreateEmptyTableOperator(
         task_id="create_ods_table",
         project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
-        time_partitioning=None,
+        cluster_fields=cluster_fields,
+        time_partitioning=time_partitioning,
         task_group=taskgroup,
         dag=dag
     )
@@ -66,6 +81,7 @@ def ods_builder(
         data_table_name=table_id,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
+        column_casting=column_casting,
         ingestion_type=ingestion_type,
         ods_table_config=ods_table_config,
         location=location,

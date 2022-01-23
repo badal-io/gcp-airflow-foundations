@@ -91,6 +91,7 @@ class TestMergeBigQuerySnapshotHDS(unittest.TestCase):
             columns=['column'],
             surrogate_keys=['column'],
             column_mapping={'column':'column'},
+            column_casting=None,
             ingestion_type=IngestionType.FULL,
             hds_table_config=hds_table_config
         )
@@ -107,7 +108,7 @@ class TestMergeBigQuerySnapshotHDS(unittest.TestCase):
                 CURRENT_TIMESTAMP() AS af_metadata_created_at,
                 TIMESTAMP_TRUNC('2021-01-01T00:00:00+00:00', DAY) AS partition_time,
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS af_metadata_row_hash
-            FROM {TEST_DATASET}.{TEST_STG_TABLE_ID} S
+            FROM `{TEST_DATASET}.{TEST_STG_TABLE_ID}` S
         """
 
         mock_hook.return_value.run_query.assert_called_once_with(
@@ -168,6 +169,7 @@ class TestMergeBigQuerySCD2HDS(unittest.TestCase):
             columns=['column_a','column_b'],
             surrogate_keys=['column_a'],
             column_mapping={'column_a':'column_a', 'column_b':'column_b'},
+            column_casting=None,
             ingestion_type=IngestionType.FULL,
             hds_table_config=hds_table_config
         )
@@ -184,19 +186,19 @@ class TestMergeBigQuerySCD2HDS(unittest.TestCase):
             FROM `{TEST_DATASET}.{TEST_STG_TABLE_ID}`
             UNION ALL 
             SELECT
-                source.`column_a`,
-                NULL,source.`column_b`
+                NULL,
+                source.`column_a`,source.`column_b`
                 FROM `{TEST_DATASET}.{TEST_STG_TABLE_ID}` source
                 JOIN `{TEST_DATASET}.{TEST_TABLE_ID}` target
                 ON target.column_a=source.column_a
                 WHERE ( 
-                        MD5(TO_JSON_STRING(target.`column_b`)) != MD5(TO_JSON_STRING(source.`column_b`))
+                        (MD5(TO_JSON_STRING(target.`column_b`)) != MD5(TO_JSON_STRING(source.`column_b`)))
                         AND target.af_metadata_expired_at IS NULL
                     )) S
-            ON T.column_a=S.column_a
-            WHEN MATCHED AND MD5(TO_JSON_STRING(T.`column_b`)) != MD5(TO_JSON_STRING(S.`column_b`)) THEN UPDATE SET af_metadata_expired_at = CURRENT_TIMESTAMP()
+            ON T.`column_a`=S.`join_key_column_a`
+            WHEN MATCHED AND (MD5(TO_JSON_STRING(T.`column_b`)) != MD5(TO_JSON_STRING(S.`column_b`))) THEN UPDATE SET af_metadata_expired_at = CURRENT_TIMESTAMP()
             WHEN NOT MATCHED BY TARGET THEN INSERT (`column_a`,`column_b`, af_metadata_created_at, af_metadata_expired_at, af_metadata_row_hash)
-            VALUES (join_key_column_a,`column_b`, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S)))) 
+            VALUES (`column_a`,`column_b`, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S)))) 
             WHEN NOT MATCHED BY SOURCE THEN UPDATE SET T.af_metadata_expired_at = CURRENT_TIMESTAMP()
         """
 
