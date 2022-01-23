@@ -8,6 +8,7 @@ from gcp_airflow_foundations.enums.source_type import SourceType
 from gcp_airflow_foundations.base_class.landing_zone_config import LandingZoneConfig
 from gcp_airflow_foundations.base_class.schema_options_config import SchemaOptionsConfig
 from gcp_airflow_foundations.base_class.facebook_config import FacebookConfig
+from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
 
 partition_limit = 4000
 ms_day = 86400000
@@ -53,6 +54,7 @@ class SourceConfig:
     dataset_hds_override: Optional[str]
     extra_options: Optional[dict]
     landing_zone_options: LandingZoneConfig
+    landing_zone_options: LandingZoneConfig
     acceptable_delay_minutes: int
     notification_emails: List[str]
     owner: str
@@ -64,6 +66,7 @@ class SourceConfig:
     start_date_tz: str = "EST"
     version: int = 1
     sla_mins: int = 900
+    dlp_config: SourceDlpConfig = None
     connection: str = "google_cloud_default"\
 
     @validator("name")

@@ -68,7 +68,8 @@ class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
-        self.ti.xcom_push(key=XCOM_RETURN_KEY, value={TEST_TABLE_ID:SCHEMA_FIELDS})
+        self.ti.\
+            xcom_push(key=XCOM_RETURN_KEY, value={TEST_TABLE_ID:SCHEMA_FIELDS})
 
     def doCleanups(self):
         cleanup_xcom()

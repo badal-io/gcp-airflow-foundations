@@ -55,7 +55,9 @@ class DlpBQInspectionResultsOperator(BaseOperator):
         sql = get_dlp_results_sql(self.project_id, self.dataset_id, self.table_id, self.min_match_count)
         results = self.hook.get_records(sql)
 
-        logging.debug("DLP Results are", results)
+        logging.info("DlpBQInspectionResultsOperator context", self)
+
+        logging.info("DLP Results are", results)
         if self.do_xcom_push:
             self.xcom_push(context, 'results', results)
         return results

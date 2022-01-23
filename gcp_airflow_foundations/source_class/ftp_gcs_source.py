@@ -24,9 +24,6 @@ from gcp_airflow_foundations.operators.api.operators.sf_to_gcs_query_operator im
 from gcp_airflow_foundations.operators.api.sensors.gcs_sensor import GCSObjectListExistenceSensor
 from gcp_airflow_foundations.operators.api.sensors.gcs_prefix_sensor import GCSObjectPrefixListExistenceSensor
 from gcp_airflow_foundations.source_class.ftp_source import FTPtoBQDagBuilder
-from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
-from gcp_airflow_foundations.source_class.source import DagBuilder
-from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
 
 class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
