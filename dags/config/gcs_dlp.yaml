@@ -8,7 +8,7 @@ source:
   extra_options:
     gcs_bucket: public-gcp-airflow-foundation-samples
     file_source_config:
-      file_name_template: "{{ TABLE_NAME }}"
+      file_name_template: "{{ TABLE_NAME }}.csv"
       source_format: CSV
       delimeter: ","
       file_prefix_filtering: False
@@ -33,7 +33,7 @@ tables:
     surrogate_keys: []
     extra_options:
       file_table_config:
-        directory_prefix: "toedh/PROD/WA/"
+        directory_prefix: ""
         allow_quoted_newlines: True
 
 

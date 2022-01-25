@@ -43,3 +43,5 @@ See the [gcp-airflow-foundations documentation](https://gcp-airflow-foundations.
 - Run unit tests with coverage report ```./tests/airflow  "pytest --cov=gcp_airflow_foundations tests/unit``` 
 - Run integration tests ```./tests/airflow  "pytest tests/integration``` 
 - Rebuild docker image if requirements changed: ```docker-compose build```
+### Sample DAGs
+Sample DAGs that ingest publicly available GCS files can be found in the dags folder, and are started as soon Airflow is ran locally 

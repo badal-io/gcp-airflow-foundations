@@ -42,10 +42,18 @@ class CustomBigQueryCreateEmptyTableOperator(BigQueryCreateEmptyTableOperator):
     def pre_execute(self, context) -> None:
         schema_fields = self.xcom_pull(context=context, task_ids=self.schema_task_id)[self.table_id]
 
-        self.table_resource={
+        if self.cluster_fields:
+            self.table_resource = {
+                    "schema": {'fields': schema_fields},
+                    "timePartitioning": self.time_partitioning,
+                    "encryptionConfiguration": None,
+                    "labels": None,
+                    "clustering": {'fields': self.cluster_fields}
+            }
+        else:
+            self.table_resource = {
                 "schema": {'fields': schema_fields},
                 "timePartitioning": self.time_partitioning,
                 "encryptionConfiguration": None,
-                "labels": None,
-                "clustering": {'fields': self.cluster_fields}
-        }
+                "labels": None
+            }

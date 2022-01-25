@@ -65,6 +65,12 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 4000m
+        reservations:
+          memory: 1000m
 
   airflow-ops:
     <<: *airflow-common

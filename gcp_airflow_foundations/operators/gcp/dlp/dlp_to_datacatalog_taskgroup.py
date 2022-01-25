@@ -16,8 +16,6 @@ from gcp_airflow_foundations.operators.gcp.dlp.get_dlp_bq_inspection_results_ope
     DlpBQInspectionResultsOperator
 
 
-
-
 def dlp_policy_tag_taskgroup_name(datastore: str):
     return f"dlp_policy_tags_for_{datastore}"
 
@@ -57,6 +55,7 @@ def schedule_dlp_to_datacatalog_taskgroup(
     decide >> dlp_task_group >> next_task
     return decide
 
+
 def schedule_dlp_to_datacatalog_taskgroup_multiple_tables(
         table_configs: list,
         table_dlp_config: DlpTableConfig,
@@ -92,6 +91,7 @@ def schedule_dlp_to_datacatalog_taskgroup_multiple_tables(
     decide >> dlp_task_groups >> next_task
     return decide
 
+
 def dlp_to_datacatalog_builder(
         datastore: str,
         project_id: str,
@@ -125,8 +125,6 @@ def dlp_to_datacatalog_builder(
     rows_limit_percent = table_dlp_config.get_rows_limit_percent()
 
     inspect_job = build_inspect_job_config(dlp_template_name, table_ref, rows_limit_percent, dlp_results_table_ref)
-    job_trigger = build_job_trigger(scan_job_name, dlp_template_name, table_ref, rows_limit_percent,
-                                    dlp_results_table_ref, table_dlp_config.get_recurrence())
 
     # 1 First delete the results table
     delete_dlp_results = BigQueryDeleteTableOperator(

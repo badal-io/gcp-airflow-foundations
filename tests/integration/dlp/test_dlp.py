@@ -141,7 +141,7 @@ class TestDlp(unittest.TestCase):
 
         tasks = self.create_dlp_dag(self.dag, project_id, dataset_id, table_id)
 
-        #ti_dlp_results = run_task(tasks['read_dlp_results_task'])
+        # ti_dlp_results = run_task(tasks['read_dlp_results_task'])
 
         # xcom_pull_res = ti.xcom_pull(task_ids='dlp_scan_table.read_dlp_results')
 

@@ -1,7 +1,6 @@
-from airflow.contrib.operators.bigquery_operator  import BigQueryUpdateTableSchemaOperator
-from typing import Optional
-
+from airflow.contrib.operators.bigquery_operator import BigQueryUpdateTableSchemaOperator
 from operators.gcp.dlp.dlp_helpers import fields_to_policy_tags
+from typing import Optional
 
 
 class UpdatePolicyTagsOperator(BigQueryUpdateTableSchemaOperator):
@@ -25,7 +24,6 @@ class UpdatePolicyTagsOperator(BigQueryUpdateTableSchemaOperator):
             delegate_to: Optional[str] = None,
             **kwargs,
     ) -> None:
-
         schema_fields_updates = fields_to_policy_tags(fields, policy_tag)
         super(BigQueryUpdateTableSchemaOperator, self).__init__(
             delegate_to=delegate_to,

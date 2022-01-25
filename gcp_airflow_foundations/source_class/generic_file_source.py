@@ -173,7 +173,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             file_list[:] = [file.replace("{{ ds }}", ds) if "{{ ds }}" in file else file for file in file_list]
             # add dir prefix to files
             file_list[:] = [dir_prefix + file for file in file_list]
-            logging.info(file_list)
+            logging.info(f"files_list {file_list}")
 
         kwargs['ti'].xcom_push(key='file_list', value=file_list)
 

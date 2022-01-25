@@ -1,10 +1,7 @@
-from typing import Optional
-
-from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.utils.decorators import apply_defaults
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
-
 import logging
+from airflow.models import BaseOperator
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.utils.decorators import apply_defaults
 
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_helpers import get_dlp_results_sql
 
