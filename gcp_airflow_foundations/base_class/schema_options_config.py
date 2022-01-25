@@ -11,8 +11,8 @@ supported_fields = ['table_name','date']
 
 @dataclass
 class SchemaOptionsConfig:
-    schema_source_type: SchemaSourceType
-    schema_object_template: Optional[str] # Supported tamplate fields: {table_name}, {date}
+    schema_source_type: SchemaSourceType = SchemaSourceType.AUTO
+    schema_object_template: Optional[str] = None # Supported tamplate fields: {table_name}, {date}
     
     @root_validator(pre=True)
     def valid_config(cls, values):

@@ -110,13 +110,12 @@ class TestDlp(unittest.TestCase):
             )
         )
 
-        dlp_table_config = DlpTableConfig()
+        dlp_table_config = DlpTableConfig().set_source_config(dlp_source_config)
 
         dlp_taskgroup = dlp_to_datacatalog_builder(
             project_id=project_id,
             table_id=target_table_id,
             dataset_id=dataset_id,
-            source_dlp_config=dlp_source_config,
             table_dlp_config=dlp_table_config,
             dag=dag
         )

@@ -13,8 +13,9 @@ class FileTableConfig:
         flag_file_path: the path to the optional success file
         bq_upload_option: either "BASH" or "GCS"
     """
-    directory_prefix: Optional[str]
-    metadata_file: Optional[str]
-    schema_file: Optional[str]
-    flag_file_path: Optional[str]
-    parquet_upload_option: Optional[str]
+    directory_prefix: Optional[str] = None
+    metadata_file: Optional[str] = None
+    schema_file: Optional[str] = None
+    flag_file_path: Optional[str] = None
+    parquet_upload_option: str = "BASH"
+    allow_quoted_newlines: bool = False

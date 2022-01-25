@@ -61,15 +61,15 @@ class SourceConfig:
     notification_emails: List[str]
     owner: str
     partition_expiration: Optional[int]
-    schema_options: SchemaOptionsConfig
-    facebook_options: Optional[FacebookConfig]
     dag_args: Optional[dict]
     location: str
     start_date: str
+    schema_options: SchemaOptionsConfig = SchemaOptionsConfig()
+    facebook_options: Optional[FacebookConfig] = None # TODO: Move into extra_configs
     start_date_tz: str = "EST"
     version: int = 1
     sla_mins: int = 900
-    dlp_config: SourceDlpConfig = None
+    dlp_config: DlpSourceConfig = None
     connection: str = "google_cloud_default"\
 
     @validator("name")

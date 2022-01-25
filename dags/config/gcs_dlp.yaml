@@ -1,5 +1,5 @@
 source:
-  name: SampleGCS
+  name: GCSWithDlp
   source_type: GCS
   ingest_schedule: "@daily"
   start_date: "2022-01-03"
@@ -14,11 +14,18 @@ source:
   gcp_project: airflow-framework
   location: us-central1
   dataset_data_name: af_test_ods
-#  dataset_hds_override: af_test_hds
+  dataset_hds_override: af_test_hds
   owner: test_user
   notification_emails: []
   landing_zone_options:
     landing_zone_dataset: af_test_hds_landing_zone
+  dlp_config:
+    results_dataset_id: dlp_results
+    template_name: projects/airflow-framework/locations/global/inspectTemplates/test1
+    policy_tag_config:
+      taxonomy: "8035665080154850692"
+      location: us
+      tag: "2785493587247608825"
 tables:
   - table_name: users
     ingestion_type: FULL
@@ -27,4 +34,5 @@ tables:
       gcs_table_config:
         directory_prefix: "toedh/PROD/WA/"
         allow_quoted_newlines: True
+
 

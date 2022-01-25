@@ -4,22 +4,11 @@ from unittest import mock
 from datetime import datetime
 import pytz
 
-from airflow.operators.dummy import DummyOperator
-from airflow.models import (
-    DAG,
-    TaskInstance,
-    XCom,
-    DagBag, 
-    DagRun, 
-    DagTag,
-    DagModel
-)
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup import dlp_to_datacatalog_builder
 from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
 from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
 from test_utils import cleanup_xcom, clear_db_dags, setup_test_dag
 from tests.unit.conftest import run_task
-from airflow.utils.state import State
 
 TASK_ID = 'test-dlp'
 TEST_DATASET = 'test-dataset'

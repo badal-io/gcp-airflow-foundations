@@ -1,4 +1,5 @@
 import logging
+from airflow.models import BaseOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.providers.google.cloud.operators.bigquery import BigQueryDeleteTableOperator
@@ -7,25 +8,27 @@ from airflow.utils.task_group import TaskGroup
 from google.cloud.bigquery.dataset import DatasetReference
 from google.cloud.bigquery.table import TableReference
 
-from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
 from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
+from gcp_airflow_foundations.operators.branch.BranchOnCronOperator import BranchOnCronOperator
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_helpers import results_to_bq_policy_tags
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_job_helpers import build_job_trigger, build_inspect_job_config
 from gcp_airflow_foundations.operators.gcp.dlp.get_dlp_bq_inspection_results_operator import \
     DlpBQInspectionResultsOperator
-from gcp_airflow_foundations.operators.branch.BranchOnCronOperator import BranchOnCronOperator
 
 
-def dlp_policy_tag_taskgroup_name():
-    return f"dlp_policy_tags_for"
+
+
+def dlp_policy_tag_taskgroup_name(datastore: str):
+    return f"dlp_policy_tags_for_{datastore}"
+
 
 def schedule_dlp_to_datacatalog_taskgroup(
+        datastore: str,
         project_id: str,
         table_id: str,
         dataset_id: str,
-        source_dlp_config: DlpSourceConfig,
         table_dlp_config: DlpTableConfig,
-        next_task_id: str,
+        next_task: BaseOperator,
         dag):
     """
     We want to schedule DLP to run
@@ -33,30 +36,67 @@ def schedule_dlp_to_datacatalog_taskgroup(
     2) On schedule there after
     """
     dlp_task_group = dlp_to_datacatalog_builder(
+        datastore=datastore,
         project_id=project_id,
         table_id=table_id,
         dataset_id=dataset_id,
-        source_dlp_config=source_dlp_config,
-        table_dlp_config = table_dlp_config
+        table_dlp_config=table_dlp_config,
+        dag=dag
     )
 
-    return BranchOnCronOperator(
+    decide = BranchOnCronOperator(
         task_id="check_if_should_run_dlp",
-        follow_task_ids_if_true=dlp_task_group.task_id,
-        follow_task_ids_if_false=next_task_id,
-        cron_expression=source_dlp_config.recurrence_schedule,
+        follow_task_ids_if_true=dlp_task_group.group_id,
+        follow_task_ids_if_false=next_task.task_id,
+        cron_expression=table_dlp_config.source_config.recurrence_schedule,
         use_task_execution_day=True,
-        run_on_first_execution=source_dlp_config.run_on_first_execution,
+        run_on_first_execution=table_dlp_config.source_config.run_on_first_execution,
         dag=dag,
     )
 
+    decide >> dlp_task_group >> next_task
+    return decide
 
+def schedule_dlp_to_datacatalog_taskgroup_multiple_tables(
+        table_configs: list,
+        table_dlp_config: DlpTableConfig,
+        next_task: BaseOperator,
+        dag):
+    """
+    We want to schedule DLP to run
+    1) First time the table is ingested
+    2) On schedule there after
+    """
+    dlp_task_groups = []
+    for table_config in table_configs:
+        dlp_task_group = dlp_to_datacatalog_builder(
+            datastore=table_config['datastore'],
+            project_id=table_config['project_id'],
+            table_id=table_config['table_id'],
+            dataset_id=table_config['dataset_id'],
+            table_dlp_config=table_dlp_config,
+            dag=dag
+        )
+        dlp_task_groups.append(dlp_task_group)
+
+    decide = BranchOnCronOperator(
+        task_id="check_if_should_run_dlp",
+        follow_task_ids_if_true=dlp_task_group.group_id,
+        follow_task_ids_if_false=next_task.task_id,
+        cron_expression=table_dlp_config.source_config.recurrence_schedule,
+        use_task_execution_day=True,
+        run_on_first_execution=table_dlp_config.source_config.run_on_first_execution,
+        dag=dag,
+    )
+
+    decide >> dlp_task_groups >> next_task
+    return decide
 
 def dlp_to_datacatalog_builder(
+        datastore: str,
         project_id: str,
         table_id: str,
         dataset_id: str,
-        source_dlp_config: DlpSourceConfig,
         table_dlp_config: DlpTableConfig,
         dag) -> TaskGroup:
     """
@@ -67,10 +107,12 @@ def dlp_to_datacatalog_builder(
    4) Update Policy Tags in BQ
   """
 
-    taskgroup = TaskGroup(dlp_policy_tag_taskgroup_name(), dag= dag)
+    assert (table_dlp_config.source_config is not None)
+
+    taskgroup = TaskGroup(dlp_policy_tag_taskgroup_name(datastore), dag=dag)
 
     # setup tables vars
-    dlp_results_dataset_id = source_dlp_config.results_dataset_id
+    dlp_results_dataset_id = table_dlp_config.source_config.results_dataset_id
 
     table_ref = TableReference(DatasetReference(project_id, dataset_id), table_id)
     dlp_results_table_ref = TableReference(DatasetReference(project_id, dlp_results_dataset_id),
@@ -78,13 +120,13 @@ def dlp_to_datacatalog_builder(
     dlp_results_table = f"{dlp_results_table_ref.project}.{dlp_results_table_ref.dataset_id}.{dlp_results_table_ref.table_id}"
 
     # setup DLP scan vars
-    dlp_template_name = table_dlp_config.get_template_name(source_dlp_config)
+    dlp_template_name = table_dlp_config.get_template_name()
     scan_job_name = f"af_inspect_{dataset_id}.{table_id}_with_{dlp_template_name}"
-    rows_limit_percent = table_dlp_config.get_rows_limit_percent(source_dlp_config)
+    rows_limit_percent = table_dlp_config.get_rows_limit_percent()
 
     inspect_job = build_inspect_job_config(dlp_template_name, table_ref, rows_limit_percent, dlp_results_table_ref)
     job_trigger = build_job_trigger(scan_job_name, dlp_template_name, table_ref, rows_limit_percent,
-                                    dlp_results_table_ref, table_dlp_config.get_recurrence(source_dlp_config))
+                                    dlp_results_table_ref, table_dlp_config.get_recurrence())
 
     # 1 First delete the results table
     delete_dlp_results = BigQueryDeleteTableOperator(
@@ -104,15 +146,6 @@ def dlp_to_datacatalog_builder(
         task_group=taskgroup,
         dag=dag
     )
-    # #3 Schedule periodic scans
-    # schedule_scan = CloudDLPCreateJobTriggerOperator(
-    #     task_id="create_scan_table_trigger",
-    #     project_id=project_id,
-    #     job_trigger=job_trigger,
-    #     task_group=taskgroup,
-    #     dag=dag
-    # )
-
     # 4. Read results
     read_results = DlpBQInspectionResultsOperator(
         task_id=f"read_dlp_results",
@@ -120,7 +153,7 @@ def dlp_to_datacatalog_builder(
         dataset_id=dlp_results_table_ref.dataset_id,
         table_id=dlp_results_table_ref.table_id,
         do_xcom_push=True,
-        min_match_count=table_dlp_config.get_min_match_count(source_dlp_config),
+        min_match_count=table_dlp_config.get_min_match_count(),
         task_group=taskgroup,
         dag=dag)
 
@@ -137,7 +170,7 @@ def dlp_to_datacatalog_builder(
             'project_id': project_id,
             'dataset_id': table_ref.dataset_id,
             'table_id': table_ref.table_id,
-            'policy_tag_config': source_dlp_config.policy_tag_config,
+            'policy_tag_config': table_dlp_config.source_config.policy_tag_config,
             'task_ids': 'dlp_scan_table.read_dlp_results'
         },
         provide_context=True

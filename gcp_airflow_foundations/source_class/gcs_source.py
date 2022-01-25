@@ -12,7 +12,6 @@ from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 from gcp_airflow_foundations.operators.api.sensors.gcs_sensor import GCSObjectListExistenceSensor
 from gcp_airflow_foundations.operators.api.sensors.gcs_prefix_sensor import GCSObjectPrefixListExistenceSensor
 from gcp_airflow_foundations.source_class.generic_file_source import GenericFileIngestionDagBuilder
-from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
 
 class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
@@ -34,13 +33,12 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
     source_type = "GCS"
 
     def flag_file_sensor(self, table_config, taskgroup):
-        if "flag_file_path" in table_config.extra_options.get("file_table_config"):
-            flag_file_path = table_config.extra_options.get("file_table_config")["flag_file_path"]
+        if self.file_table_config.flag_file_path:
             bucket = self.config.source.extra_options["gcs_bucket"]
             return GCSObjectExistenceSensor(
                 task_id="wait_for_flag_file",
                 bucket=bucket,
-                object=flag_file_path,
+                object=self.file_table_config.flag_file_path,
                 task_group=taskgroup
             )
         else:
@@ -93,6 +91,5 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         )
 
     def validate_extra_options(self):
-        # GCS Source only requires the checks for the base file_source_config and file_table_configs: 
-        # other sources like SFTP require extra checks
+        # GCS Source only requires the checks for the base file_source_config and file_table_configs:
         super().validate_extra_options()

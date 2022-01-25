@@ -20,9 +20,9 @@ class HdsTableConfig:
         hds_metadata : See HdsTableMetadataConfig class 
     """
 
-    hds_metadata: HdsTableMetadataConfig
     hds_table_time_partitioning: Optional[TimePartitioning] # DAY, HOUR, or MONTH
     hds_table_type: HdsTableType = HdsTableType.SCD2 # SNAPSHOT OR SCD2
+    hds_metadata: HdsTableMetadataConfig = HdsTableMetadataConfig()
 
     @root_validator(pre=True)
     def valid_config(cls, values):
