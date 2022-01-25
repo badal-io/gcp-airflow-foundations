@@ -37,6 +37,7 @@ class SourceConfig:
         owner : Airflow user owning the DAG
         partition_expiration: Expiration time for HDS Snapshot partitions in days.
         facebook_options: Extra options for ingesting data from Facebook Marketing API.
+        catchup: Run all dag runs since start_date. https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#catchup
         dag_args: Optional dictionary of parameters to be passed as keyword arguments to the ingestion DAG. 
                     Refer to :class:`airflow.models.dag.DAG` for the available parameters.
         location: BigQuery job location.
@@ -66,6 +67,7 @@ class SourceConfig:
     start_date: str
     schema_options: SchemaOptionsConfig = SchemaOptionsConfig()
     facebook_options: Optional[FacebookConfig] = None # TODO: Move into extra_configs
+    catchup: bool = True
     start_date_tz: str = "EST"
     version: int = 1
     sla_mins: int = 900

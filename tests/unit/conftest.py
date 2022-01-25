@@ -47,8 +47,6 @@ def compare_deps(test_task, upstream_deps, downstream_dps):
     downstream_task_ids = list(
         map(lambda task: task.task_id, test_task.downstream_list)
     )
-    logging.info(f"upstream_task_ids {upstream_task_ids}")
-    logging.info(f"downstream_task_ids {downstream_task_ids}")
 
     for upstream in upstream_deps:
         assert upstream in upstream_task_ids

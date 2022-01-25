@@ -3,11 +3,12 @@ source:
   source_type: GCS
   ingest_schedule: "@daily"
   start_date: "2022-01-03"
+  catchup: False
   acceptable_delay_minutes: 5
   extra_options:
     gcs_bucket: public-gcp-airflow-foundation-samples
     file_source_config:
-      templated_file_name: "{{ TABLE_NAME }}"
+      file_name_template: "{{ TABLE_NAME }}"
       source_format: CSV
       delimeter: ","
       file_prefix_filtering: False
@@ -24,7 +25,7 @@ tables:
     ingestion_type: FULL
     surrogate_keys: []
     extra_options:
-      gcs_table_config:
+      file_table_config:
         directory_prefix: "toedh/PROD/WA/"
         allow_quoted_newlines: True
 

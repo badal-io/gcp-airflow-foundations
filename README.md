@@ -30,9 +30,15 @@ pip install 'gcp-airflow-foundations'
 See the [gcp-airflow-foundations documentation](https://gcp-airflow-foundations.readthedocs.io/en/latest/) for more details.
 
 ## Running locally
-
+### Using Service Account
+- Create a service account in GCP, and save it as ```helpers/key/keys.json``` (don't worry, it is in .gitignore, and will not be push to the git repo)
+- Run Airflow locally (Airflow UI will be accessible at http://localhost:8080): ```docker-compose up```
+### Using user IAM
+- uncomment like 11 in ```docker-composer.yaml```
+- send env var PROJECT_ID to your test project
 - Authorize gcloud to access the Cloud Platform with Google user credentials: ```helpers/scripts/gcp-auth.sh```
 - Run Airflow locally (Airflow UI will be accessible at http://localhost:8080): ```docker-compose up```
+### Running tests
 - Run unit tests ```./tests/airflow  "pytest tests/unit``` 
 - Run unit tests with coverage report ```./tests/airflow  "pytest --cov=gcp_airflow_foundations tests/unit``` 
 - Run integration tests ```./tests/airflow  "pytest tests/integration``` 

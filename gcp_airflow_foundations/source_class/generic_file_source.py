@@ -148,10 +148,11 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         # XCom push the list of files
         # overwrite if in table_config
 
+        dir_prefix = self.file_table_config.directory_prefix
+        dir_prefix = dir_prefix.replace("{{ ds }}", ds)
         
         if self.file_source_config.source_format == "PARQUET":
-            dir_prefix = self.file_table_config.directory_prefix
-            dir_prefix = dir_prefix.replace("{{ ds }}", ds)
+
             file_list = [dir_prefix]
             kwargs['ti'].xcom_push(key='file_list', value=file_list)
             return
@@ -164,7 +165,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                     for line in f:
                         file_list.append(line.strip())
             else:
-                templated_file_name = self.config.source.extra_options["file_source_config"]["file_name_template"]
+                templated_file_name = self.file_source_config.file_name_template
                 templated_file_name = templated_file_name.replace("{{ TABLE_NAME }}", table_config.table_name)
                 file_list = [templated_file_name]
 
@@ -193,15 +194,14 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
         data_source = self.config.source
         bucket = data_source.extra_options["gcs_bucket"]
-        source_format = data_source.extra_options["file_source_config"]["source_format"]
-        field_delimeter = data_source.extra_options["file_source_config"]["delimeter"]
+        field_delimeter = self.file_source_config.delimeter
         gcp_project = data_source.gcp_project
         landing_dataset = data_source.landing_zone_options.landing_zone_dataset 
         landing_table_name = table_config.landing_zone_table_name_override
         table_name = table_config.table_name
         destination_table = f"{gcp_project}:{landing_dataset}.{table_config.landing_zone_table_name_override}" + f"_{ds}"
         files_to_load = ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list')
-        gcs_bucket_prefix = data_source.extra_options["file_source_config"]["gcs_bucket_prefix"]
+        gcs_bucket_prefix = self.file_source_config.gcs_bucket_prefix
         if gcs_bucket_prefix is None:
             gcs_bucket_prefix =  ""
         if not gcs_bucket_prefix == "":
@@ -214,7 +214,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         source_format = self.file_source_config.source_format
         if source_format == "PARQUET" and parquet_upload_option == "BASH":
             date_column = table_config.extra_options.get("sftp_table_config")["date_column"]
-            gcs_bucket_prefix = data_source.extra_options["file_source_config"]["gcs_bucket_prefix"]
+            gcs_bucket_prefix = self.file_source_config.gcs_bucket_prefix
             # bq load command if parquet
             partition_prefix = ti.xcom_pull(key='partition_prefix', task_ids='ftp_taskgroup.load_sftp_to_gcs')
             command = self.get_load_script(gcp_project, landing_dataset, landing_table_name + f"_{ds}", bucket, gcs_bucket_prefix, partition_prefix, table_name, date_column, ds)
@@ -229,7 +229,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                 logging.info(f"Load into BQ landing zone failed.")
         else:
             # gcs->bq operator else
-            if self.config.source.extra_options["file_source_config"]["file_prefix_filtering"]:
+            if self.file_source_config.file_prefix_filtering:
                 for i in range(len(files_to_load)):
                     matching_gcs_files = gcs_hook.list(bucket_name=bucket, prefix=files_to_load[i]) 
                     if len(matching_gcs_files) > 1:
@@ -302,7 +302,10 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         return from_dict(data_class=FileSourceConfig, data=source_config.extra_options["file_source_config"])
 
     def parse_file_table_config(self, table_config: SourceTableConfig):
+
         if "file_table_config" in table_config.extra_options:
-            return from_dict(data_class=FileTableConfig, data=table_config.extra_options.get("file_table_config"))
+            config = from_dict(data_class=FileTableConfig, data=table_config.extra_options.get("file_table_config"))
         else:
-            return FileTableConfig()
+            config = FileTableConfig()
+        logging.info(f"file_table_config: {config}")
+        return config

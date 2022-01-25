@@ -7,6 +7,7 @@ x-airflow-common:
     dockerfile: ./docker/Dockerfile
   environment:
     &airflow-common-env
+    # uncomment to allow using user IAM for access
     #AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://user:password@host/schema?extra__google_cloud_platform__scope=${GCP_AUTH_SCOPE}&extra__google_cloud_platform__project=${GCP_PROJECT_ID}'
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
   env_file:
