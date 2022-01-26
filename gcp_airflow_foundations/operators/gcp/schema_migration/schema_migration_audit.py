@@ -41,6 +41,9 @@ class SchemaMigrationAudit:
         self.migration_id = uuid.uuid4().hex
         self.migration_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+        self.bq_hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to)
+
+
     def insert_change_log_rows(
         self, 
         change_log: list
@@ -56,7 +59,7 @@ class SchemaMigrationAudit:
             i['schema_updated_at'] = self.migration_time
             i['migration_id'] = self.migration_id
             
-        client = bigquery.Client(project=self.project_id)
+        client = self.bq_hook.get_client(project_id=self.project_id)
 
         table_ref = client.dataset(self.dataset_id).table(self.table_id)
         table = client.get_table(table_ref)
@@ -65,9 +68,7 @@ class SchemaMigrationAudit:
                
 
     def create_audit_table(self):
-            bq_hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to)
-
-            bq_hook.create_empty_table(
+            self.bq_hook.create_empty_table(
                 project_id=self.project_id,
                 dataset_id=self.dataset_id,
                 table_id=self.table_id,

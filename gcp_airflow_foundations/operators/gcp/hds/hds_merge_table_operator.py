@@ -70,7 +70,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
-        column_casting: dict,
+        column_casting: dict = {},
         ingestion_type: IngestionType,
         hds_table_config: HdsTableConfig,
         location: Optional[str] = None,

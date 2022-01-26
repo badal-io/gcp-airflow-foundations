@@ -13,8 +13,11 @@ from test_utils import cleanup_xcom, clear_db_dags
 
 from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig, PolicyTagConfig
 from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
-from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup import dlp_to_datacatalog_builder
+from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup import dlp_to_datacatalog_builder, dlp_policy_tag_taskgroup_name
 from tests.integration.conftest import run_task
+from airflow.utils.task_group import TaskGroup
+from airflow.operators.dummy import DummyOperator
+
 
 TEST_TABLE = "test_table"
 
@@ -99,6 +102,10 @@ class TestDlp(unittest.TestCase):
     def create_dlp_dag(self, dag, project_id, dataset_id, target_table_id):
         template_name = config['dlp']['template']
 
+        dlp_taskgroup = TaskGroup(dlp_policy_tag_taskgroup_name(), dag=dag)
+        done = DummyOperator(task_id="done", trigger_rule=TriggerRule.ALL_DONE)
+
+
         dlp_source_config = DlpSourceConfig(
             results_dataset_id=dataset_id,
             template_name=template_name,
@@ -112,7 +119,9 @@ class TestDlp(unittest.TestCase):
 
         dlp_table_config = DlpTableConfig().set_source_config(dlp_source_config)
 
-        dlp_taskgroup = dlp_to_datacatalog_builder(
+        dlp_tasks = dlp_to_datacatalog_builder(
+            taskgroup= dlp_taskgroup,
+            datastore="test",
             project_id=project_id,
             table_id=target_table_id,
             dataset_id=dataset_id,
@@ -120,10 +129,10 @@ class TestDlp(unittest.TestCase):
             dag=dag
         )
 
-        delete_old_dlp_results_task = dlp_taskgroup.children["dlp_scan_table.delete_old_dlp_results"]
-        scan_table_task = dlp_taskgroup.children["dlp_scan_table.scan_table"]
-        read_dlp_results_task = dlp_taskgroup.children["dlp_scan_table.read_dlp_results"]
-        update_tags_task = dlp_taskgroup.children["dlp_scan_table.update_bq_policy_tags"]
+        delete_old_dlp_results_task = dlp_taskgroup.children["dlp_policy_tags.delete_old_dlp_results_test"]
+        scan_table_task = dlp_taskgroup.children["dlp_policy_tags.scan_table_test"]
+        read_dlp_results_task = dlp_taskgroup.children["dlp_policy_tags.read_dlp_results_test"]
+        update_tags_task = dlp_taskgroup.children["dlp_policy_tags.update_bq_policy_tags_test"]
 
         return {
             "delete_old_dlp_results_task": delete_old_dlp_results_task,
