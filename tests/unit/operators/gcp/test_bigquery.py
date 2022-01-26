@@ -37,12 +37,11 @@ TEST_TABLE_RESOURCES = {
     "timePartitioning":None,
     "encryptionConfiguration":None,
     "labels":None,
-    "clustering": {"fields": None}
+    #"clustering": {"fields": None}
 }
 
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
-from airflow.utils import timezone
 
 @provide_session
 def cleanup_xcom(session=None):

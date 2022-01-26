@@ -12,8 +12,9 @@ source:
       source_format: CSV
       delimeter: ","
       file_prefix_filtering: False
+      delete_gcs_files: False
   gcp_project: airflow-framework
-  location: us-central1
+  location: us
   dataset_data_name: af_test_ods
 #  dataset_hds_override: af_test_hds
   owner: test_user

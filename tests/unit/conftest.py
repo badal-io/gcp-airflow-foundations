@@ -3,6 +3,7 @@ import sys
 from datetime import datetime
 
 from airflow.models import TaskInstance
+import logging
 DEFAULT_DATE = datetime(2015, 1, 1)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../test_utils'))
@@ -34,6 +35,7 @@ def validate_linear_task_order(dag, ordered_task_ids, ignore_tasks_ids = []):
         downstream_task_ids = list(downstream_task_ids - set(ignore_tasks_ids))
         upstream_task_ids = list(upstream_task_ids - set(ignore_tasks_ids))
 
+        logging.info(f"validate_linear_task_order ${task_id} downstream_task_ids:${downstream_task_ids} upstream_task_ids:${upstream_task_ids}")
         if idx > 0:
             prev_task = dag.get_task(ordered_task_ids[idx - 1])
             assert(upstream_task_ids == [prev_task.task_id])

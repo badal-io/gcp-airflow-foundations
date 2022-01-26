@@ -16,12 +16,12 @@ from gcp_airflow_foundations.operators.gcp.dlp.get_dlp_bq_inspection_results_ope
     DlpBQInspectionResultsOperator
 
 
-def dlp_policy_tag_taskgroup_name(datastore: str):
-    return f"dlp_policy_tags_for_{datastore}"
+def dlp_policy_tag_taskgroup_name():
+    return "dlp_policy_tags"
 
 
 def schedule_dlp_to_datacatalog_taskgroup(
-        datastore: str,
+        datastore:str,
         project_id: str,
         table_id: str,
         dataset_id: str,
@@ -33,18 +33,23 @@ def schedule_dlp_to_datacatalog_taskgroup(
     1) First time the table is ingested
     2) On schedule there after
     """
+
+    taskgroup = TaskGroup(dlp_policy_tag_taskgroup_name(), dag=dag)
+
     dlp_task_group = dlp_to_datacatalog_builder(
+        taskgroup=taskgroup,
         datastore=datastore,
         project_id=project_id,
         table_id=table_id,
         dataset_id=dataset_id,
         table_dlp_config=table_dlp_config,
+        next_task=next_task,
         dag=dag
     )
 
     decide = BranchOnCronOperator(
         task_id="check_if_should_run_dlp",
-        follow_task_ids_if_true=dlp_task_group.group_id,
+        follow_task_ids_if_true=dlp_task_group,
         follow_task_ids_if_false=next_task.task_id,
         cron_expression=table_dlp_config.source_config.recurrence_schedule,
         use_task_execution_day=True,
@@ -52,7 +57,7 @@ def schedule_dlp_to_datacatalog_taskgroup(
         dag=dag,
     )
 
-    decide >> dlp_task_group >> next_task
+    decide >> dlp_task_group
     return decide
 
 
@@ -62,42 +67,56 @@ def schedule_dlp_to_datacatalog_taskgroup_multiple_tables(
         next_task: BaseOperator,
         dag):
     """
+    Check if DLP should run, and run it on multiple tables
     We want to schedule DLP to run
     1) First time the table is ingested
     2) On schedule there after
     """
-    dlp_task_groups = []
+    logging.info("schedule_dlp_to_datacatalog_taskgroup_multiple_tables")
+
+    taskgroup = TaskGroup(dlp_policy_tag_taskgroup_name(), dag=dag)
+
+    dlp_tasks = []
     for table_config in table_configs:
-        dlp_task_group = dlp_to_datacatalog_builder(
+        dlp_task = dlp_to_datacatalog_builder(
+            taskgroup=taskgroup,
             datastore=table_config['datastore'],
             project_id=table_config['project_id'],
             table_id=table_config['table_id'],
             dataset_id=table_config['dataset_id'],
             table_dlp_config=table_dlp_config,
+            next_task=next_task,
             dag=dag
         )
-        dlp_task_groups.append(dlp_task_group)
+        dlp_tasks.append(dlp_task)
+
+    dlp_task_ids = list(map(lambda t: t.task_id, dlp_tasks))
+
+    logging.info(f"Run BranchOnCronOperator for  {dlp_task_ids} next_task {next_task.task_id}")
 
     decide = BranchOnCronOperator(
         task_id="check_if_should_run_dlp",
-        follow_task_ids_if_true=dlp_task_group.group_id,
+        follow_task_ids_if_true=dlp_task_ids,
         follow_task_ids_if_false=next_task.task_id,
         cron_expression=table_dlp_config.source_config.recurrence_schedule,
         use_task_execution_day=True,
         run_on_first_execution=table_dlp_config.source_config.run_on_first_execution,
+        task_group=taskgroup,
         dag=dag,
     )
 
-    decide >> dlp_task_groups >> next_task
+    decide >> dlp_tasks
     return decide
 
 
 def dlp_to_datacatalog_builder(
+        taskgroup: TaskGroup,
         datastore: str,
         project_id: str,
         table_id: str,
         dataset_id: str,
         table_dlp_config: DlpTableConfig,
+        next_task: BaseOperator,
         dag) -> TaskGroup:
     """
   Method for returning a Task Group for scannign a table with DLP, and creating BigQuery policy tags based on the results
@@ -105,11 +124,11 @@ def dlp_to_datacatalog_builder(
    2) Schedule future DLP
    3) Read results of DLP scan from BigQuery
    4) Update Policy Tags in BQ
+   Returns the first task
   """
 
     assert (table_dlp_config.source_config is not None)
 
-    taskgroup = TaskGroup(dlp_policy_tag_taskgroup_name(datastore), dag=dag)
 
     # setup tables vars
     dlp_results_dataset_id = table_dlp_config.source_config.results_dataset_id
@@ -128,7 +147,7 @@ def dlp_to_datacatalog_builder(
 
     # 1 First delete the results table
     delete_dlp_results = BigQueryDeleteTableOperator(
-        task_id="delete_old_dlp_results",
+        task_id=f"delete_old_dlp_results_{datastore}",
         deletion_dataset_table=dlp_results_table,
         ignore_if_missing=True,
         task_group=taskgroup,
@@ -137,7 +156,7 @@ def dlp_to_datacatalog_builder(
 
     # 2 Scan table
     scan = CloudDLPCreateDLPJobOperator(
-        task_id="scan_table",
+        task_id=f"scan_table_{datastore}",
         project_id=project_id,
         inspect_job=inspect_job,
         wait_until_finished=True,
@@ -146,7 +165,7 @@ def dlp_to_datacatalog_builder(
     )
     # 4. Read results
     read_results = DlpBQInspectionResultsOperator(
-        task_id=f"read_dlp_results",
+        task_id=f"read_dlp_results_{datastore}",
         project_id=dlp_results_table_ref.project,
         dataset_id=dlp_results_table_ref.dataset_id,
         table_id=dlp_results_table_ref.table_id,
@@ -157,7 +176,7 @@ def dlp_to_datacatalog_builder(
 
     # 5. Update policy tags
     update_tags_task = PythonOperator(
-        task_id='update_bq_policy_tags',
+        task_id=f'update_bq_policy_tags_{datastore}',
         python_callable=update_bq_policy_tags,  # <--- PYTHON LIBRARY THAT COPIES FILES FROM SRC TO DEST
         task_group=taskgroup,
         dag=dag,
@@ -174,9 +193,9 @@ def dlp_to_datacatalog_builder(
         provide_context=True
     )
 
-    delete_dlp_results >> scan >> read_results >> update_tags_task
+    delete_dlp_results >> scan >> read_results >> update_tags_task >> next_task
 
-    return taskgroup
+    return delete_dlp_results
 
 
 def update_bq_policy_tags(project_id, dataset_id, table_id, policy_tag_config, gcp_conn_id='google_cloud_default',

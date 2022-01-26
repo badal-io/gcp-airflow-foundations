@@ -89,7 +89,7 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
             dr,
             {
                 'make_choice': State.SUCCESS,
-                'branch_1': State.SUCCESS,
+                'branch_1': None,
                 'branch_2': State.SKIPPED,
             },
         )
@@ -124,7 +124,7 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
             {
                 'make_choice': State.SUCCESS,
                 'branch_1': State.SKIPPED,
-                'branch_2': State.SUCCESS,
+                'branch_2': None,
             },
         )
 
@@ -157,7 +157,7 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
             dr,
             {
                 'make_choice': State.SUCCESS,
-                'branch_1': State.SUCCESS,
+                'branch_1': None,
                 'branch_2': State.SKIPPED,
             },
         )
