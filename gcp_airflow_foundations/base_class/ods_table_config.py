@@ -20,7 +20,9 @@ class OdsTableConfig:
         ods_table_time_partitioning: Partitioning for BigQuery table. One of DAY, HOUR, or MONTH. Must be provided if partition_column_name is not
         partition_column_name: Column to use for partitioning. Must be provided if ods_table_time_partitioning is not
     """
-    ods_metadata: OdsTableMetadataConfig
+    ods_table_time_partitioning: Optional[TimePartitioning] # DAY, HOUR, or MONTH
+    partition_column_name: Optional[str]
+    ods_metadata: OdsTableMetadataConfig = OdsTableMetadataConfig()
     merge_type: str = "SG_KEY_WITH_HASH"
     ods_table_time_partitioning: Optional[TimePartitioning] = None # DAY, HOUR, or MONTH
     partition_column_name: Optional[str] = None

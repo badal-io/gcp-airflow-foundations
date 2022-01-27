@@ -43,6 +43,8 @@ class SourceConfig:
         location: BigQuery job location.
         start_date : Start date for DAG
         start_date_tz : Timezone
+        ods_suffix : Suffix for ODS tables. Defaults to empty string.
+        hds_suffix : Suffix for HDS tables. Defaults to empty string.
         version : The Dag version. Can be incremented if logic changes
         sla_mins : Service Level Agreement (SLA) timeout minutes. This is is an expectation for the maximum time a Task should take.
         connection  : Aiflow Google Cloud Platform connection
@@ -69,6 +71,8 @@ class SourceConfig:
     facebook_options: Optional[FacebookConfig] = None # TODO: Move into extra_configs
     catchup: bool = True
     start_date_tz: str = "EST"
+    ods_suffix: str = ""
+    hds_suffix : str = ""
     version: int = 1
     sla_mins: int = 900
     dlp_config: DlpSourceConfig = None
@@ -119,5 +123,10 @@ class SourceConfig:
     def valid_hds_dataset(cls, values):
         if values['dataset_hds_override'] is None:
             values['dataset_hds_override'] = values['dataset_data_name']
+        return values
 
+    @root_validator(pre=True)
+    def valid_table_suffix(cls, values):
+        if (values['hds_suffix'] == values['ods_suffix']):
+            assert values['dataset_hds_override'] is not None, 'ODS and HDS table must reside in separate datasets if they share the same suffix.'
         return values
