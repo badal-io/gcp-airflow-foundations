@@ -17,6 +17,8 @@ from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup impo
 from tests.integration.conftest import run_task
 from airflow.utils.task_group import TaskGroup
 from airflow.operators.dummy import DummyOperator
+from airflow.utils.trigger_rule import TriggerRule
+from airflow.utils import timezone
 
 
 TEST_TABLE = "test_table"
@@ -28,7 +30,8 @@ def policy_tag(location=None, taxonomy=None, tag=None):
     location = location or config['gcp']['location']
     taxonomy = taxonomy or config['dlp']['taxonomy']
     tag = tag or config['dlp']['tag']
-    return f'projects/airflow-framework/locations/{location}/taxonomies/{taxonomy}/policyTags/{tag}'
+    project_id = config['gcp']['project_id']
+    return f'projects/{project_id}/locations/{location}/taxonomies/{taxonomy}/policyTags/{tag}'
 
 
 TEST_SCHEMA = [
@@ -89,8 +92,8 @@ class TestDlp(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
         # setup_test_dag(self)
-        self.client = bigquery.Client(project=config["gcp"]["project_id"])
         self.hook = BigQueryHook(gcp_conn_id='google_cloud_default')
+        self.client = self.hook.get_client(project_id=config['gcp']['project_id'])
 
         # print_dag_runs()
         # logging.info(f"Context is {self.template_context}")
@@ -103,7 +106,7 @@ class TestDlp(unittest.TestCase):
         template_name = config['dlp']['template']
 
         dlp_taskgroup = TaskGroup(dlp_policy_tag_taskgroup_name(), dag=dag)
-        done = DummyOperator(task_id="done", trigger_rule=TriggerRule.ALL_DONE)
+        done = DummyOperator(task_id="done", trigger_rule=TriggerRule.ALL_DONE, start_date=timezone.utcnow())
 
 
         dlp_source_config = DlpSourceConfig(
@@ -117,7 +120,8 @@ class TestDlp(unittest.TestCase):
             )
         )
 
-        dlp_table_config = DlpTableConfig().set_source_config(dlp_source_config)
+        dlp_table_config = DlpTableConfig()
+        dlp_table_config.set_source_config(dlp_source_config)
 
         dlp_tasks = dlp_to_datacatalog_builder(
             taskgroup= dlp_taskgroup,
@@ -126,6 +130,7 @@ class TestDlp(unittest.TestCase):
             table_id=target_table_id,
             dataset_id=dataset_id,
             table_dlp_config=dlp_table_config,
+            next_task=done,
             dag=dag
         )
 
@@ -150,7 +155,12 @@ class TestDlp(unittest.TestCase):
 
         tasks = self.create_dlp_dag(self.dag, project_id, dataset_id, table_id)
 
-        # ti_dlp_results = run_task(tasks['read_dlp_results_task'])
+
+        run_task(tasks['delete_old_dlp_results_task'])
+        run_task(tasks['scan_table_task'])
+        ti_dlp_results = run_task(tasks['read_dlp_results_task'])
+        run_task(tasks['update_tags_task'])
+
 
         # xcom_pull_res = ti.xcom_pull(task_ids='dlp_scan_table.read_dlp_results')
 

@@ -140,7 +140,6 @@ def dlp_to_datacatalog_builder(
 
     # setup DLP scan vars
     dlp_template_name = table_dlp_config.get_template_name()
-    scan_job_name = f"af_inspect_{dataset_id}.{table_id}_with_{dlp_template_name}"
     rows_limit_percent = table_dlp_config.get_rows_limit_percent()
 
     inspect_job = build_inspect_job_config(dlp_template_name, table_ref, rows_limit_percent, dlp_results_table_ref)
@@ -155,7 +154,7 @@ def dlp_to_datacatalog_builder(
     )
 
     # 2 Scan table
-    scan = CloudDLPCreateDLPJobOperator(
+    scan_task = CloudDLPCreateDLPJobOperator(
         task_id=f"scan_table_{datastore}",
         project_id=project_id,
         inspect_job=inspect_job,
@@ -164,7 +163,7 @@ def dlp_to_datacatalog_builder(
         dag=dag
     )
     # 4. Read results
-    read_results = DlpBQInspectionResultsOperator(
+    read_results_task = DlpBQInspectionResultsOperator(
         task_id=f"read_dlp_results_{datastore}",
         project_id=dlp_results_table_ref.project,
         dataset_id=dlp_results_table_ref.dataset_id,
@@ -181,19 +180,20 @@ def dlp_to_datacatalog_builder(
         task_group=taskgroup,
         dag=dag,
         templates_dict={
-            "dlp_results": "{{ti.xcom_pull(task_ids='dlp_scan_table.read_dlp_results')}}",
+           "dlp_results": f"{{{{ti.xcom_pull(task_ids='{read_results_task.task_id}')}}}}",
+            #"dlp_results": "{{ti.xcom_pull(task_ids='dlp_policy_tags.read_dlp_results_test')}}",
         },
         op_kwargs={
             'project_id': project_id,
             'dataset_id': table_ref.dataset_id,
             'table_id': table_ref.table_id,
             'policy_tag_config': table_dlp_config.source_config.policy_tag_config,
-            'task_ids': 'dlp_scan_table.read_dlp_results'
+            'task_ids': read_results_task.task_id
         },
         provide_context=True
     )
 
-    delete_dlp_results >> scan >> read_results >> update_tags_task >> next_task
+    delete_dlp_results >> scan_task >> read_results_task >> update_tags_task >> next_task
 
     return delete_dlp_results
 
@@ -201,7 +201,6 @@ def dlp_to_datacatalog_builder(
 def update_bq_policy_tags(project_id, dataset_id, table_id, policy_tag_config, gcp_conn_id='google_cloud_default',
                           delegate_to=None, **context):
     dlp_results = context['templates_dict']['dlp_results']
-    logging.info(f"dlp_results{project_id}.{dataset_id}.{table_id} to {dlp_results}")
 
     hook = BigQueryHook(
         gcp_conn_id=gcp_conn_id,

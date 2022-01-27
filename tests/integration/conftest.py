@@ -19,6 +19,7 @@ def test_dag():
     return DAG(dag_id="testdag", start_date=datetime.now())
 
 def run_task(task, context=None, dagassert_success=True):
+
     logging.info(f"run_task {task}")
     ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
