@@ -96,13 +96,13 @@ class TestParseSchema(unittest.TestCase):
         ds = self.template_context['ds']
         
         schema_xcom = {
-            table_config.ods_config.table_id: [
+            f"{source_config.dataset_data_name}.{table_config.ods_config.table_id}": [
                 {'name': 'af_metadata_inserted_at', 'type': 'TIMESTAMP'}, 
                 {'name': 'af_metadata_updated_at', 'type': 'TIMESTAMP'},
                 {'name': 'af_metadata_primary_key_hash', 'type': 'STRING'}, 
                 {'name': 'af_metadata_row_hash', 'type': 'STRING'}
             ], 
-            table_config.hds_config.table_id: [
+            f"{source_config.dataset_hds_override}.{table_config.hds_config.table_id}": [
                 {'name': 'af_metadata_created_at', 'type': 'TIMESTAMP'},
                 {'name': 'af_metadata_expired_at', 'type': 'TIMESTAMP'},
                 {'name': 'af_metadata_row_hash', 'type': 'STRING'}

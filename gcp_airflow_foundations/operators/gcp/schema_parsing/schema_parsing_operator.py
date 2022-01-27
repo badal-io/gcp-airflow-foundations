@@ -67,14 +67,14 @@ class ParseSchema(BaseOperator):
                 if field["name"] in self.column_mapping:
                     field["name"] = self.column_mapping[field["name"]]
 
-        if self.ods_table_config:
-            schema_xcom[self.ods_table_config.table_id] = parse_ods_schema(
+        if self.ods_table_config: 
+            schema_xcom[f"{self.data_source.dataset_data_name}.{self.ods_table_config.table_id}"] = parse_ods_schema(
                 schema_fields=source_schema_fields,
                 ods_metadata=self.ods_table_config.ods_metadata
             )
 
         if self.hds_table_config:
-            schema_xcom[self.hds_table_config.table_id] = parse_hds_schema(
+            schema_xcom[f"{self.data_source.dataset_hds_override}.{self.hds_table_config.table_id}"] = parse_hds_schema(
                 schema_fields=source_schema_fields,
                 hds_metadata=self.hds_table_config.hds_metadata,
                 hds_table_type=self.hds_table_config.hds_table_type
