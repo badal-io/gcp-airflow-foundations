@@ -44,7 +44,13 @@ steps:
     entrypoint: 'bash'
     args:
       - '-c'
-      - |
-          pytest tests/unit -vv
+      - python -v
+    id: "unit-test"
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - pytest tests/unit -vv
     id: "unit-test"
   # [END unit-test]
