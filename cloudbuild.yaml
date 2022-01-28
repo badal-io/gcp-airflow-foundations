@@ -1,6 +1,5 @@
 # - Airflow Env variables.
 substitutions:
-  _GCP_PROJECT_ID: airflow-framework
   _BUILD_IMG_NAME: airflow2_cicd:latest
   _PYTHON_VERSION: '3.8'
 steps:
@@ -51,7 +50,7 @@ steps:
     entrypoint: 'bash'
     args:
       - '-c'
-      - 'pip list'
+      - 'python -m pip list'
     id: "python-list"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
@@ -68,3 +67,6 @@ steps:
       - 'pytest tests/unit -vv && py3clean .'
     id: "unit-test"
   # [END unit-test]
+
+options:
+  substitution_option: 'ALLOW_LOOSE'
