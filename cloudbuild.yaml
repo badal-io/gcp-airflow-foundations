@@ -45,7 +45,7 @@ steps:
     args:
       - '-c'
       - python -v
-    id: "unit-test"
+    id: "python-versions"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: 'bash'
