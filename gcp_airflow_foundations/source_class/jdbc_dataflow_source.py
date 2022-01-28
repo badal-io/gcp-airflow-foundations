@@ -6,7 +6,9 @@ from dacite import from_dict
 from dataclasses import dataclass
 
 from gcp_airflow_foundations.source_class.source import DagBuilder
-from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
+from gcp_airflow_foundations.base_class.data_source_table_config import (
+    DataSourceTablesConfig,
+)
 from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
 from gcp_airflow_foundations.base_class.dataflow_job_config import DataflowJobConfig
 
@@ -16,16 +18,26 @@ import logging
 
 from airflow.models.dag import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
+from airflow.providers.google.cloud.transfers.gcs_to_bigquery import (
+    GCSToBigQueryOperator,
+)
 from airflow.sensors.external_task import ExternalTaskSensor
-from airflow.providers.google.cloud.operators.dataflow import DataflowTemplatedJobStartOperator
-from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateEmptyTableOperator
+from airflow.providers.google.cloud.operators.dataflow import (
+    DataflowTemplatedJobStartOperator,
+)
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryCreateEmptyTableOperator,
+)
 from airflow.providers.google.cloud.hooks.kms import CloudKMSHook
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.models import Variable
-from gcp_airflow_foundations.common.dataflow.jdbc.dataflow_taskgroups import dataflow_taskgroup_builder
+from gcp_airflow_foundations.common.dataflow.jdbc.dataflow_taskgroups import (
+    dataflow_taskgroup_builder,
+)
 
-from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
+from gcp_airflow_foundations.base_class.data_source_table_config import (
+    DataSourceTablesConfig,
+)
 from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
@@ -38,7 +50,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         return [self.get_schema_dag()]
 
     def set_schema_method_type(self):
-        self.schema_source_type = self.config.source.schema_options.schema_source_type     
+        self.schema_source_type = self.config.source.schema_options.schema_source_type
 
     def get_bq_ingestion_task(self, dag, table_config):
         data_source = self.config.source
@@ -64,11 +76,11 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             system_name=system_name,
             create_job_params=self.create_job_params,
             run_dataflow_job=self.run_dataflow_job,
-            create_table=self.create_table
+            create_table=self.create_table,
         )
 
         return taskgroup
-    
+
     def get_schema_dag(self):
         """
         This method returns a singular dag that runs a Dataflow job to fetch the global schemas from source.
@@ -89,11 +101,11 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             schedule_interval="@daily",
             default_args=self.default_task_args_for_table(
                 self.config, self.config.tables[0]
-            )
+            ),
         ) as schema_dag:
 
             taskgroup = dataflow_taskgroup_builder(
-              #  schema_dag,
+                #  schema_dag,
                 query_schema=True,
                 dataflow_job_params=dataflow_job_params,
                 destination_table=destination_table,
@@ -102,19 +114,25 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                 system_name=system_name,
                 create_job_params=self.create_job_params,
                 run_dataflow_job=self.run_dataflow_job,
-                create_table=self.create_table
+                create_table=self.create_table,
             )
             taskgroup.dag = schema_dag
 
             return schema_dag
 
-    def run_dataflow_job(self, template_path, system_name, table_name, query_schema, **kwargs):
-        ti = kwargs['ti']
+    def run_dataflow_job(
+        self, template_path, system_name, table_name, query_schema, **kwargs
+    ):
+        ti = kwargs["ti"]
         xcom_task_pickup = "dataflow_taskgroup.create_job_parameters"
 
-        dataflow_default_options = ti.xcom_pull(key='dataflow_default_options', task_ids=xcom_task_pickup)
-        parameters = ti.xcom_pull(key='parameters', task_ids=xcom_task_pickup)
-        job_name = f"{system_name.lower()}-upload-{table_name.lower()}-to-bq".replace("_", "-")
+        dataflow_default_options = ti.xcom_pull(
+            key="dataflow_default_options", task_ids=xcom_task_pickup
+        )
+        parameters = ti.xcom_pull(key="parameters", task_ids=xcom_task_pickup)
+        job_name = f"{system_name.lower()}-upload-{table_name.lower()}-to-bq".replace(
+            "_", "-"
+        )
 
         # hacky - TO FIX
         if isinstance(parameters["query"], list):
@@ -125,10 +143,10 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             job_name=job_name,
             template=template_path,
             dataflow_default_options=dataflow_default_options,
-            parameters=parameters
+            parameters=parameters,
         )
         trigger_job.execute(context=kwargs)
-    
+
     def create_table(self, destination_table, schema_table, source_table, **kwargs):
         ds = kwargs["ds"]
         ids = destination_table.split(":")
@@ -149,10 +167,10 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                 project_id=project_id,
                 dataset_id=dataset_id,
                 table_id=table_id,
-                schema_fields=schema_fields
+                schema_fields=schema_fields,
             )
             create_table_op.execute(context=kwargs)
-        
+
     @abstractmethod
     def create_job_params(self, config_params, destination_table, **kwargs):
         """
@@ -164,7 +182,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         query_schema:
             boolean - whether to query the schema or not
 
-        When implemented, this method should create the following dictionaries, fill them 
+        When implemented, this method should create the following dictionaries, fill them
         with the required parameters, and XCom push them
 
         DATAFLOW_DEFAULT_OPTIONS:
@@ -174,12 +192,12 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         PARAMETERS:
            driverClassName
            driverJars
-           KMSEncryptionKey 
+           KMSEncryptionKey
            outputTable
            bigQueryLoadingTemporaryDirectory
-           connectionURL 
+           connectionURL
            username
-           password 
+           password
            query
         """
         pass
@@ -190,11 +208,13 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
 
     def validate_extra_options(self):
         # try and parse as DataflowJobConfig
-        job_cfg = from_dict(data_class=DataflowJobConfig, data=self.config.source.extra_options["dataflow_job_config"])
-        
-        # For tables - assert only FULL ingestion available for now   
-        tables = self.config.tables
-       # for table in tables:
-       #     assert table.ingestion_type == "FULL"
+        job_cfg = from_dict(
+            data_class=DataflowJobConfig,
+            data=self.config.source.extra_options["dataflow_job_config"],
+        )
 
-            
+        # For tables - assert only FULL ingestion available for now
+        tables = self.config.tables
+
+    # for table in tables:
+    #     assert table.ingestion_type == "FULL"

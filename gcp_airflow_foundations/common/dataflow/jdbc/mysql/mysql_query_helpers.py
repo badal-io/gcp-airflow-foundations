@@ -1,5 +1,6 @@
 import logging
 
+
 def get_query_for_mysql_load_full(table_name, columns, owner):
     """
     JDBC query for full ingestion of one table
@@ -9,11 +10,12 @@ def get_query_for_mysql_load_full(table_name, columns, owner):
 
     select_cols = ",".join(str(x) for x in columns)
 
-    return f'select {select_cols} from {table_name}'
+    return f"select {select_cols} from {table_name}"
+
 
 def convert_schema_to_json(lists, labels):
     """
-    Input: 
+    Input:
         lists: non-empty list of n lists each of length x
         labels: list of strings of length n
     Output:
@@ -26,12 +28,13 @@ def convert_schema_to_json(lists, labels):
         for j in range(len(labels)):
             dict[labels[j]] = lists[j][i]
         dicts.append(dict)
-    return dicts     
+    return dicts
+
 
 def cast_columns(columns, dtypes, casts):
     # perform the Oracle castings needed within the query itself.
     castings = []
-    for c,d in zip(columns, dtypes):
+    for c, d in zip(columns, dtypes):
         if d in casts:
             cast = casts[d].replace("COLUMN", c)
             castings.append(cast)
@@ -85,9 +88,8 @@ def mysql_mappings():
         "TIMESTAMP": "TIMESTAMP",
     }
 
-def mysql_to_bq(
-    dtypes: list
-):
+
+def mysql_to_bq(dtypes: list):
     mappings = mysql_mappings()
     # Dicts are not really intended for use in this way, but for a tiny one
     # this is just easier

@@ -6,7 +6,9 @@ from typing import Dict, Optional
 from airflow.models import BaseOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.providers.salesforce.hooks.salesforce import SalesforceHook
-from airflow.providers.google.cloud.transfers.salesforce_to_gcs import SalesforceToGcsOperator
+from airflow.providers.google.cloud.transfers.salesforce_to_gcs import (
+    SalesforceToGcsOperator,
+)
 
 from airflow import AirflowException
 
@@ -19,13 +21,13 @@ class SalesforceToGcsQueryOperator(SalesforceToGcsOperator):
         :ref:`howto/operator:SalesforceToGcsOperator`
     :param salesforce_object: The object to query in Salesforce
     :type salesforce_object: str
-    :param ingest_all_fields: Whether or not to Select * the Object in Salesforce (if True, 
+    :param ingest_all_fields: Whether or not to Select * the Object in Salesforce (if True,
         then parameters fields_to_omit and fields_to_ingest are ignored)
     :type ingest_all_fields:  bool
-    :param fields_to_omit: A list of fields to omit from the query (if included, 
+    :param fields_to_omit: A list of fields to omit from the query (if included,
         then parameters ingest_all_fields and fields_to_omit are ignored)
     :type fields_to_omit: List[str]
-    :param fields_to_ingest: A list of fields to include in the query (if included, 
+    :param fields_to_ingest: A list of fields to include in the query (if included,
         then parameters ingest_all_fields and fields_to_omit are ignored)
     :type fields_to_ingest: List[str]
     :param bucket_name: The bucket to upload to.
@@ -54,12 +56,8 @@ class SalesforceToGcsQueryOperator(SalesforceToGcsOperator):
     :type gcp_conn_id: str
     """
 
-    template_fields = (
-        'ingest_all_fields',
-        'fields_to_omit',
-        'fields_to_include'
-    )
-    template_ext = ('.sql',)
+    template_fields = ("ingest_all_fields", "fields_to_omit", "fields_to_include")
+    template_ext = (".sql",)
 
     def __init__(
         self,
@@ -70,7 +68,7 @@ class SalesforceToGcsQueryOperator(SalesforceToGcsOperator):
         fields_to_include,
         **kwargs,
     ):
-        super().__init__(query = "", **kwargs)
+        super().__init__(query="", **kwargs)
         self.salesforce_object = salesforce_object
         self.ingest_all_fields = ingest_all_fields
         self.fields_to_omit = fields_to_omit
@@ -94,10 +92,14 @@ class SalesforceToGcsQueryOperator(SalesforceToGcsOperator):
             fields_to_query = self.fields_to_include
             if not set(fields_to_query).issubset(set(fields)):
                 extra_fields = list(set(fields_to_query) - set(fields))
-                raise AirflowException(f"Queryable content for Salesforce object {self.salesforce_object} included fields not present in the object's schema: {extra_fields}")
+                raise AirflowException(
+                    f"Queryable content for Salesforce object {self.salesforce_object} included fields not present in the object's schema: {extra_fields}"
+                )
         else:
             # ingest_all_fields is false, and no other information was provided - throw exception
-            raise AirflowException(f"Queryable content for Salesforce object {self.salesforce_object} was malformed")
+            raise AirflowException(
+                f"Queryable content for Salesforce object {self.salesforce_object} was malformed"
+            )
         query = f"""SELECT {",".join(fields_to_query)} FROM {self.salesforce_object}""".strip()
         logging.info(query)
         self.query = query

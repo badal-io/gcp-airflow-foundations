@@ -11,16 +11,11 @@ from airflow.models.dag import DAG
 from airflow.utils.session import create_session
 from airflow.utils.timezone import datetime
 
-from airflow.models import (
-    DagBag, 
-    DagRun, 
-    DagTag,
-    TaskInstance,
-    DagModel
-)
+from airflow.models import DagBag, DagRun, DagTag, TaskInstance, DagModel
 
 DEFAULT_DATE = datetime(2015, 1, 1)
-TEST_DAG_ID = 'unit_test_dag'
+TEST_DAG_ID = "unit_test_dag"
+
 
 def clear_db_dags():
     with create_session() as session:
@@ -35,15 +30,19 @@ class TestTaskGroupBuilder(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         conf_location = os.path.join(here, "config", "valid")
         self.configs = load_tables_config_from_dir(conf_location)
-        
-        self.args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
 
-    def test_ods_task_group(self):        
+        self.args = {"owner": "airflow", "start_date": DEFAULT_DATE}
+
+    def test_ods_task_group(self):
         for config in self.configs:
             data_source = config.source
 
             for table in config.tables:
-                with  DAG(f"{TEST_DAG_ID}.{table.table_name}", default_args=self.args, schedule_interval='@once') as dag:
+                with DAG(
+                    f"{TEST_DAG_ID}.{table.table_name}",
+                    default_args=self.args,
+                    schedule_interval="@once",
+                ) as dag:
                     ods_task_group = ods_builder(
                         project_id=data_source.gcp_project,
                         table_id=table.table_name,
@@ -57,17 +56,21 @@ class TestTaskGroupBuilder(unittest.TestCase):
                         ods_table_config=table.ods_config,
                         partition_expiration=None,
                         location=data_source.location,
-                        dag=dag
+                        dag=dag,
                     )
 
                 assert ods_task_group is not None, "Clould not load the ODS task group"
-                
+
     def test_hds_task_group(self):
         for config in self.configs:
             data_source = config.source
 
             for table in config.tables:
-                with  DAG(f"{TEST_DAG_ID}.{table.table_name}", default_args=self.args, schedule_interval='@once') as dag:
+                with DAG(
+                    f"{TEST_DAG_ID}.{table.table_name}",
+                    default_args=self.args,
+                    schedule_interval="@once",
+                ) as dag:
                     hds_task_group = hds_builder(
                         project_id=data_source.gcp_project,
                         table_id=table.table_name,
@@ -81,7 +84,7 @@ class TestTaskGroupBuilder(unittest.TestCase):
                         hds_table_config=table.hds_config,
                         partition_expiration=None,
                         location=data_source.location,
-                        dag=dag
+                        dag=dag,
                     )
 
                 assert hds_task_group is not None, "Could not load the ODS task group"

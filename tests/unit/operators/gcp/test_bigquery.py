@@ -11,42 +11,42 @@ import pytz
 from airflow.operators.dummy import DummyOperator
 from airflow.exceptions import AirflowException
 
-from airflow.models import (
-    DAG,
-    TaskInstance,
-    XCom,
-    DagBag, 
-    DagRun, 
-    DagTag,
-    DagModel
-)
+from airflow.models import DAG, TaskInstance, XCom, DagBag, DagRun, DagTag, DagModel
 from airflow.models.xcom import XCOM_RETURN_KEY
 
-from gcp_airflow_foundations.operators.gcp.create_table import CustomBigQueryCreateEmptyTableOperator
-from gcp_airflow_foundations.operators.gcp.delete_staging_table import BigQueryDeleteStagingTableOperator
-from gcp_airflow_foundations.operators.gcp.gcs_to_bigquery import CustomGCSToBigQueryOperator
+from gcp_airflow_foundations.operators.gcp.create_table import (
+    CustomBigQueryCreateEmptyTableOperator,
+)
+from gcp_airflow_foundations.operators.gcp.delete_staging_table import (
+    BigQueryDeleteStagingTableOperator,
+)
+from gcp_airflow_foundations.operators.gcp.gcs_to_bigquery import (
+    CustomGCSToBigQueryOperator,
+)
 
-TASK_ID = 'test-bq-generic-operator'
-TEST_DATASET = 'test-dataset'
-TEST_GCP_PROJECT_ID = 'test-project'
-TEST_TABLE_ID = 'test-table-id'
+TASK_ID = "test-bq-generic-operator"
+TEST_DATASET = "test-dataset"
+TEST_GCP_PROJECT_ID = "test-project"
+TEST_TABLE_ID = "test-table-id"
 DEFAULT_DATE = pytz.utc.localize(datetime(2015, 1, 1))
-TEST_DAG_ID = 'test-bigquery-operators'
-SCHEMA_FIELDS = [{'name':'column', 'type':'STRING'}]
+TEST_DAG_ID = "test-bigquery-operators"
+SCHEMA_FIELDS = [{"name": "column", "type": "STRING"}]
 TEST_TABLE_RESOURCES = {
-    "schema":{"fields": SCHEMA_FIELDS},
-    "timePartitioning":None,
-    "encryptionConfiguration":None,
-    "labels":None,
-    #"clustering": {"fields": None}
+    "schema": {"fields": SCHEMA_FIELDS},
+    "timePartitioning": None,
+    "encryptionConfiguration": None,
+    "labels": None,
+    # "clustering": {"fields": None}
 }
 
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
 
+
 @provide_session
 def cleanup_xcom(session=None):
     session.query(XCom).delete()
+
 
 def clear_db_dags():
     with create_session() as session:
@@ -58,35 +58,41 @@ def clear_db_dags():
 
 class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
     def setUp(self):
-        args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
-        self.dag = DAG('TEST_DAG_ID', default_args=args, schedule_interval='@once')
+        args = {"owner": "airflow", "start_date": DEFAULT_DATE}
+        self.dag = DAG("TEST_DAG_ID", default_args=args, schedule_interval="@once")
 
         self.dag.create_dagrun(
-            run_id='test', start_date=DEFAULT_DATE, execution_date=DEFAULT_DATE, state=State.SUCCESS
+            run_id="test",
+            start_date=DEFAULT_DATE,
+            execution_date=DEFAULT_DATE,
+            state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id='dummy', dag=self.dag)
+        task = DummyOperator(task_id="dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
-        self.ti.xcom_push(key=XCOM_RETURN_KEY, value={f"{TEST_DATASET}.{TEST_TABLE_ID}":SCHEMA_FIELDS})
+        self.ti.xcom_push(
+            key=XCOM_RETURN_KEY,
+            value={f"{TEST_DATASET}.{TEST_TABLE_ID}": SCHEMA_FIELDS},
+        )
 
     def doCleanups(self):
         cleanup_xcom()
         clear_db_dags()
 
-    @mock.patch('airflow.providers.google.cloud.operators.bigquery.BigQueryHook')
+    @mock.patch("airflow.providers.google.cloud.operators.bigquery.BigQueryHook")
     def test_execute(self, mock_hook):
         operator = CustomBigQueryCreateEmptyTableOperator(
-            task_id=TASK_ID, 
-            dataset_id=TEST_DATASET, 
-            project_id=TEST_GCP_PROJECT_ID, 
+            task_id=TASK_ID,
+            dataset_id=TEST_DATASET,
+            project_id=TEST_GCP_PROJECT_ID,
             table_id=TEST_TABLE_ID,
-            schema_task_id='dummy'
+            schema_task_id="dummy",
         )
-        
+
         operator.pre_execute(context=self.template_context)
-       
+
         operator.execute(context=self.template_context)
 
         mock_hook.return_value.create_empty_table.assert_called_once_with(
@@ -101,20 +107,23 @@ class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
             materialized_view=None,
             encryption_configuration=None,
             table_resource=TEST_TABLE_RESOURCES,
-            exists_ok=True
+            exists_ok=True,
         )
 
 
 class TestBigQueryDeleteStagingTableOperator(unittest.TestCase):
     def setUp(self):
-        args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
-        self.dag = DAG('TEST_DAG_ID', default_args=args, schedule_interval='@once')
+        args = {"owner": "airflow", "start_date": DEFAULT_DATE}
+        self.dag = DAG("TEST_DAG_ID", default_args=args, schedule_interval="@once")
 
         self.dag.create_dagrun(
-            run_id='test', start_date=DEFAULT_DATE, execution_date=DEFAULT_DATE, state=State.SUCCESS
+            run_id="test",
+            start_date=DEFAULT_DATE,
+            execution_date=DEFAULT_DATE,
+            state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id='dummy', dag=self.dag)
+        task = DummyOperator(task_id="dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
@@ -123,22 +132,22 @@ class TestBigQueryDeleteStagingTableOperator(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-    @mock.patch('airflow.providers.google.cloud.operators.bigquery.BigQueryHook')
+    @mock.patch("airflow.providers.google.cloud.operators.bigquery.BigQueryHook")
     def test_execute(self, mock_hook):
         operator = BigQueryDeleteStagingTableOperator(
-            task_id=TASK_ID, 
-            dataset_id=TEST_DATASET, 
-            project_id=TEST_GCP_PROJECT_ID, 
-            table_id=TEST_TABLE_ID
+            task_id=TASK_ID,
+            dataset_id=TEST_DATASET,
+            project_id=TEST_GCP_PROJECT_ID,
+            table_id=TEST_TABLE_ID,
         )
-        
+
         operator.pre_execute(context=self.template_context)
-       
+
         operator.execute(context=self.template_context)
 
-        ds = self.template_context['ds'] 
+        ds = self.template_context["ds"]
 
         mock_hook.return_value.delete_table.assert_called_once_with(
             table_id=f"{TEST_GCP_PROJECT_ID}.{TEST_DATASET}.{TEST_TABLE_ID}_{ds}",
-            not_found_ok=True
+            not_found_ok=True,
         )

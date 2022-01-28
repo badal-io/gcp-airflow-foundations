@@ -13,14 +13,16 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_audit import SchemaMigrationAudit
+from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_audit import (
+    SchemaMigrationAudit,
+)
 
 
 class MigrateSchema(BaseOperator):
     """
     Detects any changes in the source table's schema and updates the target table's schema.
-    
-    :param project_id: GCP project ID  
+
+    :param project_id: GCP project ID
     :type project_id: str
     :param table_id: Target table name
     :type table_id: str
@@ -40,12 +42,12 @@ class MigrateSchema(BaseOperator):
         *,
         dataset_id,
         table_id,
-        project_id, 
+        project_id,
         new_schema_fields=None,
-        gcp_conn_id='google_cloud_default',
+        gcp_conn_id="google_cloud_default",
         delegate_to=None,
         encryption_configuration=None,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -58,17 +60,23 @@ class MigrateSchema(BaseOperator):
         self.encryption_configuration = encryption_configuration
 
         self.hook = BigQueryHook(
-            gcp_conn_id=self.gcp_conn_id,
-            delegate_to=self.delegate_to,
+            gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to
         )
         conn = self.hook.get_conn()
         self.cursor = conn.cursor()
 
     def execute(self, context):
         if not self.new_schema_fields:
-            self.new_schema_fields = self.xcom_pull(context=context, task_ids="schema_parsing")[f"{self.dataset_id}.{self.table_id}"]
+            self.new_schema_fields = self.xcom_pull(
+                context=context, task_ids="schema_parsing"
+            )[f"{self.dataset_id}.{self.table_id}"]
 
-        query, schema_fields_updates, sql_columns, change_log = self.build_schema_query()
+        (
+            query,
+            schema_fields_updates,
+            sql_columns,
+            change_log,
+        ) = self.build_schema_query()
 
         if change_log:
             logging.info("Migrating new schema to target table")
@@ -78,25 +86,23 @@ class MigrateSchema(BaseOperator):
                     sql=query,
                     use_legacy_sql=False,
                     destination_dataset_table=f"{self.dataset_id}.{self.table_id}",
-                    write_disposition="WRITE_TRUNCATE"
+                    write_disposition="WRITE_TRUNCATE",
                 )
 
             if schema_fields_updates:
                 self.hook.update_table_schema(
-                    dataset_id=self.dataset_id, 
+                    dataset_id=self.dataset_id,
                     table_id=self.table_id,
                     schema_fields_updates=schema_fields_updates,
-                    include_policy_tags=False
+                    include_policy_tags=False,
                 )
 
             SchemaMigrationAudit(
-                project_id=self.project_id,
-                dataset_id=self.dataset_id
+                project_id=self.project_id, dataset_id=self.dataset_id
             ).insert_change_log_rows(change_log)
-        
+
         else:
             logging.info("No schema changes detected")
-
 
     def build_schema_query(self):
         """
@@ -113,12 +119,14 @@ class MigrateSchema(BaseOperator):
         :rtype: list
         """
 
-        self.current_schema_fields = self.hook.get_schema(dataset_id=self.dataset_id, table_id=self.table_id).get("fields", None)
-        
+        self.current_schema_fields = self.hook.get_schema(
+            dataset_id=self.dataset_id, table_id=self.table_id
+        ).get("fields", None)
+
         logging.info(f"The current schema is: {self.current_schema_fields}")
 
         logging.info(f"The new schema is: {self.new_schema_fields}")
-        
+
         column_names_new = [i["name"] for i in self.new_schema_fields]
         column_names_current = [i["name"] for i in self.current_schema_fields]
 
@@ -132,37 +140,52 @@ class MigrateSchema(BaseOperator):
             column_mode = field["mode"]
 
             if (column_name not in column_names_new) and (column_mode == "REQUIRED"):
-                logging.info(f"Column `{column_name}` was changed from REQUIRED to NULLABLE")
+                logging.info(
+                    f"Column `{column_name}` was changed from REQUIRED to NULLABLE"
+                )
 
                 change_log.append(
                     {
-                        "table_id":self.table_id,
-                        "dataset_id":self.dataset_id,
-                        "column_name":column_name,
-                        "type_of_change":"column mode relaxation"
+                        "table_id": self.table_id,
+                        "dataset_id": self.dataset_id,
+                        "column_name": column_name,
+                        "type_of_change": "column mode relaxation",
                     }
                 )
 
-                schema_fields_updates.append(
-                    {"name":column_name,"mode":"NULLABLE"}
-                )
+                schema_fields_updates.append({"name": column_name, "mode": "NULLABLE"})
 
                 sql_columns.append(f"""`{column_name}`""")
 
             else:
-                column_type_new = self.bigQuery_mapping(next((i['type'] for i in self.new_schema_fields if i["name"] == column_name), None))
+                column_type_new = self.bigQuery_mapping(
+                    next(
+                        (
+                            i["type"]
+                            for i in self.new_schema_fields
+                            if i["name"] == column_name
+                        ),
+                        None,
+                    )
+                )
                 if (column_type_new is not None) and (column_type_new != column_type):
-                    if not self.allowed_casting(column_name, column_type, column_type_new):
-                        raise AirflowException(f"Data type of column {column_name} cannot be changed from {column_type} to {column_type_new}")
+                    if not self.allowed_casting(
+                        column_name, column_type, column_type_new
+                    ):
+                        raise AirflowException(
+                            f"Data type of column {column_name} cannot be changed from {column_type} to {column_type_new}"
+                        )
 
-                    logging.info(f"Data type of column `{column_name}` was changed from {column_type} to {column_type_new}")
+                    logging.info(
+                        f"Data type of column `{column_name}` was changed from {column_type} to {column_type_new}"
+                    )
 
                     change_log.append(
                         {
-                            "table_id":self.table_id,
-                            "dataset_id":self.dataset_id,
-                            "column_name":column_name,
-                            "type_of_change":"data type change"
+                            "table_id": self.table_id,
+                            "dataset_id": self.dataset_id,
+                            "column_name": column_name,
+                            "type_of_change": "data type change",
                         }
                     )
 
@@ -181,47 +204,61 @@ class MigrateSchema(BaseOperator):
 
                 change_log.append(
                     {
-                        "table_id":self.table_id,
-                        "dataset_id":self.dataset_id,
-                        "column_name":column_name,
-                        "type_of_change":"column addition"
+                        "table_id": self.table_id,
+                        "dataset_id": self.dataset_id,
+                        "column_name": column_name,
+                        "type_of_change": "column addition",
                     }
                 )
 
-                schema_fields_updates.append(
-                   field
-                )
+                schema_fields_updates.append(field)
 
         query = f"""SELECT {",".join(sql_columns)} FROM `{self.dataset_id}.{self.table_id}`;"""
 
         return query, schema_fields_updates, sql_columns, change_log
 
-
     def bigQuery_mapping(self, data_type):
-        mapping = {
-            "FLOAT":"FLOAT"
-        }
+        mapping = {"FLOAT": "FLOAT"}
 
         if data_type in mapping:
             return mapping[data_type]
         else:
-            return data_type    
+            return data_type
 
     def allowed_casting(self, column_name, current_data_type, new_data_type):
         casting = {
-            "INTEGER":["BOOL","INTEGER","NUMERIC","BIGNUMERIC","FLOAT64","STRING"],
-            "NUMERIC":["INTEGER","NUMERIC","BIGNUMERIC","FLOAT64","STRING"],
-            "BIGNUMERIC":["INTEGER","NUMERIC","BIGNUMERIC","FLOAT64","STRING"],
-            "FLOAT":["INTEGER","NUMERIC","BIGNUMERIC","FLOAT64","STRING"],
-            "BOOL":["BOOL","INTEGER","STRING"],
-            "STRING":["BOOL","INTEGER","NUMERIC","BIGNUMERIC","FLOAT64","STRING","BYTES","DATE","DATETIME","TIME","TIMESTAMP"],
-            "BYTES":["STRING","BYTES"],
-            "DATE":["STRING","DATE","DATETIME","TIMESTAMP"],
-            "DATETIME":["STRING","DATE","DATETIME","TIME","TIMESTAMP"],
-            "TIME":["STRING","TIME"],
-            "TIMESTAMP":["STRING","DATE","DATETIME","TIME","TIMESTAMP"],
-            "ARRAY":["ARRAY"],
-            "STRUCT":["STRUCT"]
+            "INTEGER": [
+                "BOOL",
+                "INTEGER",
+                "NUMERIC",
+                "BIGNUMERIC",
+                "FLOAT64",
+                "STRING",
+            ],
+            "NUMERIC": ["INTEGER", "NUMERIC", "BIGNUMERIC", "FLOAT64", "STRING"],
+            "BIGNUMERIC": ["INTEGER", "NUMERIC", "BIGNUMERIC", "FLOAT64", "STRING"],
+            "FLOAT": ["INTEGER", "NUMERIC", "BIGNUMERIC", "FLOAT64", "STRING"],
+            "BOOL": ["BOOL", "INTEGER", "STRING"],
+            "STRING": [
+                "BOOL",
+                "INTEGER",
+                "NUMERIC",
+                "BIGNUMERIC",
+                "FLOAT64",
+                "STRING",
+                "BYTES",
+                "DATE",
+                "DATETIME",
+                "TIME",
+                "TIMESTAMP",
+            ],
+            "BYTES": ["STRING", "BYTES"],
+            "DATE": ["STRING", "DATE", "DATETIME", "TIMESTAMP"],
+            "DATETIME": ["STRING", "DATE", "DATETIME", "TIME", "TIMESTAMP"],
+            "TIME": ["STRING", "TIME"],
+            "TIMESTAMP": ["STRING", "DATE", "DATETIME", "TIME", "TIMESTAMP"],
+            "ARRAY": ["ARRAY"],
+            "STRUCT": ["STRUCT"],
         }
 
         allowed_casting = casting[current_data_type]

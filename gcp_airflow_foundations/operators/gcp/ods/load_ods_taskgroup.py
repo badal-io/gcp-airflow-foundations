@@ -4,14 +4,19 @@ from airflow.utils.task_group import TaskGroup
 
 from typing import List, Optional
 
-from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
-from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
+from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import (
+    MergeBigQueryODS,
+)
+from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import (
+    MigrateSchema,
+)
 
-from gcp_airflow_foundations.operators.gcp.create_table import CustomBigQueryCreateEmptyTableOperator
+from gcp_airflow_foundations.operators.gcp.create_table import (
+    CustomBigQueryCreateEmptyTableOperator,
+)
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
-
 
 
 def ods_builder(
@@ -21,7 +26,7 @@ def ods_builder(
     landing_zone_dataset: str,
     landing_zone_table_name_override: Optional[str],
     column_mapping: Optional[dict],
-    column_casting:  Optional[dict],
+    column_casting: Optional[dict],
     surrogate_keys: List[str],
     ingestion_type: IngestionType,
     ods_table_config: Optional[OdsTableConfig],
@@ -30,7 +35,8 @@ def ods_builder(
     dag: DAG,
     cluster_fields=None,
     labels=None,
-    encryption_configuration=None) -> TaskGroup:
+    encryption_configuration=None,
+) -> TaskGroup:
 
     """
     Method for returning a Task Group for 1) creating an empty target ODS table (if it doesn't already exist) and for 2) for merging the staging table data into the target ODS table
@@ -38,18 +44,25 @@ def ods_builder(
     taskgroup = TaskGroup(group_id="create_ods_merge_taskgroup")
 
     if ods_table_config.ods_table_time_partitioning is not None:
-        field = column_mapping.get(ods_table_config.partition_column_name, ods_table_config.partition_column_name) if column_mapping else ods_table_config.partition_column_name
+        field = (
+            column_mapping.get(
+                ods_table_config.partition_column_name,
+                ods_table_config.partition_column_name,
+            )
+            if column_mapping
+            else ods_table_config.partition_column_name
+        )
 
         time_partitioning = {
-            "type":ods_table_config.ods_table_time_partitioning.value,
-            "field":field,
-            "expirationMs":partition_expiration
+            "type": ods_table_config.ods_table_time_partitioning.value,
+            "field": field,
+            "expirationMs": partition_expiration,
         }
-    
+
     else:
         time_partitioning = None
-    
-    #1 Check if ODS table exists and if not create an empty table
+
+    # 1 Check if ODS table exists and if not create an empty table
     create_table = CustomBigQueryCreateEmptyTableOperator(
         task_id="create_ods_table",
         project_id=project_id,
@@ -58,20 +71,20 @@ def ods_builder(
         cluster_fields=cluster_fields,
         time_partitioning=time_partitioning,
         task_group=taskgroup,
-        dag=dag
+        dag=dag,
     )
-    
-    #2 Migrate schema
+
+    # 2 Migrate schema
     migrate_schema = MigrateSchema(
         task_id="schema_migration",
         project_id=project_id,
         table_id=table_id,
-        dataset_id=dataset_id, 
+        dataset_id=dataset_id,
         task_group=taskgroup,
-        dag=dag
+        dag=dag,
     )
-    
-    #3 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
+
+    # 3 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
     insert = MergeBigQueryODS(
         task_id=f"upsert_{table_id}",
         project_id=project_id,
@@ -86,7 +99,7 @@ def ods_builder(
         ods_table_config=ods_table_config,
         location=location,
         task_group=taskgroup,
-        dag=dag
+        dag=dag,
     )
 
     create_table >> migrate_schema >> insert

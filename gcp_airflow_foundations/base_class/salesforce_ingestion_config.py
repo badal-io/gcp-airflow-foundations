@@ -11,12 +11,13 @@ from typing import List, Optional
 class SalesforceIngestionConfig:
     """
     Salesforce configuration class.
-    
+
     Attributes:
         ingest_all_columns: SELECT * the Salesforce object if true
         fields_to_omit: a list of object fields to omit from ingestion
         field_names: an explicit list of fields to ingest
     """
+
     api_table_name: str
     ingest_all_columns: bool
     fields_to_omit: Optional[List[str]]

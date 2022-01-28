@@ -14,15 +14,18 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from gcp_airflow_foundations.operators.gcp.ods.ods_sql_upsert_helpers import SqlHelperODS
+from gcp_airflow_foundations.operators.gcp.ods.ods_sql_upsert_helpers import (
+    SqlHelperODS,
+)
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+
 
 class MergeBigQueryODS(BigQueryOperator):
     """
     Merges data into a BigQuery ODS table.
-    
-    :param project_id: GCP project ID  
+
+    :param project_id: GCP project ID
     :type project_id: str
     :param stg_table_name: Source table name
     :type stg_table_name: str
@@ -44,15 +47,11 @@ class MergeBigQueryODS(BigQueryOperator):
     :type ingestion_type: IngestionType
     :param ods_table_config: User-provided ODS configuration options
     :type ods_table_config: OdsTableConfig
-    :param location: The geographic location of the job. 
+    :param location: The geographic location of the job.
     :type location: str
     """
 
-    template_fields = (
-        "stg_table_name",
-        "data_table_name",
-        "stg_dataset_name"
-    )
+    template_fields = ("stg_table_name", "data_table_name", "stg_dataset_name")
 
     @apply_defaults
     def __init__(
@@ -99,10 +98,12 @@ class MergeBigQueryODS(BigQueryOperator):
         self.ods_table_config = ods_table_config
 
     def pre_execute(self, context) -> None:
-        ds = context['ds']
+        ds = context["ds"]
 
         if not self.columns:
-            staging_columns = self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']
+            staging_columns = self.xcom_pull(
+                context=context, task_ids="schema_parsing"
+            )["source_table_columns"]
         else:
             staging_columns = self.columns
 
@@ -110,10 +111,10 @@ class MergeBigQueryODS(BigQueryOperator):
             for i in staging_columns:
                 if i not in self.column_mapping:
                     self.column_mapping[i] = i
-            
+
         else:
-            self.column_mapping = {i:i for i in staging_columns}
-            
+            self.column_mapping = {i: i for i in staging_columns}
+
         source_columns = staging_columns
 
         self.log.info(
@@ -124,22 +125,26 @@ class MergeBigQueryODS(BigQueryOperator):
 
         sql_helper = SqlHelperODS(
             source_dataset=self.stg_dataset_name,
-            target_dataset=self.data_dataset_name ,
+            target_dataset=self.data_dataset_name,
             source=f"{self.stg_table_name}_{ds}",
             target=self.data_table_name,
             columns=source_columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             column_casting=self.column_casting,
-            ods_metadata=self.ods_table_config.ods_metadata
+            ods_metadata=self.ods_table_config.ods_metadata,
         )
 
         if self.ods_table_config.ods_table_time_partitioning:
-            partitioning_dimension = self.ods_table_config.ods_table_time_partitioning.value
+            partitioning_dimension = (
+                self.ods_table_config.ods_table_time_partitioning.value
+            )
             sql_helper.time_partitioning = partitioning_dimension
-            sql_helper.partition_column_name =  self.ods_table_config.partition_column_name
-        
-            ts = context['ts']
+            sql_helper.partition_column_name = (
+                self.ods_table_config.partition_column_name
+            )
+
+            ts = context["ts"]
 
             sql_helper.partition_timestamp = ts
 
@@ -150,17 +155,23 @@ class MergeBigQueryODS(BigQueryOperator):
             else:
                 sql = sql_helper.create_full_sql()
                 self.write_disposition = "WRITE_APPEND"
-                self.destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}"
+                self.destination_dataset_table = (
+                    f"{self.data_dataset_name}.{self.data_table_name}"
+                )
 
         elif self.ingestion_type == IngestionType.FULL:
             # Overwrite ODS table with the staging table data
             sql = sql_helper.create_full_sql()
             self.write_disposition = "WRITE_TRUNCATE"
-            self.destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}"
+            self.destination_dataset_table = (
+                f"{self.data_dataset_name}.{self.data_table_name}"
+            )
 
         else:
             raise AirflowException("Invalid ingestion type", self.ingestion_type)
 
-        logging.info(f"Executing sql: {sql}. Write disposition: {self.write_disposition}")
+        logging.info(
+            f"Executing sql: {sql}. Write disposition: {self.write_disposition}"
+        )
 
         self.sql = sql

@@ -22,16 +22,16 @@ class TestDagParser(unittest.TestCase):
     def test_load_config(self):
         configs = load_tables_config_from_dir(self.conf_location)
         assert len(configs) == 1
-    
+
     def test_dag_parser(self):
-        parser = DagParser() 
+        parser = DagParser()
         parser.conf_location = self.conf_location
         dags = parser.parse_dags()
 
         assert isinstance(dags, dict)
         assert all(isinstance(dag, airflow.DAG) for dag in dags.values())
         assert len(dags) == 2
-        
+
 
 class TestDags(unittest.TestCase):
     def setUp(self):
@@ -39,7 +39,7 @@ class TestDags(unittest.TestCase):
         conf_location = os.path.join(here, "config", "valid")
         self.configs = load_tables_config_from_dir(conf_location)
 
-        parser = DagParser() 
+        parser = DagParser()
         parser.conf_location = conf_location
         self.dags = parser.parse_dags().values()
 
@@ -64,4 +64,4 @@ class TestInvalidDagParser(unittest.TestCase):
     def test_load_config(self):
         with pytest.raises(AirflowException) as ctx:
             configs = load_tables_config_from_dir(self.conf_location)
-        assert str(ctx.value) == "missing value for field \"source.location\""
+        assert str(ctx.value) == 'missing value for field "source.location"'

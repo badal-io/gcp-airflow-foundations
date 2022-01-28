@@ -2,14 +2,15 @@ import datetime
 import unittest
 
 
-
 from airflow.models import DAG, DagRun, TaskInstance as TI
 from airflow.operators.dummy import DummyOperator
 from airflow.utils import timezone
 from airflow.utils.session import create_session
 from airflow.utils.state import State
 
-from gcp_airflow_foundations.operators.branch.BranchOnCronOperator import BranchOnCronOperator
+from gcp_airflow_foundations.operators.branch.BranchOnCronOperator import (
+    BranchOnCronOperator,
+)
 
 
 DEFAULT_DATE = timezone.datetime(2020, 2, 5)  # Wednesday
@@ -30,9 +31,7 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
 
     def setUp(self):
         self.dag = DAG(
-            "branch_cron_test",
-            start_date=DEFAULT_DATE,
-            schedule_interval=INTERVAL,
+            "branch_cron_test", start_date=DEFAULT_DATE, schedule_interval=INTERVAL
         )
         self.branch_1 = DummyOperator(task_id="branch_1", dag=self.dag)
         self.branch_2 = DummyOperator(task_id="branch_2", dag=self.dag)
@@ -51,7 +50,7 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
             try:
                 expected_state = task_ids_to_states[ti.task_id]
             except KeyError:
-                raise ValueError(f'Invalid task id {ti.task_id} found!')
+                raise ValueError(f"Invalid task id {ti.task_id} found!")
             else:
                 self.assertEqual(
                     ti.state,
@@ -87,11 +86,7 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
 
         self._assert_task_ids_match_states(
             dr,
-            {
-                'make_choice': State.SUCCESS,
-                'branch_1': None,
-                'branch_2': State.SKIPPED,
-            },
+            {"make_choice": State.SUCCESS, "branch_1": None, "branch_2": State.SKIPPED},
         )
 
     def test_branch_follow_false(self):
@@ -121,11 +116,7 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
 
         self._assert_task_ids_match_states(
             dr,
-            {
-                'make_choice': State.SUCCESS,
-                'branch_1': State.SKIPPED,
-                'branch_2': None,
-            },
+            {"make_choice": State.SUCCESS, "branch_1": State.SKIPPED, "branch_2": None},
         )
 
     def test_branch_follow_true_on_first_run(self):
@@ -155,9 +146,5 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
 
         self._assert_task_ids_match_states(
             dr,
-            {
-                'make_choice': State.SUCCESS,
-                'branch_1': None,
-                'branch_2': State.SKIPPED,
-            },
+            {"make_choice": State.SUCCESS, "branch_1": None, "branch_2": State.SKIPPED},
         )

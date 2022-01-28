@@ -3,6 +3,7 @@ from pydantic.dataclasses import dataclass
 
 from typing import List, Optional
 
+
 @dataclass
 class FileTableConfig:
     """
@@ -13,6 +14,7 @@ class FileTableConfig:
         flag_file_path: the path to the optional success file
         bq_upload_option: either "BASH" or "GCS"
     """
+
     directory_prefix: Optional[str]
     metadata_file: Optional[str] = None
     schema_file: Optional[str] = None

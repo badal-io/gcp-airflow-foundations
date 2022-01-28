@@ -1,4 +1,6 @@
-from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
+from airflow.providers.google.cloud.transfers.gcs_to_bigquery import (
+    GCSToBigQueryOperator,
+)
 
 from airflow.utils.decorators import apply_defaults
 
@@ -15,7 +17,7 @@ class CustomGCSToBigQueryOperator(GCSToBigQueryOperator):
         self,
         *,
         schema_config: SchemaSourceConfig,
-        data_source: SourceConfig, 
+        data_source: SourceConfig,
         table_config: SourceTableConfig,
         bucket: str,
         source_objects: str,
@@ -40,14 +42,18 @@ class CustomGCSToBigQueryOperator(GCSToBigQueryOperator):
         self.table_config = table_config
 
     def pre_execute(self, context) -> None:
-        ds = context['ds']
+        ds = context["ds"]
 
         schema_source_config_class = self.schema_config
 
-        logging.info(f"Parsing schema for staging table using `{schema_source_config_class.__name__}`")
+        logging.info(
+            f"Parsing schema for staging table using `{schema_source_config_class.__name__}`"
+        )
 
         schema_method = schema_source_config_class().schema_method()
-        schema_method_arguments = schema_source_config_class().schema_method_arguments(self.data_source, self.table_config, ds)
+        schema_method_arguments = schema_source_config_class().schema_method_arguments(
+            self.data_source, self.table_config, ds
+        )
 
         if schema_method and schema_method_arguments:
             self.schema_fields = schema_method(**schema_method_arguments)

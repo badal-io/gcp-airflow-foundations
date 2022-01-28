@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from pydantic import validator, root_validator
 
+
 @dataclass
 class PolicyTagConfig:
     """
@@ -11,9 +12,11 @@ class PolicyTagConfig:
          location: GCP logcation where the taxonomy was created
          tag: The tag to use (must be part of the taxonomy)
     """
+
     taxonomy: str
     location: str
     tag: str
+
 
 @dataclass
 class DlpSourceConfig:
@@ -27,12 +30,11 @@ class DlpSourceConfig:
          recurrence_schedule: How often to run the DLP scan and update the tags
          run_on_first_execution: True if we should run on the first time we ingest a new table
     """
+
     results_dataset_id: str
     template_name: str
     policy_tag_config: PolicyTagConfig
     rows_limit_percent: int = 10
-    min_match_count:int = 1
-    recurrence_schedule: str = "0 0 1 * *" # First day of every month
+    min_match_count: int = 1
+    recurrence_schedule: str = "0 0 1 * *"  # First day of every month
     run_on_first_execution: bool = True
-
-

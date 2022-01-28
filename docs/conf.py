@@ -13,52 +13,52 @@ sys.path.insert(0, os.path.abspath("."))
 
 # -- Project information
 
-project = 'GCP Airflow Foundations'
-copyright = '2021, Badal.io'
-author = 'Badal'
+project = "GCP Airflow Foundations"
+copyright = "2021, Badal.io"
+author = "Badal"
 
-release = '0.2.6'
-version = '0.2.6'
+release = "0.2.6"
+version = "0.2.6"
 
 # -- General configuration
 
 extensions = [
-    'sphinx.ext.doctest',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
+    "sphinx.ext.doctest",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.autosectionlabel'
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.autosectionlabel",
 ]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),
-    "airflow": ("https://airflow.apache.org/", None)
+    "airflow": ("https://airflow.apache.org/", None),
 }
 
-intersphinx_disabled_domains = ['std']
+intersphinx_disabled_domains = ["std"]
 
 autoclass_content = "both"
 autodoc_default_options = {"members": True}
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # -- Options for HTML output
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # -- Options for EPUB output
-epub_show_urls = 'footnote'
+epub_show_urls = "footnote"
 
 # Napoleon settings
 napoleon_google_docstring = True

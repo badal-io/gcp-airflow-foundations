@@ -13,16 +13,17 @@ from airflow.utils.helpers import build_airflow_url_with_query
 from airflow.utils.session import provide_session
 from airflow.utils.state import State
 
-DELIMITER = '.'
+DELIMITER = "."
 
 # TO-DO: add exception in the source base class to ensure the delimiter is not used in the source/table names
+
 
 class TableIngestionSensor(BaseSensorOperator):
     """
     Waits for table ingestion DAGs to complete for a
     specific execution_date
 
-    :param external_source_tables: A map whose keys are the sources 
+    :param external_source_tables: A map whose keys are the sources
         to wait for and the values are a list of regex expressions for each source.
         The regex expressions will be used to find matching DAGs. For example:
 
@@ -50,21 +51,23 @@ class TableIngestionSensor(BaseSensorOperator):
     :type execution_delta: Optional[datetime.timedelta]
     """
 
-    template_fields = ['external_source_tables']
-    ui_color = '#19647e'
+    template_fields = ["external_source_tables"]
+    ui_color = "#19647e"
 
     def __init__(
         self,
         *,
         external_source_tables: dict,
-        mode: Optional[str] = 'reschedule',
+        mode: Optional[str] = "reschedule",
         allowed_states: Optional[Iterable[str]] = None,
         failed_states: Optional[Iterable[str]] = None,
         execution_delta: Optional[datetime.timedelta] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.allowed_states = list(allowed_states) if allowed_states else [State.SUCCESS]
+        self.allowed_states = (
+            list(allowed_states) if allowed_states else [State.SUCCESS]
+        )
         self.failed_states = list(failed_states) if failed_states else []
 
         total_states = self.allowed_states + self.failed_states
@@ -75,28 +78,32 @@ class TableIngestionSensor(BaseSensorOperator):
                 f"Duplicate values provided as allowed "
                 f"`{self.allowed_states}` and failed states `{self.failed_states}`"
             )
-       
+
         self.execution_delta = execution_delta
         self.external_source_tables = external_source_tables
 
     @provide_session
     def poke(self, context, session=None):
         if self.execution_delta:
-            dttm = context['execution_date'] - self.execution_delta
+            dttm = context["execution_date"] - self.execution_delta
         else:
-            dttm = context['execution_date']
+            dttm = context["execution_date"]
 
         dttm_filter = [dttm]
-        serialized_dttm_filter = ','.join(dt.isoformat() for dt in dttm_filter)
+        # serialized_dttm_filter = ",".join(dt.isoformat() for dt in dttm_filter)
 
-        count_allowed = self.get_count(dttm_filter, context, session, self.allowed_states)
+        count_allowed = self.get_count(
+            dttm_filter, context, session, self.allowed_states
+        )
 
         count_failed = -1
         if self.failed_states:
-            count_failed = self.get_count(dttm_filter, context, session, self.failed_states)
+            count_failed = self.get_count(
+                dttm_filter, context, session, self.failed_states
+            )
 
         if count_failed == len(dttm_filter):
-            pass # TO-DO: define behaviour if any of the dependent DAGs have failed. Maybe provide list of essential tables?
+            pass  # TO-DO: define behaviour if any of the dependent DAGs have failed. Maybe provide list of essential tables?
 
         return count_allowed == 1
 
@@ -111,11 +118,10 @@ class TableIngestionSensor(BaseSensorOperator):
         :type states: list
         :return: count of record against the filters
         """
-        TI = TaskInstance
         DR = DagRun
-        
+
         external_dag_ids = self.get_external_dag_ids(context=context, session=session)
-        
+
         expected_count = len(external_dag_ids)
         count = (
             session.query(func.count())
@@ -128,26 +134,26 @@ class TableIngestionSensor(BaseSensorOperator):
         )
 
         self.log.info(
-            'Current count of completed DAGs is %s. The expected DAG count is %s',
+            "Current count of completed DAGs is %s. The expected DAG count is %s",
             count,
-            expected_count
+            expected_count,
         )
-            
+
         return count / expected_count
 
     def get_external_dag_ids(self, context, session) -> list:
         """
         Retrieve a list of external DAG IDs based on the provided source & table combinations
         """
-        schedule_interval = context['dag'].schedule_interval
+        schedule_interval = context["dag"].schedule_interval
 
         external_dag_ids = []
 
         # Query all active dags
-        query = session.query(DagModel).filter(DagModel.is_active==True).all()
+        query = session.query(DagModel).filter(DagModel.is_active is True).all()
 
         if len(query) == 0:
-            raise AirflowException(f'No active dags found.')
+            raise AirflowException(f"No active dags found.")
 
         schedule_map = {}
         source_dag_map = {}
@@ -159,41 +165,55 @@ class TableIngestionSensor(BaseSensorOperator):
                 continue
 
             source = dag_id.split(DELIMITER)[0]
-            
+
             if source in source_dag_map:
                 source_dag_map[source].append(dag_id)
             else:
                 source_dag_map[source] = [dag_id]
-        
+
         if len(source_dag_map) == 0:
-            raise AirflowException(f'Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly.')
+            raise AirflowException(
+                f"Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly."
+            )
 
         for source, tables in self.external_source_tables.items():
             source_dags = source_dag_map.get(source, None)
 
             if not source_dags:
-                raise AirflowException(f'No active dags found for source {source}.')
-            
+                raise AirflowException(f"No active dags found for source {source}.")
+
             dags = []
             for regex in tables:
                 try:
                     table_dags = [
-                        dag for dag in source_dags if re.match(regex, dag.split(DELIMITER)[1])
+                        dag
+                        for dag in source_dags
+                        if re.match(regex, dag.split(DELIMITER)[1])
                     ]
                 except re.error:
-                    raise AirflowException(f'The regex expression \'{regex}\' is invalid.')
+                    raise AirflowException(
+                        f"The regex expression '{regex}' is invalid."
+                    )
 
                 if not table_dags:
-                    raise AirflowException(f'No active dags found for source {source} using regex: \"{regex}\".')
+                    raise AirflowException(
+                        f'No active dags found for source {source} using regex: "{regex}".'
+                    )
 
-                if not all([schedule_interval == schedule_map[dag] for dag in table_dags]):
-                    raise AirflowException(f'Incompatible schedule intervals with that of the main DAG: {schedule_interval}.')
+                if not all(
+                    [schedule_interval == schedule_map[dag] for dag in table_dags]
+                ):
+                    raise AirflowException(
+                        f"Incompatible schedule intervals with that of the main DAG: {schedule_interval}."
+                    )
 
                 dags.extend(table_dags)
 
             dags = list(set(dags))
             external_dag_ids.extend(dags)
 
-            self.log.info('%s dependent DAGs found for source %s: %s.', len(dags), source, dags)
-                        
+            self.log.info(
+                "%s dependent DAGs found for source %s: %s.", len(dags), source, dags
+            )
+
         return list(set(external_dag_ids))

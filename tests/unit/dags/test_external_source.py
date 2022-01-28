@@ -2,7 +2,7 @@ import os
 import pytest
 import unittest
 
-import airflow 
+import airflow
 
 from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.parse_dags import DagParser
@@ -21,7 +21,7 @@ class TestExternalSource(unittest.TestCase):
         assert CustomDagBuilder in DagBuilder.sources
 
     def test_dag_parser(self):
-        parser = DagParser() 
+        parser = DagParser()
         parser.conf_location = self.conf_location
         dags = parser.parse_dags()
 
@@ -37,7 +37,9 @@ class TestInvalidExternalSource(unittest.TestCase):
 
     def test_dag_parser(self):
         with pytest.raises(AirflowException) as ctx:
-            parser = DagParser() 
+            parser = DagParser()
             parser.conf_location = self.conf_location
             dags = parser.parse_dags()
-        assert str(ctx.value) == "Source \"INVALID_SOURCE\" is not found in DagBuilder Class"
+        assert (
+            str(ctx.value) == 'Source "INVALID_SOURCE" is not found in DagBuilder Class'
+        )

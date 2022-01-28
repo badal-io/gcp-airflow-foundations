@@ -1,44 +1,46 @@
-import pytest
-import logging
-import uuid
-import hashlib
-from datetime import datetime
 import pandas as pd
-from time import sleep
-
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
-from airflow import DAG
-
+import pytest
+import uuid
 from airflow.providers.google.cloud.operators.bigquery import (
-    BigQueryCreateEmptyTableOperator
+    BigQueryCreateEmptyTableOperator,
 )
-
-from tests.integration.conftest import run_task, run_task_with_pre_execute
-
-from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
-
-from gcp_airflow_foundations.base_class.ods_metadata_config import OdsTableMetadataConfig
-from gcp_airflow_foundations.enums.ingestion_type import IngestionType
-from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
-from gcp_airflow_foundations.common.gcp.ods.schema_utils import parse_ods_schema
-
 from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
+from time import sleep
 
-from airflow.models import TaskInstance
+from gcp_airflow_foundations.base_class.ods_metadata_config import (
+    OdsTableMetadataConfig,
+)
+from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
+from gcp_airflow_foundations.common.gcp.ods.schema_utils import parse_ods_schema
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import (
+    MergeBigQueryODS,
+)
+from tests.integration.conftest import run_task, run_task_with_pre_execute
+
 
 class TestOdsMerge(object):
-    """ 
+    """
         End-to-end testing for ODS table ETL. Steps:
-        
+
             1) Mock data are loaded to staging dataset
             2) MergeBigQueryODS operator is used to insert the staging data to the ODS table
             3) The rows of the ODS table are queried after every insert operation to validate that they match the expected rows
 
         The tables are cleaned up at the end of the test
     """
+
     @pytest.fixture(autouse=True)
-    def setup(self, test_dag, project_id, staging_dataset, target_dataset, target_table_id, mock_data_rows):
+    def setup(
+        self,
+        test_dag,
+        project_id,
+        staging_dataset,
+        target_dataset,
+        target_table_id,
+        mock_data_rows,
+    ):
         self.test_dag = test_dag
         self.project_id = project_id
         self.staging_dataset = staging_dataset
@@ -47,32 +49,38 @@ class TestOdsMerge(object):
         self.mock_data_rows = mock_data_rows
 
         self.client = bigquery.Client(project=project_id)
-        self.target_table_ref = self.client.dataset(target_dataset).table(target_table_id)
+        self.target_table_ref = self.client.dataset(target_dataset).table(
+            target_table_id
+        )
 
-        self.columns = ["customerID","key_id","city_name"]
-        self.surrogate_keys = ["customerID","key_id"]
-        self.column_mapping = {i:i for i in self.columns}
+        self.columns = ["customerID", "key_id", "city_name"]
+        self.surrogate_keys = ["customerID", "key_id"]
+        self.column_mapping = {i: i for i in self.columns}
         self.ingestion_type = IngestionType.INCREMENTAL
         self.ods_table_config = OdsTableConfig(
             ods_metadata=OdsTableMetadataConfig(
-                hash_column_name='af_metadata_row_hash', 
-                primary_key_hash_column_name='af_metadata_primary_key_hash', 
-                ingestion_time_column_name='af_metadata_inserted_at', 
-                update_time_column_name='af_metadata_updated_at'
-            ), 
-            merge_type='SG_KEY_WITH_HASH'
+                hash_column_name="af_metadata_row_hash",
+                primary_key_hash_column_name="af_metadata_primary_key_hash",
+                ingestion_time_column_name="af_metadata_inserted_at",
+                update_time_column_name="af_metadata_updated_at",
+            ),
+            merge_type="SG_KEY_WITH_HASH",
         )
 
         self.schema_fields = [
-            {"name":"customerID", "type":"STRING", "mode":"NULLABLE"},
-            {"name":"key_id", "type":"INTEGER", "mode":"NULLABLE"},
-            {"name":"city_name", "type":"STRING", "mode":"NULLABLE"}
+            {"name": "customerID", "type": "STRING", "mode": "NULLABLE"},
+            {"name": "key_id", "type": "INTEGER", "mode": "NULLABLE"},
+            {"name": "city_name", "type": "STRING", "mode": "NULLABLE"},
         ]
 
-        self.bq_schema_fields = [SchemaField.from_api_repr(i) for i in self.schema_fields]
+        self.bq_schema_fields = [
+            SchemaField.from_api_repr(i) for i in self.schema_fields
+        ]
 
     def insert_mock_data(self):
-        staging_table_id = f"{self.project_id}.{self.staging_dataset}.{self.target_table_id}"
+        staging_table_id = (
+            f"{self.project_id}.{self.staging_dataset}.{self.target_table_id}"
+        )
         table = bigquery.Table(staging_table_id, schema=self.bq_schema_fields)
         self.client.create_table(table)
 
@@ -86,7 +94,7 @@ class TestOdsMerge(object):
     def create_ods(self):
         ods_schema_fields = parse_ods_schema(
             schema_fields=self.schema_fields,
-            ods_metadata=self.ods_table_config.ods_metadata
+            ods_metadata=self.ods_table_config.ods_metadata,
         )
 
         create_table = BigQueryCreateEmptyTableOperator(
@@ -96,16 +104,20 @@ class TestOdsMerge(object):
             schema_fields=ods_schema_fields,
             time_partitioning=None,
             exists_ok=True,
-            dag=self.test_dag
+            dag=self.test_dag,
         )
 
         run_task(create_table)
 
     def clean_up(self):
-        staging_table_ref = self.client.dataset(self.staging_dataset).table(self.target_table_id)
+        staging_table_ref = self.client.dataset(self.staging_dataset).table(
+            self.target_table_id
+        )
         self.client.delete_table(staging_table_ref)
 
-        target_table_ref = self.client.dataset(self.target_dataset).table(f"{self.target_table_id}_ODS_INCREMENTAL")
+        target_table_ref = self.client.dataset(self.target_dataset).table(
+            f"{self.target_table_id}_ODS_INCREMENTAL"
+        )
         self.client.delete_table(target_table_ref)
 
     def test_merge_ods(self):
@@ -124,20 +136,24 @@ class TestOdsMerge(object):
             columns=self.columns,
             ingestion_type=self.ingestion_type,
             ods_table_config=self.ods_table_config,
-            dag=self.test_dag
+            dag=self.test_dag,
         )
 
         run_task_with_pre_execute(insert)
 
-        sql = f""" 
-            SELECT 
+        sql = f"""
+            SELECT
                 customerID, key_id, city_name
-            FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_ODS_INCREMENTAL 
+            FROM {self.project_id}.{self.target_dataset}.{self.target_table_id}_ODS_INCREMENTAL
             ORDER BY key_id ASC"""
 
         query_config = bigquery.QueryJobConfig(use_legacy_sql=False)
 
-        query_results = self.client.query(sql, job_config=query_config).to_dataframe().to_dict(orient='record')
+        query_results = (
+            self.client.query(sql, job_config=query_config)
+            .to_dataframe()
+            .to_dict(orient="record")
+        )
 
         expected_rows = self.mock_data_rows[:]
 

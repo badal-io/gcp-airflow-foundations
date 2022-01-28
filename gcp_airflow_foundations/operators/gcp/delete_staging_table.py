@@ -1,7 +1,7 @@
 from typing import Optional
 
 from airflow.providers.google.cloud.operators.bigquery import (
-    BigQueryDeleteTableOperator
+    BigQueryDeleteTableOperator,
 )
 
 from airflow.utils.decorators import apply_defaults
@@ -28,9 +28,9 @@ class BigQueryDeleteStagingTableOperator(BigQueryDeleteTableOperator):
         super(BigQueryDeleteStagingTableOperator, self).__init__(
             deletion_dataset_table=deletion_dataset_table,
             ignore_if_missing=True,
-            **kwargs
+            **kwargs,
         )
 
     def pre_execute(self, context) -> None:
-        ds = context['ds']
+        ds = context["ds"]
         self.deletion_dataset_table = f"{self.deletion_dataset_table}_{ds}"

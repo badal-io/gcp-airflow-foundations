@@ -17,22 +17,16 @@ class CustomBigQueryHook(BigQueryHook):
     :param gcp_conn_id: The Airflow connection used for GCP credentials.
     :type gcp_conn_id: Optional[str]
     """
-    def __init__(
-        self,
-        gcp_conn_id: str,
-        **kwargs
-    ) -> None:
-        super().__init__(
-            gcp_conn_id=gcp_conn_id,
-            **kwargs
-        )
+
+    def __init__(self, gcp_conn_id: str, **kwargs) -> None:
+        super().__init__(gcp_conn_id=gcp_conn_id, **kwargs)
 
     def load_nested_table_from_dataframe(
         self,
         df: pd.DataFrame,
         project_id: str,
         destination_dataset_table: str,
-        write_disposition: str = 'WRITE_TRUNCATE'
+        write_disposition: str = "WRITE_TRUNCATE",
     ) -> bigquery.job.LoadJob:
         """
         Loads a pandas.DataFrame to a BigQuery table. It supports nested fields.
@@ -53,9 +47,7 @@ class CustomBigQueryHook(BigQueryHook):
 
         writer = pyarrow.BufferOutputStream()
         pq.write_table(
-            pyarrow.Table.from_pandas(df),
-            writer,
-            use_compliant_nested_type=True
+            pyarrow.Table.from_pandas(df), writer, use_compliant_nested_type=True
         )
         reader = pyarrow.BufferReader(writer.getvalue())
 
@@ -69,4 +61,4 @@ class CustomBigQueryHook(BigQueryHook):
 
         return client.load_table_from_file(
             reader, destination_dataset_table, job_config=job_config
-        )     
+        )

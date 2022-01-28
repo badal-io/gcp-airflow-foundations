@@ -32,9 +32,11 @@ class SFTPFilesExistenceSensor(BaseSensorOperator):
     :type sftp_conn_id: str
     """
 
-    template_fields = ('paths',)
+    template_fields = ("paths",)
 
-    def __init__(self, *, paths: list, sftp_conn_id: str = 'sftp_default', **kwargs) -> None:
+    def __init__(
+        self, *, paths: list, sftp_conn_id: str = "sftp_default", **kwargs
+    ) -> None:
         super().__init__(**kwargs)
         self.paths = paths
         self.hook: Optional[SFTPHook] = None
@@ -43,10 +45,12 @@ class SFTPFilesExistenceSensor(BaseSensorOperator):
     def poke(self, context: dict) -> bool:
         self.hook = SFTPHook(self.sftp_conn_id)
         for path in self.paths:
-            self.log.info('Poking for %s', path)
+            self.log.info("Poking for %s", path)
             try:
                 mod_time = self.hook.get_mod_time(path)
-                self.log.info('Found File %s last modified: %s', str(path), str(mod_time))
+                self.log.info(
+                    "Found File %s last modified: %s", str(path), str(mod_time)
+                )
             except OSError as e:
                 if e.errno != SFTP_NO_SUCH_FILE:
                     raise e
