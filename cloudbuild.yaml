@@ -4,8 +4,16 @@ substitutions:
   _BUILD_IMG_NAME: airflow2_cicd:latest
   _PYTHON_VERSION: '3.8'
 steps:
-# - Build a new Airflow2 image.
+  # - Build a new Airflow2 image.
   # [START build-airflow2]
+#  - name: 'gcr.io/cloud-builders/docker'
+#    waitFor: ['-']
+#    entrypoint: 'bash'
+#    args:
+#      - '-c'
+#      - |
+#          docker pull gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} || exit 0
+#    id: 'pull-airflow2'
   - name: 'gcr.io/cloud-builders/docker'
     waitFor: ['-']
     entrypoint: 'bash'
@@ -14,14 +22,22 @@ steps:
       - |
         docker build -t gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
         --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
-        -f docker/cloudbuild.Dockerfile .
-    #env:
-    #  - 'FOO=$_BAR'
+        --cache-from gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
+        -f docker/Dockerfile .
     dir: '.'
     id: 'build-airflow2'
   # [END build-airflow2]
 
-# - Unit tests.
+#  - name: 'gcr.io/${PROJECT_ID}/${_COMPOSER_BUILD_IMG_NAME}'
+#    waitFor: ['build-airflow2']
+#    entrypoint: 'bash'
+#    args:
+#      - '-c'
+#      - |
+#          pytest tests/unit
+#    id: "unit-test"
+
+  # - Unit tests.
   # [START unit-test]
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
