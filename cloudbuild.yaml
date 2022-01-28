@@ -57,7 +57,7 @@ steps:
     entrypoint: 'bash'
     args:
       - '-c'
-      - 'python pytest tests/unit -vv && py3clean .'
+      - 'pip install --no-cache-dir -r docker/requirements-ci.txt'
     id: "unit-test-2"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
