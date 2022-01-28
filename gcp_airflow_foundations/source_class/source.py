@@ -61,8 +61,6 @@ class DagBuilder(ABC):
             )
             logging.info(f"table_default_task_args {table_default_task_args}")
 
-            start_date = table_default_task_args["start_date"]
-
             kwargs = data_source.dag_args if data_source.dag_args else {}
 
             with DAG(

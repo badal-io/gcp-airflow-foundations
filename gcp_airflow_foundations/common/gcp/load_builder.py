@@ -38,7 +38,6 @@ def load_builder(
     """
 
     project_id = data_source.gcp_project
-    table_id = table_config.table_name
     dataset_id = data_source.dataset_data_name
     dataset_hds_id = data_source.dataset_hds_override
     landing_zone_dataset = data_source.landing_zone_options.landing_zone_dataset

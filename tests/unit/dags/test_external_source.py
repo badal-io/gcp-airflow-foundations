@@ -39,7 +39,7 @@ class TestInvalidExternalSource(unittest.TestCase):
         with pytest.raises(AirflowException) as ctx:
             parser = DagParser()
             parser.conf_location = self.conf_location
-            dags = parser.parse_dags()
+            parser.parse_dags()
         assert (
             str(ctx.value) == 'Source "INVALID_SOURCE" is not found in DagBuilder Class'
         )

@@ -127,7 +127,7 @@ class TestDlpSubTask(unittest.TestCase):
 
         taskgroup = TaskGroup(dlp_policy_tag_taskgroup_name(), dag=self.dag)
 
-        first_dlp_task = dlp_to_datacatalog_builder(
+        dlp_to_datacatalog_builder(
             datastore="ods",
             taskgroup=taskgroup,
             next_task=done,
@@ -150,10 +150,10 @@ class TestDlpSubTask(unittest.TestCase):
             "dlp_policy_tags.delete_old_dlp_results_ods"
         ]
         scan_table_task = taskgroup.children["dlp_policy_tags.scan_table_ods"]
-        read_results_task = taskgroup.children["dlp_policy_tags.read_dlp_results_ods"]
-        update_bq_policy_tags_ods = taskgroup.children[
-            "dlp_policy_tags.update_bq_policy_tags_ods"
-        ]
+        # read_results_task = taskgroup.children["dlp_policy_tags.read_dlp_results_ods"]
+        # update_bq_policy_tags_ods = taskgroup.children[
+        #     "dlp_policy_tags.update_bq_policy_tags_ods"
+        # ]
 
         run_task(task=delete_old_dlp_results_task)
 

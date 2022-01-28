@@ -3,6 +3,8 @@ import pytz
 import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.operators.dummy import DummyOperator
+from airflow.utils.session import create_session, provide_session
+from airflow.utils.state import State
 from datetime import datetime
 
 from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
@@ -16,9 +18,6 @@ from gcp_airflow_foundations.source_class.schema_source_config import (
 TASK_ID = "test-bq-generic-operator"
 DEFAULT_DATE = pytz.utc.localize(datetime(2017, 8, 1))
 TEST_DAG_ID = "test-bigquery-operators"
-
-from airflow.utils.session import create_session, provide_session
-from airflow.utils.state import State
 
 expected_xcom = {
     "source_table_columns": [

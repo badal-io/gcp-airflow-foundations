@@ -3,6 +3,8 @@ import pytz
 import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.operators.dummy import DummyOperator
+from airflow.utils.session import create_session, provide_session
+from airflow.utils.state import State
 from datetime import datetime
 from unittest import mock
 
@@ -20,9 +22,6 @@ TEST_GCP_PROJECT_ID = "test-project"
 TEST_TABLE_ID = "test-table-id"
 DEFAULT_DATE = pytz.utc.localize(datetime(2015, 1, 1))
 TEST_DAG_ID = "test-bigquery-operators"
-
-from airflow.utils.session import create_session, provide_session
-from airflow.utils.state import State
 
 
 @provide_session

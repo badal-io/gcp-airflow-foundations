@@ -542,5 +542,5 @@ class TestTableIngestionSensor(unittest.TestCase):
             execute_task(task=op, execution_date=DEFAULT_DATE)
         assert (
             str(ctx.value)
-            == f"Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly."
+            == "Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly."
         )

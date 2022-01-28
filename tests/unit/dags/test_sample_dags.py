@@ -28,7 +28,7 @@ def test_gcs_tasks(gcs_dag, gcs_dag_task_ids):
             "ftp_taskgroup.get_file_list",
             "ftp_taskgroup.wait_for_files_to_ingest",
             "ftp_taskgroup.load_gcs_to_landing_zone",
-            #'ftp_taskgroup.delete_gcs_files',
+            # 'ftp_taskgroup.delete_gcs_files',
             "schema_parsing",
             "create_ods_merge_taskgroup.create_ods_table",
             "create_ods_merge_taskgroup.schema_migration",

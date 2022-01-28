@@ -3,6 +3,8 @@ import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.operators.dummy import DummyOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.utils.session import create_session, provide_session
+from airflow.utils.state import State
 from datetime import datetime
 
 from gcp_airflow_foundations.base_class.ods_metadata_config import (
@@ -21,10 +23,6 @@ TABLE_NAME = "ga_sessions"
 TASK_ID = "test-bq-generic-operator"
 DEFAULT_DATE = pytz.utc.localize(datetime(2017, 7, 31))
 TEST_DAG_ID = "test-bigquery-operators"
-
-from airflow.utils.session import create_session, provide_session
-from airflow.utils.state import State
-
 SURROGATE_KEYS = ["visitId", "date", "userId", "clientId"]
 SOURCE_TABLE_COLUMNS = [
     "visitorId",

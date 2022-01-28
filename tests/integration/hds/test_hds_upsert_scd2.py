@@ -3,6 +3,8 @@ import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.operators.dummy import DummyOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.utils.session import create_session, provide_session
+from airflow.utils.state import State
 from datetime import datetime
 
 from gcp_airflow_foundations.base_class.hds_metadata_config import (
@@ -23,8 +25,6 @@ TASK_ID = "test-bq-generic-operator"
 DEFAULT_DATE = pytz.utc.localize(datetime(2017, 7, 31))
 TEST_DAG_ID = "test-bigquery-operators"
 
-from airflow.utils.session import create_session, provide_session
-from airflow.utils.state import State
 
 SURROGATE_KEYS = ["visitId", "fullVisitorId"]
 SOURCE_TABLE_COLUMNS = [
@@ -92,7 +92,7 @@ class TestIncrementalUpsertSCD2HDS(unittest.TestCase):
         )
 
         hds_upsert_data = MergeBigQueryHDS(
-            task_id=f"upsert_hds_scd2",
+            task_id="upsert_hds_scd2",
             project_id=PROJECT_ID,
             stg_dataset_name=STAGING_DATASET,
             data_dataset_name=DATASET,
@@ -169,7 +169,7 @@ class TestFullUpsertSCD2HDS(unittest.TestCase):
         )
 
         hds_upsert_data = MergeBigQueryHDS(
-            task_id=f"upsert_hds_scd2",
+            task_id="upsert_hds_scd2",
             project_id=PROJECT_ID,
             stg_dataset_name=STAGING_DATASET,
             data_dataset_name=DATASET,

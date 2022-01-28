@@ -224,16 +224,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
 
     def get_list_of_files(self, table_config, **kwargs):
         # XCom push the list of files
-        bucket = self.config.source.extra_options["gcs_bucket"]
         if "metadata_file" in table_config.extra_options.get("gcs_table_config"):
-            metadata_file_name = table_config.extra_options.get("gcs_table_config")[
-                "metadata_file"
-            ]
-            metadata_file = self.gcs_hook.download(
-                bucket_name=bucket,
-                object_name=metadata_file_name,
-                filename="metadata.csv",
-            )
             file_list = []
             with open("metadata.csv", newline="") as f:
                 for line in f:

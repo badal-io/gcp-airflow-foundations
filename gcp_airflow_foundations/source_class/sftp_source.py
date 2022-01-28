@@ -216,7 +216,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             gcs_bucket_prefix += "/"
 
         table_name = table_config.table_name
-        source_path_prefix = dir_prefix + "/*"
         destination_path_prefix = gcs_bucket_prefix + table_name + "/" + ds
 
         if (
@@ -236,9 +235,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             sftp_hook.retrieve_file(dir_prefix + "/" + file, my_path + "/" + file)
 
         gcs_hook = GCSHook()
-        local_files = [
-            f for f in os.listdir(my_path) if os.path.isfile(os.join(my_path, f))
-        ]
         for file in files_to_load:
             obj = destination_path_prefix + "/" + file
             gcs_hook.upload(
@@ -264,7 +260,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         **kwargs,
     ):
         ds = kwargs["ds"]
-        ti = kwargs["ti"]
 
         airflow_date_template = self.config.source.extra_options["file_source_config"][
             "airflow_date_template"
@@ -286,7 +281,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             "full_dir_download"
         ]
         table_name = table_config.table_name
-        source_path_prefix = dir_prefix + "/*"
         destination_path_prefix = gcs_bucket_prefix + table_name + "/" + ds
 
         if (
@@ -323,7 +317,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         # else:
         #    files_to_upload = [x for x in map if f"{date_column}={source_file_date}" in x]
 
-        flag_file = flag_file_path.split("/")[-1]
         # delete prefix up until the external partitions
         local_file_prefix_to_drop = ""
         if not files_to_upload == []:
@@ -335,7 +328,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         local_files_list = [my_path + "/" + file for file in files_to_upload]
 
         for remote_file in files_to_upload:
-            conn = sftp_hook.get_conn()
             file = my_path + "/" + remote_file
             path_to_create = file.rsplit("/", 1)[0]
             if not os.path.exists(path_to_create):
@@ -406,7 +398,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         tables = self.config.tables
         for table_config in tables:
             # try and parse as SFTPTableConfig
-            sftp_table_config = from_dict(
+            from_dict(
                 data_class=SFTPTableConfig,
                 data=table_config.extra_options.get("sftp_table_config"),
             )

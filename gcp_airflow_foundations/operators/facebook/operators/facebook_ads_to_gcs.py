@@ -168,7 +168,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
                     self.log.info(
                         "Extracting data for account %s completed", facebook_acc_id
                     )
-                except:
+                except:  # noqa: E722
                     self.log.info(
                         "Extracting data for account %s failed. Will retry later.",
                         facebook_acc_id,

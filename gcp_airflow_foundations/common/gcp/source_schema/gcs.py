@@ -17,8 +17,6 @@ def read_schema_from_gcs(
         Helper method to load table schema from a GCS URI
     """
 
-    bq_hook = BigQueryHook(bigquery_conn_id=bigquery_conn_id, delegate_to=None)
-
     parsed_url = urlparse(gcs_schema_object)
     gcs_bucket = parsed_url.netloc
     gcs_object = parsed_url.path.lstrip("/")

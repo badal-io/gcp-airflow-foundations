@@ -3,6 +3,8 @@ import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.models.xcom import XCOM_RETURN_KEY
 from airflow.operators.dummy import DummyOperator
+from airflow.utils.session import create_session, provide_session
+from airflow.utils.state import State
 from datetime import datetime
 from unittest import mock
 from unittest.mock import MagicMock
@@ -26,9 +28,6 @@ TEST_STG_TABLE_ID = "test-staging-table-id"
 DEFAULT_DATE = pytz.utc.localize(datetime(2021, 1, 1))
 TEST_DAG_ID = "test-bigquery-operators"
 SCHEMA_FIELDS = [{"name": "column", "type": "STRING"}]
-
-from airflow.utils.session import create_session, provide_session
-from airflow.utils.state import State
 
 
 @provide_session
@@ -173,8 +172,6 @@ class TestMergeBigQuerySCD2HDS(unittest.TestCase):
         operator.pre_execute(context=self.template_context)
 
         operator.execute(MagicMock())
-
-        ds = self.template_context["ds"]
 
         sql = f"""
             MERGE `{TEST_DATASET}.{TEST_TABLE_ID}` T

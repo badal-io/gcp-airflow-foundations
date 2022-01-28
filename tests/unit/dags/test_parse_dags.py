@@ -63,5 +63,5 @@ class TestInvalidDagParser(unittest.TestCase):
 
     def test_load_config(self):
         with pytest.raises(AirflowException) as ctx:
-            configs = load_tables_config_from_dir(self.conf_location)
+            load_tables_config_from_dir(self.conf_location)
         assert str(ctx.value) == 'missing value for field "source.location"'

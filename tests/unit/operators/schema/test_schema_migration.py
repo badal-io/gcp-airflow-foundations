@@ -12,6 +12,9 @@ from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_aud
 from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import (
     MigrateSchema,
 )
+from airflow.utils.session import create_session, provide_session
+from airflow.utils.state import State
+
 
 TASK_ID = "test-bq-generic-operator"
 TEST_DATASET = "test-dataset"
@@ -20,9 +23,6 @@ TEST_TABLE_ID = "test-table-id"
 DEFAULT_DATE = pytz.utc.localize(datetime(2015, 1, 1))
 TEST_DAG_ID = "test-bigquery-operators"
 SCHEMA_FIELDS = [{"name": "column", "type": "STRING"}]
-
-from airflow.utils.session import create_session, provide_session
-from airflow.utils.state import State
 
 
 @provide_session

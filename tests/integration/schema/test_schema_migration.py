@@ -5,6 +5,7 @@ import unittest
 from airflow.exceptions import AirflowException
 from airflow.models import TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.utils.session import create_session, provide_session
 from datetime import datetime
 
 from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
@@ -16,7 +17,6 @@ TASK_ID = "test-bq-generic-operator"
 DEFAULT_DATE = pytz.utc.localize(datetime(2017, 8, 1))
 TEST_DAG_ID = "test-bigquery-operators"
 
-from airflow.utils.session import create_session, provide_session
 
 NEW_SCHEMA_FIELDS_ADDED_COLUMN = [
     {"name": "visitorId", "type": "INTEGER", "mode": "NULLABLE"},
@@ -220,5 +220,5 @@ class TestMigrateSchemaDataTypeChangeInvalid(unittest.TestCase):
             migrate_schema_ods.execute({})
         assert (
             str(ctx.value)
-            == f"Data type of column visitorId cannot be changed from INTEGER to DATETIME"
+            == "Data type of column visitorId cannot be changed from INTEGER to DATETIME"
         )

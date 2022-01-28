@@ -45,8 +45,6 @@ class TwilioToBQDagBuilder(DagBuilder):
             )
             logging.info(f"table_default_task_args {table_default_task_args}")
 
-            start_date = table_default_task_args["start_date"]
-
             with DAG(
                 dag_id=f"twilio_to_bq_{table_config.table_name}",
                 description=f"BigQuery load for {table_config.table_name}",
@@ -68,7 +66,7 @@ class TwilioToBQDagBuilder(DagBuilder):
                 )
 
                 # 2 Create task groups for loading data to ODS/HDS tables
-                taskgroups = load_builder(
+                load_builder(
                     project_id=data_source.gcp_project,
                     table_id=table_config.table_name,
                     dataset_id=data_source.dataset_data_name,
