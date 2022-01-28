@@ -27,7 +27,7 @@ COPY docker/requirements-ci.txt requirements-ci.txt
 RUN pip install --no-cache-dir -r requirements-ci.txt
 
 # - Install dependencies
-#COPY requirements.txt requirements.txt
+COPY requirements.txt requirements.txt
 #RUN pip install --no-cache-dir -r requirements.txt
 
 WORKDIR /opt/airflow
