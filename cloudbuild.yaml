@@ -77,5 +77,8 @@ steps:
 #    id: "unit-test"
   # [END unit-test]
 
+timeout: 1200s
+images:
+  - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 options:
   substitution_option: 'ALLOW_LOOSE'
