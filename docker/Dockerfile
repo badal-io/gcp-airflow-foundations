@@ -13,8 +13,11 @@ RUN chmod +x ./airflow-ci.sh
 RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
 
 # Install Py packages
-COPY docker/requirements-composer.txt .
-RUN pip install --no-cache-dir -r requirements-composer.txt
+# COPY docker/requirements-composer.txt .
+# RUN pip install --no-cache-dir -r requirements-composer.txt
+
+COPY docker/requirements-ci.txt requirements-ci.txt
+RUN pip install --no-cache-dir -r requirements-ci.txt
 
 # Initiaize Airflow DB
 RUN airflow db init
