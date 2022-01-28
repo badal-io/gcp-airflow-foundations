@@ -21,7 +21,7 @@ steps:
       - |
         docker build -t gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
         --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
-        --cache-from gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
+     #   --cache-from gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
         -f docker/Dockerfile .
     dir: '.'
     id: 'build-airflow2'
@@ -52,6 +52,13 @@ steps:
       - '-c'
       - 'python -m pip list'
     id: "python-list"
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'cat -r docker/requirements-ci.txt'
+    id: "unit-test-3"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: 'bash'
