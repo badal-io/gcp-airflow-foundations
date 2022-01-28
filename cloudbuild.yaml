@@ -54,19 +54,19 @@ steps:
       - '-c'
       - 'pip3 list'
     id: "python-list"
-  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
-    entrypoint: '/bin/bash'
-    args:
-      - '-c'
-      - 'cat docker/requirements-ci.txt'
-    id: "unit-test-3"
-  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
-    entrypoint: '/bin/bash'
-    args:
-      - '-c'
-      - 'pip3 install --no-cache-dir -r docker/requirements-ci.txt'
+#  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
+#    waitFor: ['build-airflow2']
+#    entrypoint: '/bin/bash'
+#    args:
+#      - '-c'
+#      - 'cat docker/requirements-ci.txt'
+#    id: "unit-test-3"
+#  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
+#    waitFor: ['build-airflow2']
+#    entrypoint: '/bin/bash'
+#    args:
+#      - '-c'
+#      - 'pip3 install --no-cache-dir -r docker/requirements-ci.txt'
     id: "unit-test-2"
 #  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
 #    waitFor: ['build-airflow2']
