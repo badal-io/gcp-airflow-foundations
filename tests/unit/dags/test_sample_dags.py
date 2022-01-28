@@ -28,7 +28,7 @@ def test_gcs_tasks(gcs_dag, gcs_dag_task_ids):
         'schema_parsing',
         'create_ods_merge_taskgroup.create_ods_table',
         'create_ods_merge_taskgroup.schema_migration',
-        'create_ods_merge_taskgroup.upsert_users_ODS',
+        'create_ods_merge_taskgroup.upsert_users',
         'delete_staging_table',
         'done',
     ])
@@ -46,7 +46,7 @@ def test_gcs_tasks_with_dlp(gcs_dlp_dag):
                                    'schema_parsing',
                                    'create_ods_merge_taskgroup.create_ods_table',
                                    'create_ods_merge_taskgroup.schema_migration',
-                                   'create_ods_merge_taskgroup.upsert_users_ODS',
+                                   'create_ods_merge_taskgroup.upsert_users',
                                    'delete_staging_table',
                                    'dlp_policy_tags.check_if_should_run_dlp',
                                    'dlp_policy_tags.delete_old_dlp_results_ods',

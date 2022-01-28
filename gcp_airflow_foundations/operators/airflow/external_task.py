@@ -171,7 +171,7 @@ class TableIngestionSensor(BaseSensorOperator):
         for source, tables in self.external_source_tables.items():
             source_dags = source_dag_map.get(source, None)
 
-            if not source_dags:
+            if source_dags is None:
                 raise AirflowException(f'No active dags found for source {source}.')
             
             dags = []
