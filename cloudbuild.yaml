@@ -51,7 +51,7 @@ steps:
     entrypoint: 'bash'
     args:
       - '-c'
-      - 'python -m pip list'
+      - 'pip3 list'
     id: "python-list"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
@@ -65,7 +65,7 @@ steps:
     entrypoint: 'bash'
     args:
       - '-c'
-      - 'pip install --no-cache-dir -r docker/requirements-ci.txt'
+      - 'pip3 install --no-cache-dir -r docker/requirements-ci.txt'
     id: "unit-test-2"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
