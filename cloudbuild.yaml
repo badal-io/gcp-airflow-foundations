@@ -51,10 +51,13 @@ steps:
   - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: '/bin/bash'
-    args:
-      - '-c'
-      - 'pip3 list'
+    args: ['-c', 'python', 'import sys; print(sys.path)']
     id: "python-list"
+  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: '/bin/bash'
+    args: ['-c', 'pip install -r requirements.txt']
+    id: "python-install"
 #  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
 #    waitFor: ['build-airflow2']
 #    entrypoint: '/bin/bash'
