@@ -67,14 +67,14 @@ steps:
 #    args:
 #      - '-c'
 #      - 'pip3 install --no-cache-dir -r docker/requirements-ci.txt'
-    id: "unit-test-2"
-#  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
-#    waitFor: ['build-airflow2']
-#    entrypoint: '/bin/bash'
-#    args:
-#      - '-c'
-#      - 'pytest tests/unit -vv && py3clean .'
-#    id: "unit-test"
+#    id: "unit-test-2"
+  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - 'pytest tests/unit -vv && py3clean .'
+    id: "unit-test"
   # [END unit-test]
 
 timeout: 1200s
