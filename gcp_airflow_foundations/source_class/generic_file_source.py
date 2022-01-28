@@ -126,9 +126,9 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         """
         pass
 
-    @abstractmethod
-    def load_to_landing_task(self, table_config):
-        pass
+    # @abstractmethod
+    # def load_to_landing_task(self, table_config):
+    #     pass
 
     @abstractmethod
     def delete_gcs_files(table_config, taskgroup):
@@ -166,7 +166,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         else:
             bucket = self.config.source.extra_options["gcs_bucket"]
             if self.file_table_config.metadata_file:
-                metadata_file = gcs_hook.download(
+                gcs_hook.download(
                     bucket_name=bucket,
                     object_name=self.file_table_config.metadata_file,
                     filename="metadata.csv",
@@ -260,7 +260,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                 )
                 bash.execute(context=kwargs)
             except Exception:
-                logging.info(f"Load into BQ landing zone failed.")
+                logging.info("Load into BQ landing zone failed.")
         else:
             # gcs->bq operator else
             if self.file_source_config.file_prefix_filtering:

@@ -180,7 +180,7 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
             params={"limit": "20000", "time_range": params["time_range"]},
             fields=[
                 "account_id",
-                #'name', TO-DO: troubleshoot why pyarrow fails to convert the `name` column
+                # 'name', TO-DO: troubleshoot why pyarrow fails to convert the `name` column
                 "daily_budget",
                 "effective_status",
                 "lifetime_budget",

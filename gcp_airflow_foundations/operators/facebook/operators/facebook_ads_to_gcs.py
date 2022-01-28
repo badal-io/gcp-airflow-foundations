@@ -102,11 +102,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
 
     def execute(self, context: dict):
 
-        dag_id = context["dag"].dag_id
         ds = context["ds"]
-
-        interval_start = datetime.strptime(ds, "%Y-%m-%d")
-        interval_end = interval_start + relativedelta(day=31)
 
         if not self.time_range:
             self.parameters["time_range"] = {"since": ds, "until": ds}
@@ -205,7 +201,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         job_config.parquet_options = parquet_options
         job_config.write_disposition = "WRITE_TRUNCATE"
 
-        job = client.load_table_from_file(
+        client.load_table_from_file(
             reader,
             f"{self.destination_project_dataset_table}_{ds}",
             job_config=job_config,

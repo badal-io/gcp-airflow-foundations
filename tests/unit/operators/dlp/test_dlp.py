@@ -1,24 +1,21 @@
+import pytz
 import unittest
+from airflow.operators.dummy import DummyOperator
+from airflow.utils import timezone
+from airflow.utils.task_group import TaskGroup
+from airflow.utils.trigger_rule import TriggerRule
+from datetime import datetime
+from test_utils import cleanup_xcom, clear_db_dags, setup_test_dag
 from unittest import mock
 
-from datetime import datetime
-import pytz
-from airflow.utils import timezone
-
-
+from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
+from gcp_airflow_foundations.base_class.dlp_source_config import PolicyTagConfig
+from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup import (
     dlp_to_datacatalog_builder,
     dlp_policy_tag_taskgroup_name,
 )
-from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
-from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
-from test_utils import cleanup_xcom, clear_db_dags, setup_test_dag
 from tests.unit.conftest import run_task
-from gcp_airflow_foundations.base_class.dlp_source_config import PolicyTagConfig
-from airflow.utils.task_group import TaskGroup
-from airflow.operators.dummy import DummyOperator
-from airflow.utils.trigger_rule import TriggerRule
-
 
 TASK_ID = "test-dlp"
 TEST_DATASET = "test-dataset"

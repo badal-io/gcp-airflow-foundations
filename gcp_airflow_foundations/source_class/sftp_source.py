@@ -1,29 +1,21 @@
-from dataclasses import fields
-from os import X_OK
-from urllib.parse import urlparse
 import logging
-from dacite import from_dict
-from dataclasses import dataclass
-from datetime import datetime
-import shutil
 import os
-import glob
-
-from airflow.operators.python_operator import PythonOperator
-from airflow.operators.dummy import DummyOperator
-from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from airflow.sensors.python import PythonSensor
+import shutil
 from airflow.models import Variable
-
+from airflow.operators.python_operator import PythonOperator
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.providers.sftp.hooks.sftp import SFTPHook
+from airflow.sensors.python import PythonSensor
+from dacite import from_dict
+from datetime import datetime
+
+from gcp_airflow_foundations.base_class.sftp_table_config import SFTPTableConfig
 from gcp_airflow_foundations.operators.api.sensors.sftp_sensor import (
     SFTPFilesExistenceSensor,
 )
 from gcp_airflow_foundations.source_class.generic_file_source import (
     GenericFileIngestionDagBuilder,
 )
-from gcp_airflow_foundations.common.gcp.load_builder import load_builder
-from gcp_airflow_foundations.base_class.sftp_table_config import SFTPTableConfig
 
 
 class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):

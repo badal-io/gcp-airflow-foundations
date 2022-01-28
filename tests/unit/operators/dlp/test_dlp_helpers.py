@@ -1,8 +1,9 @@
 import unittest
+
+from gcp_airflow_foundations.base_class.dlp_source_config import PolicyTagConfig
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_helpers import (
     results_to_bq_policy_tags,
 )
-from gcp_airflow_foundations.base_class.dlp_source_config import PolicyTagConfig
 
 
 class TestDlpSubTask(unittest.TestCase):

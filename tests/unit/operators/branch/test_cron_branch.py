@@ -1,7 +1,5 @@
 import datetime
 import unittest
-
-
 from airflow.models import DAG, DagRun, TaskInstance as TI
 from airflow.operators.dummy import DummyOperator
 from airflow.utils import timezone
@@ -11,7 +9,6 @@ from airflow.utils.state import State
 from gcp_airflow_foundations.operators.branch.BranchOnCronOperator import (
     BranchOnCronOperator,
 )
-
 
 DEFAULT_DATE = timezone.datetime(2020, 2, 5)  # Wednesday
 INTERVAL = datetime.timedelta(hours=12)

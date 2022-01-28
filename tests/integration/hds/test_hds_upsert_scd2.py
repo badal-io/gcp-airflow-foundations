@@ -1,32 +1,19 @@
-import unittest
-from unittest import mock
-from unittest.mock import MagicMock
-import os
-
-import pytest
-from google.cloud.exceptions import Conflict
-
-from datetime import datetime
 import pytz
-
+import unittest
+from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.operators.dummy import DummyOperator
-from airflow.exceptions import AirflowException
-from airflow.models import DAG, TaskInstance, XCom, DagBag, DagRun, DagTag, DagModel
-from airflow.models.xcom import XCOM_RETURN_KEY
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from datetime import datetime
 
-from gcp_airflow_foundations.operators.gcp.hds.hds_merge_table_operator import (
-    MergeBigQueryHDS,
-)
-from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.base_class.hds_metadata_config import (
     HdsTableMetadataConfig,
 )
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
-from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
-from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
-
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+from gcp_airflow_foundations.operators.gcp.hds.hds_merge_table_operator import (
+    MergeBigQueryHDS,
+)
 
 PROJECT_ID = "airflow-framework"
 STAGING_DATASET = "af_test_landing_zone"
@@ -38,7 +25,6 @@ TEST_DAG_ID = "test-bigquery-operators"
 
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
-from airflow.utils import timezone
 
 SURROGATE_KEYS = ["visitId", "fullVisitorId"]
 SOURCE_TABLE_COLUMNS = [

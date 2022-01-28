@@ -65,8 +65,6 @@ class SqlHelperHDS:
         )
 
     def create_scd2_sql_with_hash(self, ingestion_type):
-        comma = ","
-
         TEMPLATE = """
             MERGE `{target}` T
             USING ({source_query}) S

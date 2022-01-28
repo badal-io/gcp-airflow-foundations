@@ -1,19 +1,15 @@
 import logging
-import unittest
 import pytest
-
+import unittest
 from airflow.exceptions import AirflowException
-
 from airflow.models import DagBag, DagRun, DagTag, TaskInstance, DagModel
 from airflow.models.dag import DAG
-
+from airflow.utils.session import create_session
 from airflow.utils.state import State
 from airflow.utils.timezone import datetime
-from airflow.utils.session import create_session
 
 from gcp_airflow_foundations.operators.airflow.external_task import TableIngestionSensor
 from tests.unit.conftest import execute_task
-
 
 DEFAULT_DATE = datetime(2015, 1, 1)
 TEST_DAG_ID = "unit_test_dag"
@@ -512,7 +508,7 @@ class TestTableIngestionSensor(unittest.TestCase):
             execute_task(task=op, execution_date=DEFAULT_DATE)
         assert (
             str(ctx.value)
-            == f"Incompatible schedule intervals with that of the main DAG: @once."
+            == "Incompatible schedule intervals with that of the main DAG: @once."
         )
 
     def test_catch_delimiter_error(self):

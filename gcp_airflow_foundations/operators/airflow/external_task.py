@@ -153,7 +153,7 @@ class TableIngestionSensor(BaseSensorOperator):
         query = session.query(DagModel).filter(DagModel.is_active is True).all()
 
         if len(query) == 0:
-            raise AirflowException(f"No active dags found.")
+            raise AirflowException("No active dags found.")
 
         schedule_map = {}
         source_dag_map = {}
@@ -173,7 +173,7 @@ class TableIngestionSensor(BaseSensorOperator):
 
         if len(source_dag_map) == 0:
             raise AirflowException(
-                f"Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly."
+                "Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly."
             )
 
         for source, tables in self.external_source_tables.items():

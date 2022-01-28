@@ -1,49 +1,23 @@
-from abc import ABC, abstractmethod, abstractproperty
 import logging
-from re import A
-import re
-from dacite import from_dict
-from dataclasses import dataclass
-
-from gcp_airflow_foundations.source_class.source import DagBuilder
-from gcp_airflow_foundations.base_class.data_source_table_config import (
-    DataSourceTablesConfig,
-)
-from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
-from gcp_airflow_foundations.base_class.dataflow_job_config import DataflowJobConfig
-
-from dataclasses import fields
-from urllib.parse import urlparse
-import logging
-
+from abc import abstractmethod
 from airflow.models.dag import DAG
-from airflow.operators.python_operator import PythonOperator
-from airflow.providers.google.cloud.transfers.gcs_to_bigquery import (
-    GCSToBigQueryOperator,
-)
-from airflow.sensors.external_task import ExternalTaskSensor
-from airflow.providers.google.cloud.operators.dataflow import (
-    DataflowTemplatedJobStartOperator,
-)
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateEmptyTableOperator,
 )
-from airflow.providers.google.cloud.hooks.kms import CloudKMSHook
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
-from airflow.models import Variable
+from airflow.providers.google.cloud.operators.dataflow import (
+    DataflowTemplatedJobStartOperator,
+)
+from dacite import from_dict
+
+from gcp_airflow_foundations.base_class.dataflow_job_config import DataflowJobConfig
 from gcp_airflow_foundations.common.dataflow.jdbc.dataflow_taskgroups import (
     dataflow_taskgroup_builder,
 )
-
-from gcp_airflow_foundations.base_class.data_source_table_config import (
-    DataSourceTablesConfig,
-)
 from gcp_airflow_foundations.source_class.source import DagBuilder
-from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
 
 class JdbcToBQDataflowDagBuilder(DagBuilder):
-
     source_type = "JDBC"
 
     def get_extra_dags(self):
@@ -103,7 +77,6 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                 self.config, self.config.tables[0]
             ),
         ) as schema_dag:
-
             taskgroup = dataflow_taskgroup_builder(
                 #  schema_dag,
                 query_schema=True,

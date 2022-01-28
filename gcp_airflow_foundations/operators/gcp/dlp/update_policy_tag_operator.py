@@ -8,7 +8,6 @@ from typing import Optional
 class UpdatePolicyTagsOperator(BigQueryUpdateTableSchemaOperator):
     template_fields = ("dataset_id", "table_id", "fields", "policy_tag")
 
-    @apply_defaults
     def __init__(
         self,
         *,

@@ -1,28 +1,20 @@
+import pytz
 import unittest
+from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
+from airflow.models.xcom import XCOM_RETURN_KEY
+from airflow.operators.dummy import DummyOperator
+from datetime import datetime
 from unittest import mock
 from unittest.mock import MagicMock
-import os
 
-import pytest
-from google.cloud.exceptions import Conflict
-
-from datetime import datetime
-import pytz
-
-from airflow.operators.dummy import DummyOperator
-from airflow.exceptions import AirflowException
-from airflow.models import DAG, TaskInstance, XCom, DagBag, DagRun, DagTag, DagModel
-from airflow.models.xcom import XCOM_RETURN_KEY
-
-from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import (
-    MergeBigQueryODS,
-)
-from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.base_class.ods_metadata_config import (
     OdsTableMetadataConfig,
 )
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
-from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import (
+    MergeBigQueryODS,
+)
 
 TASK_ID = "test-bq-generic-operator"
 TEST_DATASET = "test-dataset"
@@ -35,7 +27,6 @@ SCHEMA_FIELDS = [{"name": "column", "type": "STRING"}]
 
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
-from airflow.utils import timezone
 
 
 @provide_session

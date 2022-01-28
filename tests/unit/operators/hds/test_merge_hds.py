@@ -1,29 +1,22 @@
+import pytz
 import unittest
+from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
+from airflow.models.xcom import XCOM_RETURN_KEY
+from airflow.operators.dummy import DummyOperator
+from datetime import datetime
 from unittest import mock
 from unittest.mock import MagicMock
-import os
 
-import pytest
-from google.cloud.exceptions import Conflict
-
-from datetime import datetime
-import pytz
-
-from airflow.operators.dummy import DummyOperator
-from airflow.exceptions import AirflowException
-from airflow.models import DAG, TaskInstance, XCom, DagBag, DagRun, DagTag, DagModel
-from airflow.models.xcom import XCOM_RETURN_KEY
-
-from gcp_airflow_foundations.operators.gcp.hds.hds_merge_table_operator import (
-    MergeBigQueryHDS,
-)
-from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.base_class.hds_metadata_config import (
     HdsTableMetadataConfig,
 )
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
+from gcp_airflow_foundations.operators.gcp.hds.hds_merge_table_operator import (
+    MergeBigQueryHDS,
+)
 
 TASK_ID = "test-bq-generic-operator"
 TEST_DATASET = "test-dataset"
@@ -36,7 +29,6 @@ SCHEMA_FIELDS = [{"name": "column", "type": "STRING"}]
 
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
-from airflow.utils import timezone
 
 
 @provide_session
@@ -114,7 +106,7 @@ class TestMergeBigQuerySnapshotHDS(unittest.TestCase):
 
         mock_hook.return_value.run_query.assert_called_once_with(
             sql=sql,
-            destination_dataset_table=f"{TEST_DATASET}.{TEST_TABLE_ID}${ds.replace('-','')}",
+            destination_dataset_table=f"{TEST_DATASET}.{TEST_TABLE_ID}${ds.replace('-', '')}",
             write_disposition="WRITE_TRUNCATE",
             allow_large_results=False,
             flatten_results=None,

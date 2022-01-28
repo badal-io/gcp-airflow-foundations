@@ -1,30 +1,17 @@
 from dataclasses import fields
-from os import X_OK
-from urllib.parse import urlparse
-from abc import ABC, abstractmethod, abstractproperty
 import logging
 import json
-import pandas as pd
-from dacite import from_dict
-from dataclasses import dataclass
 from datetime import datetime
 
-from airflow.models.dag import DAG
-from airflow.utils.task_group import TaskGroup
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.dummy import DummyOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import (
     GCSToBigQueryOperator,
 )
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
-from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.exceptions import AirflowException
 
-from gcp_airflow_foundations.base_class.gcs_table_config import GCSTableConfig
 from gcp_airflow_foundations.base_class.gcs_source_config import GCSSourceConfig
-from gcp_airflow_foundations.operators.api.operators.sf_to_gcs_query_operator import (
-    SalesforceToGcsQueryOperator,
-)
 from gcp_airflow_foundations.operators.api.sensors.gcs_sensor import (
     GCSObjectListExistenceSensor,
 )

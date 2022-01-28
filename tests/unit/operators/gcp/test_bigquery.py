@@ -1,27 +1,16 @@
-import unittest
-from unittest import mock
-from unittest.mock import MagicMock
-
-import pytest
-from google.cloud.exceptions import Conflict
-
-from datetime import datetime
 import pytz
-
-from airflow.operators.dummy import DummyOperator
-from airflow.exceptions import AirflowException
-
-from airflow.models import DAG, TaskInstance, XCom, DagBag, DagRun, DagTag, DagModel
+import unittest
+from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.models.xcom import XCOM_RETURN_KEY
+from airflow.operators.dummy import DummyOperator
+from datetime import datetime
+from unittest import mock
 
 from gcp_airflow_foundations.operators.gcp.create_table import (
     CustomBigQueryCreateEmptyTableOperator,
 )
 from gcp_airflow_foundations.operators.gcp.delete_staging_table import (
     BigQueryDeleteStagingTableOperator,
-)
-from gcp_airflow_foundations.operators.gcp.gcs_to_bigquery import (
-    CustomGCSToBigQueryOperator,
 )
 
 TASK_ID = "test-bq-generic-operator"

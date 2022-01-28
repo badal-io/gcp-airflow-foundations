@@ -8,6 +8,8 @@ from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from gcp_airflow_foundations.operators.api.hooks.twilio_hook import TwilioHook
+from urllib.parse import urlparse
+from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 
 
 class TwilioToBigQueryOperator(BaseOperator):

@@ -1,34 +1,22 @@
-import unittest
-from unittest import mock
-from unittest.mock import MagicMock
 import os
-
 import pytest
-from google.cloud.exceptions import Conflict
-
-from datetime import datetime
 import pytz
-
-from airflow.operators.dummy import DummyOperator
+import unittest
 from airflow.exceptions import AirflowException
-from airflow.models import DAG, TaskInstance, XCom, DagBag, DagRun, DagTag, DagModel
-from airflow.models.xcom import XCOM_RETURN_KEY
+from airflow.models import TaskInstance, XCom, DagRun, DagTag, DagModel
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from datetime import datetime
 
+from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
 from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import (
     MigrateSchema,
 )
-from gcp_airflow_foundations.parse_dags import DagParser
-from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
-
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 TASK_ID = "test-bq-generic-operator"
 DEFAULT_DATE = pytz.utc.localize(datetime(2017, 8, 1))
 TEST_DAG_ID = "test-bigquery-operators"
 
 from airflow.utils.session import create_session, provide_session
-from airflow.utils.state import State
-from airflow.utils import timezone
 
 NEW_SCHEMA_FIELDS_ADDED_COLUMN = [
     {"name": "visitorId", "type": "INTEGER", "mode": "NULLABLE"},
