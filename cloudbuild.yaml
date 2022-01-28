@@ -44,13 +44,27 @@ steps:
     entrypoint: 'bash'
     args:
       - '-c'
-      - python -v
+      - 'python -V'
     id: "python-versions"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: 'bash'
     args:
       - '-c'
-      - pytest tests/unit -vv
+      - 'pip list'
+    id: "python-list"
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+      waitFor: ['build-airflow2']
+      entrypoint: 'bash'
+      args:
+        - '-c'
+        - 'python pytest tests/unit -vv && py3clean .'
+      id: "unit-test-2"
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'pytest tests/unit -vv && py3clean .'
     id: "unit-test"
   # [END unit-test]
