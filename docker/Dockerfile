@@ -15,24 +15,22 @@ ENV PATH $PATH:/home/airflow/google-cloud-sdk/bin
 RUN mkdir /opt/airflow/gcp_airflow_foundations
 
 # Copying only files essential for installing gcp_airflow_foundations
-COPY setup.py /opt/airflow/setup.py
-COPY setup.cfg /opt/airflow/setup.cfg
-COPY README.md /opt/airflow/README.md
-COPY MANIFEST.in /opt/airflow/MANIFEST.in
+COPY setup.py setup.cfg README.md MANIFEST.in tests requirements.txt docker/requirements-ci.txt /opt/airflow/
+# COPY setup.cfg /opt/airflow/setup.cfg
+# COPY README.md /opt/airflow/README.md
+# COPY MANIFEST.in /opt/airflow/MANIFEST.in
 COPY gcp_airflow_foundations/__init__.py /opt/airflow/gcp_airflow_foundations/__init__.py
 COPY gcp_airflow_foundations/version.py /opt/airflow/gcp_airflow_foundations/version.py
-COPY tests /opt/airflow/
+# COPY tests /opt/airflow/
 
 WORKDIR /opt/airflow
+RUN pip install --user --upgrade pip
 
 # - Install CI/test dependencies
-COPY docker/requirements-ci.txt /opt/airflow/requirements-ci.txt
+# COPY docker/requirements-ci.txt /opt/airflow/requirements-ci.txt
 RUN pip install --no-cache-dir -r requirements-ci.txt --user
 
 # - Install dependencies
-COPY requirements.txt /opt/airflow/requirements.txt
-#RUN pip install --no-cache-dir -r requirements.txt
+# COPY requirements.txt /opt/airflow/requirements.txt
 
-# RUN pip install --upgrade pip
-RUN pip install -e .
-
+RUN pip install --user -e .
