@@ -69,7 +69,7 @@ steps:
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: /bin/bash
-    args: ['-c', 'python', '-m', 'pytest', 'integration/unit', '-vv']
+    args: ['-c', 'python', '-m', 'pytest', 'tests/integration', '-vv']
     id: "integration-test"
     # - -c
     # - |
