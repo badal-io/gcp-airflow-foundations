@@ -60,9 +60,10 @@ steps:
     # waitFor: ['build-airflow2']
     entrypoint: /bin/bash
     args: 
-    - -c
-    - |
-      python -m pytest tests/unit -vv|| { exit 1; }
+    # - -c
+    # - |
+    # 'python', '-m', 'pytest', 'tests/unit', '-vv'|| { exit 1; }
+    ['-c', 'python', '-m', 'pytest', 'tests/unit', '-vv']
 
   #   id: "unit-test"
 
