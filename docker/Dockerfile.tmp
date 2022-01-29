@@ -21,3 +21,4 @@ RUN pip install --no-cache-dir -r requirements-ci.txt
 
 # Initiaize Airflow DB
 RUN airflow db init
+
