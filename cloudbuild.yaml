@@ -6,7 +6,7 @@ substitutions:
 steps:
   # - Build a new Airflow2 image.
   # [START build-airflow2]
-  - id: build-image
+  - id: build-airflow2
     name: gcr.io/kaniko-project/executor
     args:
       - --destination=gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}
