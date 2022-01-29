@@ -24,11 +24,13 @@ COPY gcp_airflow_foundations/version.py /opt/airflow/gcp_airflow_foundations/ver
 
 # - Install CI/test dependencies
 COPY docker/requirements-ci.txt requirements-ci.txt
-RUN pip install --no-cache-dir -r requirements-ci.txt
+RUN pip install --no-cache-dir -r requirements-ci.txt --user
 
 # - Install dependencies
 COPY requirements.txt requirements.txt
 #RUN pip install --no-cache-dir -r requirements.txt
+
+COPY tests /opt/airflow/
 
 WORKDIR /opt/airflow
 # RUN pip install --upgrade pip
