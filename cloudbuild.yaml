@@ -90,7 +90,7 @@ steps:
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: python
-    args: ['-m', 'pytest', 'tests/unit']
+    args: ['-m', 'pytest', '/workspace/tests/unit']
 
     id: "unit-test"
   # [END unit-test]
