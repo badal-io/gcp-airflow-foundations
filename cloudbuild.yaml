@@ -49,25 +49,25 @@ steps:
   # - Unit tests.
   # [START unit-test]
 
-  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
-    entrypoint: '/bin/bash'
-    args:
-      - '-c'
-      - 'whoami'
-    id: "whoami"
-  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
-    entrypoint: '/bin/bash'
-    args:
-      - '-c'
-      - 'python -V'
-    id: "python-versions"
-  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
-    entrypoint: '/bin/bash'
-    args: ['-c', 'python', 'import sys; print(sys.path)']
-    id: "python-list"
+  # - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+  #   waitFor: ['build-airflow2']
+  #   entrypoint: '/bin/bash'
+  #   args:
+  #     - '-c'
+  #     - 'whoami'
+  #   id: "whoami"
+  # - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+  #   waitFor: ['build-airflow2']
+  #   entrypoint: '/bin/bash'
+  #   args:
+  #     - '-c'
+  #     - 'python -V'
+  #   id: "python-versions"
+  # - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+  #   waitFor: ['build-airflow2']
+  #   entrypoint: '/bin/bash'
+  #   args: ['-c', 'python', 'import sys; print(sys.path)']
+  #   id: "python-list"
   # - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
   #   waitFor: ['build-airflow2']
   #   entrypoint: '/bin/bash'
@@ -88,20 +88,20 @@ steps:
 #      - '-c'
 #      - 'pip3 install --no-cache-dir -r docker/requirements-ci.txt'
 #    id: "unit-test-2"
-  # - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-  #   waitFor: ['build-airflow2']
-  #   entrypoint: python
-  #   args: ['-m', 'pytest', '/workspace/tests/unit']
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: python
+    args: ['-m', 'pytest', 'tests/unit']
 
   #   id: "unit-test"
 
-  - name: python:3.8
-    entrypoint: pip
-    args: ["install", "-r", "docker/requirements-ci.txt", "--user"]
+  # - name: python:3.8
+  #   entrypoint: pip
+  #   args: ["install", "-r", "docker/requirements-ci.txt", "--user"]
 
-  - name: python:3.8
-    entrypoint: python
-    args: ['-m', 'pytest', 'tests/unit']
+  # - name: python:3.8
+  #   entrypoint: python
+  #   args: ['-m', 'pytest', 'tests/unit']
   
   # [END unit-test]
 
