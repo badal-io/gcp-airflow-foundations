@@ -6,45 +6,13 @@ substitutions:
 steps:
   # - Build a new Airflow2 image.
   # [START build-airflow2]
-  - id: build-airflow2
-    name: gcr.io/kaniko-project/executor
-    args:
-      - --destination=gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}
-      - --cache=true
-      - --cache-ttl=2h
-      - --dockerfile=docker/Dockerfile
-#  - name: 'gcr.io/cloud-builders/docker'
-#    waitFor: ['-']
-#    entrypoint: 'bash'
-#    args:
-#      - '-c'
-#      - |
-#          docker pull gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} || exit 0
-#    id: 'pull-airflow2'
-#  - name: 'gcr.io/cloud-builders/docker'
-#    waitFor: ['-']
-#    entrypoint: 'bash'
-#    args:
-#      - '-c'
-#      - |
-#        docker build -t gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
-#        --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
-#        --cache-from gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
-#        -f docker/Dockerfile .
-#    dir: '.'
-#    id: 'build-airflow2'
-  # [END build-airflow2]
-  #
-
-
-    #  - name: 'gcr.io/${PROJECT_ID}/${_COMPOSER_BUILD_IMG_NAME}'
-#    waitFor: ['build-airflow2']
-#    entrypoint: 'bash'
-#    args:
-#      - '-c'
-#      - |
-#          pytest tests/unit
-#    id: "unit-test"
+  # - id: build-airflow2
+  #   name: gcr.io/kaniko-project/executor
+  #   args:
+  #     - --destination=gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}
+  #     - --cache=true
+  #     - --cache-ttl=2h
+  #     - --dockerfile=docker/Dockerfile
 
   # - Unit tests.
   # [START unit-test]
@@ -90,8 +58,8 @@ steps:
 #    id: "unit-test-2"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
-    entrypoint: python
-    args: ['-m', 'pytest', 'tests/unit']
+    entrypoint: /bin/bash
+    args: ['-c', 'pytest', 'tests/unit']
 
   #   id: "unit-test"
 
