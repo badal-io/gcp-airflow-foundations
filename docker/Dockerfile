@@ -23,9 +23,10 @@ WORKDIR /opt/airflow
 
 RUN pip install --user --upgrade pip
 
-# - Install CI/test dependencies
-RUN pip install --user --no-cache-dir -r requirements-ci.txt
-
 USER root
+
+# - Install CI/test dependencies
+RUN pip install --no-cache-dir -r requirements-ci.txt
+
 # - Install dependencies
 RUN pip install --user -e . # --user 
