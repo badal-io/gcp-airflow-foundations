@@ -83,6 +83,7 @@ steps:
   - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: '/bin/bash'
+    dir: '/opt/airflow'
     args:
       - '-c'
       - 'pytest tests/unit -vv && py3clean .'
