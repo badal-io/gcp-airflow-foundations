@@ -13,17 +13,15 @@ steps:
       - --cache=true
       - --cache-ttl=2h
       - --dockerfile=docker/Dockerfile
-
   # - Unit tests.
   # [START unit-test]
-
-   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-     waitFor: ['build-airflow2']
-     entrypoint: '/bin/bash'
-     args:
-       - '-c'
-       - 'whoami'
-     id: "whoami"
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - 'whoami'
+    id: "whoami"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: '/bin/bash'
