@@ -51,6 +51,7 @@ steps:
     waitFor: ['build-airflow2']
     entrypoint: pip
     args: ["install", "-r", "requirements-ci.txt", "--user"]
+    dir: /opt/airflow
     id: "unit-test-3"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 #    waitFor: ['build-airflow2']
