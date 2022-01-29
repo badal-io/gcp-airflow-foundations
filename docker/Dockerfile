@@ -1,23 +1,36 @@
-ARG PYTHON_VERSION
+ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
 
-FROM python:$PYTHON_VERSION
+FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
+USER root
 
-# Environment variabls
-ENV AIRFLOW_VER='2.1.1'
-ENV AIRFLOW_HOME=/opt/airflow
+# - Install GCP util
+RUN curl -sSL https://sdk.cloud.google.com | bash
+ENV PATH $PATH:/home/airflow/google-cloud-sdk/bin
 
+# - Copy a custom airflow config file
+#COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
-# Install Airflow and dependencies
-COPY helpers/scripts/airflow-ci.sh .
-RUN chmod +x ./airflow-ci.sh
-RUN bash -c "./airflow-ci.sh '$AIRFLOW_VER'"
+# - install gcp_airflow_foundations package in EDITABLE mode.
 
-# Install Py packages
-# COPY docker/requirements-composer.txt .
-# RUN pip install --no-cache-dir -r requirements-composer.txt
+# The gcp_airflow_foundations folder is later mounted into the container, so the latest version is picked up
+RUN mkdir /opt/airflow/gcp_airflow_foundations
 
+# Copying only files essential for installing gcp_airflow_foundations
+COPY setup.py /opt/airflow/setup.py
+COPY setup.cfg /opt/airflow/setup.cfg
+COPY README.md /opt/airflow/README.md
+COPY MANIFEST.in /opt/airflow/MANIFEST.in
+COPY gcp_airflow_foundations/__init__.py /opt/airflow/gcp_airflow_foundations/__init__.py
+COPY gcp_airflow_foundations/version.py /opt/airflow/gcp_airflow_foundations/version.py
+
+# - Install CI/test dependencies
 COPY docker/requirements-ci.txt requirements-ci.txt
 RUN pip install --no-cache-dir -r requirements-ci.txt
 
-# Initiaize Airflow DB
-RUN airflow db init
+# - Install dependencies
+COPY requirements.txt requirements.txt
+#RUN pip install --no-cache-dir -r requirements.txt
+
+WORKDIR /opt/airflow
+# RUN pip install --upgrade pip
+RUN pip install -e .
