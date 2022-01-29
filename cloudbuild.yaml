@@ -11,7 +11,7 @@ steps:
     args:
       - --destination=gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}
       - --cache=true
-      - --cache-ttl=1h
+      - --cache-ttl=2h
       - --dockerfile=docker/Dockerfile
 #  - name: 'gcr.io/cloud-builders/docker'
 #    waitFor: ['-']
@@ -87,12 +87,17 @@ steps:
 #      - '-c'
 #      - 'pip3 install --no-cache-dir -r docker/requirements-ci.txt'
 #    id: "unit-test-2"
-  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
+  # - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+  #   waitFor: ['build-airflow2']
+  #   entrypoint: python
+  #   args: ['-m', 'pytest', '/workspace/tests/unit']
+
+  #   id: "unit-test"
+
+  - name: python
     entrypoint: python
     args: ['-m', 'pytest', '/workspace/tests/unit']
-
-    id: "unit-test"
+  
   # [END unit-test]
 
 timeout: 1200s
