@@ -47,13 +47,12 @@ steps:
   #   args: ['-c', 'pip install -r requirements.txt']
   #   id: "python-install"
 
-#  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
-#    waitFor: ['build-airflow2']
-#    entrypoint: '/bin/bash'
-#    args:
-#      - '-c'
-#      - 'cat docker/requirements-ci.txt'
-#    id: "unit-test-3"
+  - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    entrypoint: pip
+    args: ["install", "-r", "requirements-ci.txt, "--user"]
+
+    id: "unit-test-3"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 #    waitFor: ['build-airflow2']
 #    entrypoint: '/bin/bash'
