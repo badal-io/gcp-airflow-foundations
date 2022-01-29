@@ -95,9 +95,13 @@ steps:
 
   #   id: "unit-test"
 
-  - name: python
+  - name: python:3.8
+    entrypoint: pip
+    args: ["install", "-r", "docker/requirements-ci.txt", "--user"]
+
+  - name: python:3.8
     entrypoint: python
-    args: ['-m', 'pytest', '/workspace/tests/unit']
+    args: ['-m', 'pytest', 'tests/unit']
   
   # [END unit-test]
 
