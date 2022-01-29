@@ -50,8 +50,7 @@ steps:
   - name: 'gcr.io/${_PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: pip
-    args: ["install", "-r", "requirements-ci.txt, "--user"]
-
+    args: ["install", "-r", "requirements-ci.txt", "--user"]
     id: "unit-test-3"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 #    waitFor: ['build-airflow2']
