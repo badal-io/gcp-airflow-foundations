@@ -26,5 +26,6 @@ RUN pip install --user --upgrade pip
 # - Install CI/test dependencies
 RUN pip install --user --no-cache-dir -r requirements-ci.txt
 
+USER root
 # - Install dependencies
 RUN pip install --user -e . # --user 
