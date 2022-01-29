@@ -1,6 +1,6 @@
-ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
-
 FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
+
+ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
 
 # - Install GCP util
 RUN curl -sSL https://sdk.cloud.google.com | bash
@@ -21,18 +21,18 @@ COPY README.md /opt/airflow/README.md
 COPY MANIFEST.in /opt/airflow/MANIFEST.in
 COPY gcp_airflow_foundations/__init__.py /opt/airflow/gcp_airflow_foundations/__init__.py
 COPY gcp_airflow_foundations/version.py /opt/airflow/gcp_airflow_foundations/version.py
-
-# - Install CI/test dependencies
-COPY docker/requirements-ci.txt requirements-ci.txt
-RUN pip install --no-cache-dir -r requirements-ci.txt --user
-
-# - Install dependencies
-COPY requirements.txt requirements.txt
-#RUN pip install --no-cache-dir -r requirements.txt
-
 COPY tests /opt/airflow/
 
 WORKDIR /opt/airflow
+
+# - Install CI/test dependencies
+COPY docker/requirements-ci.txt /opt/airflow/requirements-ci.txt
+RUN pip install --no-cache-dir -r requirements-ci.txt --user
+
+# - Install dependencies
+COPY requirements.txt /opt/airflow/requirements.txt
+#RUN pip install --no-cache-dir -r requirements.txt
+
 # RUN pip install --upgrade pip
 RUN pip install -e .
 
