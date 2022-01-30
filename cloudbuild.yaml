@@ -50,7 +50,7 @@ steps:
   - name: python
     waitFor: ['build-airflow2']
     entrypoint: pip
-    args: ["install", "-r", "/opt/airflow/requirements-ci.txt", "--user"]
+    args: ["install", "-r", "docker/requirements-ci.txt", "--user"]
     dir: /opt/airflow
     id: "install-req"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
