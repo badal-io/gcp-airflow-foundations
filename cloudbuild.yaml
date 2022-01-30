@@ -52,6 +52,12 @@ steps:
     entrypoint: pip
     args: ["install", "-r", "docker/requirements-ci.txt"]
     id: "install-req"
+
+  - name: python
+    waitFor: ['build-airflow2']
+    entrypoint: /bin/bash
+    args: ["-c", "echo", "$PATH"]
+    id: "test1"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 #    waitFor: ['build-airflow2']
 #    entrypoint: '/bin/bash'
@@ -65,10 +71,17 @@ steps:
     args: ['-m', 'pytest', 'tests/unit', '-vv']
     id: "unit-test"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ["install-req", 'build-airflow2']
+    entrypoint: python
+    args: ['-m', 'pytest', 'tests/unit', '-vv']
+    env: ["PYTHONPATH=/home/airflow/.local/bin"]
+    id: "unit-test-2"
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: /bin/bash
     args: ['-c', 'python', '-m', 'pytest', 'tests/integration', '-vv']
     id: "integration-test"
+
     # - -c
     # - |
     # 'python', '-m', 'pytest', 'tests/unit', '-vv'|| { exit 1; }
