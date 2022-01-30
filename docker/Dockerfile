@@ -22,10 +22,10 @@ COPY gcp_airflow_foundations/version.py /opt/airflow/gcp_airflow_foundations/ver
 
 WORKDIR /opt/airflow
 
-RUN pip install  --upgrade pip
+RUN pip install --user --upgrade pip
 
 # - Install CI/test dependencies
-RUN pip install  --no-cache-dir -r requirements-ci.txt
+RUN pip install --user --no-cache-dir -r requirements-ci.txt
 
 # - Install dependencies
-RUN pip install  -e .
+RUN pip install --user -e .

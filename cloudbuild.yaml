@@ -62,7 +62,8 @@ steps:
       echo 'getting env'
       env
       echo 'PATH: ' $$PATH
-      echo 'python: ' python -m site
+      echo 'python -m site'
+      python -m site
     id: "test1"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 #    waitFor: ['build-airflow2']
