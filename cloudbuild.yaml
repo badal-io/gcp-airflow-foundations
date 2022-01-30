@@ -53,10 +53,16 @@ steps:
     args: ["install", "-r", "docker/requirements-ci.txt"]
     id: "install-req"
 
-  - name: python
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: /bin/bash
-    args: ["-c", "echo", "$PATH"]
+    args:
+    - '-c'
+    - |
+      echo 'getting env'
+      env
+      echo 'PATH: ' $$PATH
+      echo 'python: ' python -m site
     id: "test1"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 #    waitFor: ['build-airflow2']
