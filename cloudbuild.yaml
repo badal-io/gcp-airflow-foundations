@@ -56,6 +56,8 @@ steps:
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: /bin/bash
+    env:
+      - 'PYTHONPATH=/opt/airflow'
     args:
     - '-c'
     - |
@@ -64,6 +66,7 @@ steps:
       echo 'PATH: ' $$PATH
       echo 'python -m site'
       python -m site
+
     id: "test1"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 #    waitFor: ['build-airflow2']
@@ -74,17 +77,22 @@ steps:
 #    id: "unit-test-2"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ["install-req", 'build-airflow2']
+    env:
+      - 'PYTHONPATH=/opt/airflow'
     entrypoint: python
     args: ['-m', 'pytest', 'tests/unit', '-vv']
     id: "unit-test"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ["install-req", 'build-airflow2']
+    env:
+      - 'PYTHONPATH=/opt/airflow'
     entrypoint: python
     args: ['-m', 'pytest', 'tests/unit', '-vv']
-    env: ["PYTHONPATH=/home/airflow/.local/bin"]
     id: "unit-test-2"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
+    env:
+      - 'PYTHONPATH=/opt/airflow'
     entrypoint: /bin/bash
     args: ['-c', 'python', '-m', 'pytest', 'tests/integration', '-vv']
     id: "integration-test"
