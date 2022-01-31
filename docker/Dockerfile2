@@ -5,6 +5,9 @@ USER root
 #COPY docker/entrypoint.sh /entrypoint.sh
 #RUN rm $AIRFLOW_HOME/airflow.cfg
 
+RUN pip install  --upgrade pip
+
+
 COPY docker/requirements-ci.txt requirements-ci.txt
 RUN pip install -r requirements-ci.txt
 
