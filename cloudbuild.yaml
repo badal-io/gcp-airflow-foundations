@@ -12,7 +12,7 @@ steps:
       - --destination=gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}
       - --cache=true
       - --cache-ttl=2h
-      - --dockerfile=docker/Dockerfile2
+      - --dockerfile=docker/Dockerfile
   # - Unit tests.
   # [START unit-test]
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
