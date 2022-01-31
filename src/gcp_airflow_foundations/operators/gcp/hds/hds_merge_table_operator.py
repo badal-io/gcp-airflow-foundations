@@ -65,11 +65,13 @@ class MergeBigQueryHDS(BigQueryOperator):
         data_table_name: str,
         stg_dataset_name: str,
         data_dataset_name: str,
+        schema_parsing_task_id: str,
         surrogate_keys: [str],
         columns: Optional[list] = None,
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
+        column_casting: dict,
         ingestion_type: IngestionType,
         hds_table_config: HdsTableConfig,
         location: Optional[str] = None,
@@ -91,17 +93,19 @@ class MergeBigQueryHDS(BigQueryOperator):
         self.data_table_name = data_table_name
         self.stg_dataset_name = stg_dataset_name
         self.data_dataset_name = data_dataset_name
+        self.schema_parsing_task_id = schema_parsing_task_id
         self.surrogate_keys = surrogate_keys
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.columns = columns
         self.column_mapping = column_mapping
+        self.column_casting = column_casting
         self.ingestion_type = ingestion_type
         self.hds_table_config = hds_table_config
 
     def pre_execute(self, context) -> None:
         if not self.columns:
-            staging_columns = self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']
+            staging_columns = self.xcom_pull(context=context, task_ids=self.schema_parsing_task_id)['source_table_columns']
         else:
             staging_columns = self.columns
 
@@ -132,6 +136,7 @@ class MergeBigQueryHDS(BigQueryOperator):
             columns=source_columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
+            column_casting=self.column_casting,
             hds_metadata=self.hds_table_config.hds_metadata
         )
 

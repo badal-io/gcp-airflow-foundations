@@ -7,6 +7,9 @@ from pydantic.dataclasses import dataclass
 from gcp_airflow_foundations.enums.source_type import SourceType
 from gcp_airflow_foundations.base_class.landing_zone_config import LandingZoneConfig
 from gcp_airflow_foundations.base_class.schema_options_config import SchemaOptionsConfig
+from gcp_airflow_foundations.base_class.facebook_config import FacebookConfig
+from gcp_airflow_foundations.base_class.source_ingestion_config import FullIngestionConfig
+
 
 partition_limit = 4000
 ms_day = 86400000
@@ -20,48 +23,60 @@ expiration_options = {
 @dataclass
 class SourceConfig:
     """
+    Source configuration data class.
+
     Attributes:
         name : Name of source
         source_type : Source type selection. See SourceType class
         ingest_schedule : Ingestion schedule. Currently only supporting @hourly, @daily, @weekly, and @monthly
-        gcp_project : GCP project ID
+        gcp_project : Google Cloud Platform project ID
         dataset_data_name : Target dataset name
-        connection : Aiflow GCP connection
-        extra_options : GCP bucket and objects for source data if loading from GCS
+        connection : Aiflow Google Cloud Platform connection
+        extra_options : Google Cloud Storage bucket and objects for source data if loading from GCS
         landing_zone_options : Staging dataset name
         acceptable_delay_minutes : Delay minutes limit
         notification_emails : Email address for notification emails
         owner : Airflow user owning the DAG
         partition_expiration: Expiration time for HDS Snapshot partitions in days.
+        facebook_options: Extra options for ingesting data from Facebook Marketing API.
+        dag_args: Optional dictionary of parameters to be passed as keyword arguments to the ingestion DAG. 
+                    Refer to :class:`airflow.models.dag.DAG` for the available parameters.
         location: BigQuery job location.
         start_date : Start date for DAG
         start_date_tz : Timezone
         version : The Dag version. Can be incremented if logic changes
-        sla_mins : SLA mins
+        sla_mins : Service Level Agreement (SLA) timeout minutes. This is is an expectation for the maximum time a Task should take.
     """
     name: str
     source_type: str
     ingest_schedule: str
+    external_dag_id: Optional[str]
     gcp_project: str
     dataset_data_name: str
     dataset_hds_override: Optional[str]
     connection: str
-    extra_options: dict
+    extra_options: Optional[dict]
     landing_zone_options: LandingZoneConfig
     acceptable_delay_minutes: int
     notification_emails: List[str]
     owner: str
     partition_expiration: Optional[int]
     schema_options: SchemaOptionsConfig
+    facebook_options: Optional[FacebookConfig]
+    full_ingestion_options: Optional[FullIngestionConfig]
+    dag_args: Optional[dict]
     location: str
     start_date: str
     start_date_tz: str = "EST"
     version: int = 1
     sla_mins: int = 900
+    regex_matching: bool = False
+
 
     @validator("name")
     def valid_name(cls, v):
-        assert v, "Name must not be empty"
+        assert v, "Source name must not be empty"
+        assert "." not in v, "Source Name cannot contain the period character"
         return v
 
     @validator("source_type")
@@ -103,5 +118,4 @@ class SourceConfig:
     def valid_hds_dataset(cls, values):
         if values['dataset_hds_override'] is None:
             values['dataset_hds_override'] = values['dataset_data_name']
-
         return values

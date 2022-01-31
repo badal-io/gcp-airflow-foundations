@@ -22,12 +22,15 @@ def hds_builder(
     landing_zone_dataset,
     landing_zone_table_name_override,
     column_mapping,
+    column_casting,
     surrogate_keys,
     ingestion_type,
     hds_table_config,
     partition_expiration,
     location,
+    schema_parsing_task_id,
     dag,
+    cluster_fields=None,
     time_partitioning=None,
     labels=None,
     encryption_configuration=None) -> TaskGroup:
@@ -55,6 +58,7 @@ def hds_builder(
         project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
+        cluster_fields=cluster_fields,
         time_partitioning=time_partitioning,
         task_group=taskgroup,
         dag=dag
@@ -63,6 +67,7 @@ def hds_builder(
     #2 Migrate schema
     migrate_schema = MigrateSchema(
         task_id="schema_migration",
+        schema_parsing_task_id=schema_parsing_task_id,
         project_id=project_id,
         table_id=table_id,
         dataset_id=dataset_id, 
@@ -72,14 +77,16 @@ def hds_builder(
 
     #3 Load staging table to HDS table
     insert = MergeBigQueryHDS(
-        task_id="insert_into_hds_table",
+        task_id=f"upsert_{table_id}",
         project_id=project_id,
         stg_dataset_name=landing_zone_dataset,
         data_dataset_name=dataset_id,
         stg_table_name=landing_zone_table_name_override,
         data_table_name=table_id,
+        schema_parsing_task_id=schema_parsing_task_id,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
+        column_casting=column_casting,
         ingestion_type=ingestion_type,
         hds_table_config=hds_table_config,
         location=location,

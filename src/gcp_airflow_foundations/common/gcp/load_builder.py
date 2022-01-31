@@ -13,6 +13,7 @@ def load_builder(
     table_config,
     schema_config,
     preceding_task,
+    schema_parsing_task_id,
     dag):
 
     """
@@ -27,22 +28,21 @@ def load_builder(
     landing_zone_table_name_override = table_config.landing_zone_table_name_override
     surrogate_keys = table_config.surrogate_keys
     column_mapping = table_config.column_mapping
+    column_casting = table_config.column_casting
     ingestion_type = table_config.ingestion_type
     partition_expiration = data_source.partition_expiration
     ods_table_config = table_config.ods_config
     hds_table_config = table_config.hds_config
     location = data_source.location
+    cluster_fields = table_config.cluster_fields
 
-    if ingestion_type == IngestionType.INCREMENTAL:
-        ods_table_config.table_id = f"{landing_zone_table_name_override}_ODS_Incremental"
-
-    elif ingestion_type == IngestionType.FULL:
-        ods_table_config.table_id = f"{landing_zone_table_name_override}_ODS_Full"
+    ods_table_config.table_id = f"{landing_zone_table_name_override}_ODS"
 
     parse_schema = ParseSchema(
         task_id="schema_parsing",
         schema_config=schema_config,
         column_mapping=column_mapping,
+        column_casting=column_casting,
         data_source=data_source,
         table_config=table_config,
         dag=dag
@@ -56,9 +56,13 @@ def load_builder(
         landing_zone_table_name_override=landing_zone_table_name_override,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
+        column_casting=column_casting,
         ingestion_type=ingestion_type,
+        cluster_fields=cluster_fields,
+        partition_expiration=partition_expiration,
         ods_table_config=ods_table_config,
         location=location,
+        schema_parsing_task_id=schema_parsing_task_id,
         dag=dag
     )
     
@@ -78,10 +82,13 @@ def load_builder(
             landing_zone_table_name_override=ods_table_config.table_id,
             surrogate_keys=surrogate_keys,
             column_mapping=column_mapping,
+            column_casting=column_casting,
             ingestion_type=ingestion_type,
+            cluster_fields=cluster_fields,
             partition_expiration=partition_expiration,
             hds_table_config=hds_table_config,
             location=location,
+            schema_parsing_task_id=schema_parsing_task_id,
             dag=dag
         )
 
@@ -94,6 +101,6 @@ def load_builder(
     )
 
     if hds_task_group:
-        preceding_task >> parse_schema >> ods_task_group >> hds_task_group >> delete_staging_table
+        return [parse_schema, ods_task_group, hds_task_group, delete_staging_table]
     else:
-        preceding_task >> parse_schema >> ods_task_group >> delete_staging_table
+        return [parse_schema, ods_task_group, delete_staging_table]

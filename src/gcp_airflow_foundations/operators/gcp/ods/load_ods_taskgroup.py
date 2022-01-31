@@ -21,12 +21,15 @@ def ods_builder(
     landing_zone_dataset,
     landing_zone_table_name_override,
     column_mapping,
+    column_casting,
     surrogate_keys,
     ingestion_type,
     ods_table_config,
+    partition_expiration,
     location,
+    schema_parsing_task_id,
     dag,
-    time_partitioning=None,
+    cluster_fields=None,
     labels=None,
     encryption_configuration=None) -> TaskGroup:
 
@@ -35,13 +38,24 @@ def ods_builder(
     """
     taskgroup = TaskGroup(group_id="create_ods_merge_taskgroup")
 
+    if ods_table_config.ods_table_time_partitioning is not None:
+        time_partitioning = {
+            "type":ods_table_config.ods_table_time_partitioning.value,
+            "field":column_mapping[ods_table_config.partition_column_name],
+            "expirationMs":partition_expiration
+        }
+    
+    else:
+        time_partitioning = None
+    
     #1 Check if ODS table exists and if not create an empty table
     create_table = CustomBigQueryCreateEmptyTableOperator(
         task_id="create_ods_table",
         project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
-        time_partitioning=None,
+        cluster_fields=cluster_fields,
+        time_partitioning=time_partitioning,
         task_group=taskgroup,
         dag=dag
     )
@@ -49,6 +63,7 @@ def ods_builder(
     #2 Migrate schema
     migrate_schema = MigrateSchema(
         task_id="schema_migration",
+        schema_parsing_task_id=schema_parsing_task_id,
         project_id=project_id,
         table_id=table_id,
         dataset_id=dataset_id, 
@@ -58,14 +73,16 @@ def ods_builder(
     
     #3 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
     insert = MergeBigQueryODS(
-        task_id="insert_into_ods_table",
+        task_id=f"upsert_{table_id}",
         project_id=project_id,
         stg_dataset_name=landing_zone_dataset,
         data_dataset_name=dataset_id,
+        schema_parsing_task_id=schema_parsing_task_id,
         stg_table_name=landing_zone_table_name_override,
         data_table_name=table_id,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
+        column_casting=column_casting,
         ingestion_type=ingestion_type,
         ods_table_config=ods_table_config,
         location=location,

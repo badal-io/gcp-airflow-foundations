@@ -7,7 +7,7 @@ from airflow.contrib.operators.bigquery_operator import (
 )
 
 from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
@@ -38,9 +38,10 @@ class MigrateSchema(BaseOperator):
     def __init__(
         self,
         *,
+        schema_parsing_task_id,
         dataset_id,
         table_id,
-        project_id, 
+        project_id,
         new_schema_fields=None,
         gcp_conn_id='google_cloud_default',
         delegate_to=None,
@@ -50,6 +51,7 @@ class MigrateSchema(BaseOperator):
         super().__init__(**kwargs)
 
         self.project_id = project_id
+        self.schema_parsing_task_id = schema_parsing_task_id
         self.dataset_id = dataset_id
         self.table_id = table_id
         self.new_schema_fields = new_schema_fields
@@ -66,7 +68,7 @@ class MigrateSchema(BaseOperator):
 
     def execute(self, context):
         if not self.new_schema_fields:
-            self.new_schema_fields = self.xcom_pull(context=context, task_ids="schema_parsing")[self.table_id]
+            self.new_schema_fields = self.xcom_pull(context=context, task_ids=self.schema_parsing_task_id)[self.table_id]
 
         query, schema_fields_updates, sql_columns, change_log = self.build_schema_query()
 
@@ -74,7 +76,7 @@ class MigrateSchema(BaseOperator):
             logging.info("Migrating new schema to target table")
 
             if sql_columns:
-                self.cursor.run_query(
+                self.hook.run_query(
                     sql=query,
                     use_legacy_sql=False,
                     destination_dataset_table=f"{self.dataset_id}.{self.table_id}",
@@ -113,7 +115,7 @@ class MigrateSchema(BaseOperator):
         :rtype: list
         """
 
-        self.current_schema_fields = self.cursor.get_schema(dataset_id=self.dataset_id, table_id=self.table_id).get("fields", None)
+        self.current_schema_fields = self.hook.get_schema(dataset_id=self.dataset_id, table_id=self.table_id).get("fields", None)
         
         logging.info(f"The current schema is: {self.current_schema_fields}")
 
@@ -188,7 +190,7 @@ class MigrateSchema(BaseOperator):
                 )
 
                 schema_fields_updates.append(
-                    {"name":column_name,"mode":"NULLABLE","type":column_type}
+                   field
                 )
 
         query = f"""SELECT {",".join(sql_columns)} FROM `{self.dataset_id}.{self.table_id}`;"""

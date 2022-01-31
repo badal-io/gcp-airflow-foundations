@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
 from airflow.contrib.operators.bigquery_operator import (
@@ -62,11 +63,13 @@ class MergeBigQueryODS(BigQueryOperator):
         data_table_name: str,
         stg_dataset_name: str,
         data_dataset_name: str,
+        schema_parsing_task_id: str,
         surrogate_keys: [str],
         columns: Optional[list] = None,
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
+        column_casting: dict,
         ingestion_type: IngestionType,
         ods_table_config: OdsTableConfig,
         location: Optional[str] = None,
@@ -87,11 +90,13 @@ class MergeBigQueryODS(BigQueryOperator):
         self.data_table_name = data_table_name
         self.stg_dataset_name = stg_dataset_name
         self.data_dataset_name = data_dataset_name
+        self.schema_parsing_task_id = schema_parsing_task_id
         self.surrogate_keys = surrogate_keys
         self.columns = columns
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
+        self.column_casting = column_casting
         self.ingestion_type = ingestion_type
         self.ods_table_config = ods_table_config
 
@@ -99,7 +104,7 @@ class MergeBigQueryODS(BigQueryOperator):
         ds = context['ds']
 
         if not self.columns:
-            staging_columns = self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']
+            staging_columns = self.xcom_pull(context=context, task_ids=self.schema_parsing_task_id)['source_table_columns']
         else:
             staging_columns = self.columns
 
@@ -127,12 +132,27 @@ class MergeBigQueryODS(BigQueryOperator):
             columns=source_columns,
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
+            column_casting=self.column_casting,
             ods_metadata=self.ods_table_config.ods_metadata
         )
 
+        if self.ods_table_config.ods_table_time_partitioning:
+            partitioning_dimension = self.ods_table_config.ods_table_time_partitioning.value
+            sql_helper.time_partitioning = partitioning_dimension
+            sql_helper.partition_column_name =  self.ods_table_config.partition_column_name
+        
+            ts = context['ts']
+
+            sql_helper.partition_timestamp = ts
+
         if self.ingestion_type == IngestionType.INCREMENTAL:
-            # Append staging table to ODS table
-            sql = sql_helper.create_upsert_sql_with_hash()
+            if self.surrogate_keys:
+                # Append staging table to ODS table
+                sql = sql_helper.create_upsert_sql_with_hash()
+            else:
+                sql = sql_helper.create_full_sql()
+                self.write_disposition = "WRITE_APPEND"
+                self.destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}"
 
         elif self.ingestion_type == IngestionType.FULL:
             # Overwrite ODS table with the staging table data

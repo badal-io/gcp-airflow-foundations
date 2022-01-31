@@ -14,7 +14,9 @@ def dataflow_taskgroup_builder(
     system_name,
     create_job_params,
     run_dataflow_job,
-    create_table
+    create_table,
+    ingest_metadata,
+    table_type_casts
 ) -> TaskGroup:
 
     """
@@ -50,22 +52,27 @@ def dataflow_taskgroup_builder(
     )
 
     if not query_schema:
-        schema_task_sensor = ExternalTaskSensor(
-            task_id="check_bq_schema_updated",
-            external_dag_id=f"{system_name}_upload_schema",
-            task_group=taskgroup,
-        )
 
         create_table = PythonOperator(
             task_id="create_table_if_needed",
             op_kwargs={"destination_table": destination_table,
             "schema_table": destination_schema_table,
-            "source_table": table_name},
+            "source_table": table_name,
+            "table_type_casts": table_type_casts},
             python_callable=create_table,
             task_group=taskgroup,
         )
 
-        schema_task_sensor >> create_job_parameters >> create_table >> trigger_dataflow_job
+        if ingest_metadata:
+            schema_task_sensor = ExternalTaskSensor(
+                task_id="check_bq_schema_updated",
+                external_dag_id=f"{system_name}_upload_schema",
+                task_group=taskgroup,
+            )
+            schema_task_sensor >> create_job_parameters >> create_table >> trigger_dataflow_job
+        else:
+            create_job_parameters >> create_table >> trigger_dataflow_job
+
     else:
         create_job_parameters >> trigger_dataflow_job
 

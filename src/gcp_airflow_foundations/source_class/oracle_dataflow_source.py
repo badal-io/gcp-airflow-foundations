@@ -1,6 +1,7 @@
 from dataclasses import fields
 from urllib.parse import urlparse
 import logging
+import re
 
 from airflow.models.dag import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -9,6 +10,7 @@ from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.providers.google.cloud.hooks.kms import CloudKMSHook
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.models import Variable
+from airflow.utils.task_group import TaskGroup
 
 from gcp_airflow_foundations.source_class.jdbc_dataflow_source import JdbcToBQDataflowDagBuilder
 from gcp_airflow_foundations.base_class.data_source_table_config import DataSourceTablesConfig
@@ -20,7 +22,7 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
     """
     Builds DAGs to load a CSV file from GCS to a BigQuery Table.
     """
-    source_type = "ORACLE"
+    source_type = "ORACLE"  
 
     def create_job_params(self, config_params, destination_table, table_name, destination_schema_table, query_schema, owner, **kwargs):
         #   1.  Generate SQL Query
