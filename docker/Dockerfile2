@@ -5,8 +5,8 @@ USER root
 #COPY docker/entrypoint.sh /entrypoint.sh
 #RUN rm $AIRFLOW_HOME/airflow.cfg
 
-COPY docker/requirements-ci.txt   requirements-ci.txt
-RUN pip install -r requirements-ci.txt
+COPY requirements-airflow.txt  requirements.txt
+RUN pip3 install -r requirements.txt
 
 ## Add the wait script to the image
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
