@@ -85,22 +85,22 @@ steps:
     dir: /home/airflow/
     args: ['-m', 'pytest', 'tests/unit', '-vv']
     id: "unit-test"
-  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ["install-req", 'build-airflow2','test1']
-    env:
-      - 'PYTHONPATH=/home/airflow/.local'
-    dir: /home/airflow/
-    entrypoint: python
-    args: ['-m', 'pytest', 'tests/unit', '-vv']
-    id: "unit-test-2"
-  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
-    env:
-      - 'PYTHONHOME=/home/airflow/.local'
-    entrypoint: /bin/bash
-    dir: /home/airflow/
-    args: ['-c', 'python', '-m', 'pytest', 'tests/integration', '-vv']
-    id: "integration-test"
+#  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+#    waitFor: ["install-req", 'build-airflow2','test1']
+#    env:
+#      - 'PYTHONPATH=/home/airflow/.local'
+#    dir: /home/airflow/
+#    entrypoint: python
+#    args: ['-m', 'pytest', 'tests/unit', '-vv']
+#    id: "unit-test-2"
+#  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+#    waitFor: ['build-airflow2']
+#    env:
+#      - 'PYTHONHOME=/home/airflow/.local'
+#    entrypoint: /bin/bash
+#    dir: /home/airflow/
+#    args: ['-c', 'python', '-m', 'pytest', 'tests/integration', '-vv']
+#    id: "integration-test"
 
     # - -c
     # - |
