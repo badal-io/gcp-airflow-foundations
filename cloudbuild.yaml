@@ -43,8 +43,8 @@ steps:
   #   id: "python-list"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
-    entrypoint: '/bin/bash'
-    args: ['-c', 'pip install -r docker/requirements-ci.txt', '--user']
+    entrypoint: pip
+    args: ['install', '-r','docker/requirements-ci.txt', '--user']
     id: "python-install"
 
   - name: python
