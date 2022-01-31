@@ -80,12 +80,14 @@ steps:
     env:
       - 'PYTHONPATH=/opt/airflow'
     entrypoint: python
+    dir: /home/airflow/
     args: ['-m', 'pytest', 'tests/unit', '-vv']
     id: "unit-test"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ["install-req", 'build-airflow2','test1']
     env:
       - 'PYTHONPATH=/opt/airflow'
+    dir: /home/airflow/
     entrypoint: python
     args: ['-m', 'pytest', 'tests/unit', '-vv']
     id: "unit-test-2"
@@ -94,6 +96,7 @@ steps:
     env:
       - 'PYTHONPATH=/opt/airflow'
     entrypoint: /bin/bash
+    dir: /home/airflow/
     args: ['-c', 'python', '-m', 'pytest', 'tests/integration', '-vv']
     id: "integration-test"
 
