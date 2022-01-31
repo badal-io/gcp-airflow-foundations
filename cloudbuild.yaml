@@ -89,7 +89,7 @@ steps:
 #    args: ['-m', 'pytest', 'tests/unit', '-vv']
 #    id: "unit-test"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ["install-req", 'build-airflow2','test1', "python-install"]
+    waitFor: ["install-req", 'build-airflow2','test1']
     env:
       - 'PYTHONPATH=/home/airflow/.local'
     dir: /home/airflow/
