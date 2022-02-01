@@ -57,7 +57,7 @@ steps:
     waitFor: ['build-airflow2', 'install-req']
     entrypoint: /bin/bash
     env:
-      - 'PYTHONPATH=/home/airflow/.local'
+      - 'PYTHONUSERBASE=/home/airflow/.local'
      # - 'PYTHONPATH=/home/airflow/.local'
     args:
     - '-c'
@@ -91,7 +91,8 @@ steps:
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ["install-req", 'build-airflow2','test1', 'install-req']
     env:
-      - 'PYTHONPATH=/home/airflow/.local'
+      #- 'PYTHONPATH=/home/airflow/.local'
+      - 'PYTHONUSERBASE=/home/airflow/.local'
     dir: /home/airflow/
     entrypoint: python
     args: ['-m', 'pytest', 'tests/unit', '-vv']
