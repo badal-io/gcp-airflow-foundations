@@ -93,7 +93,6 @@ steps:
     env:
       #- 'PYTHONPATH=/home/airflow/.local'
       - 'PYTHONUSERBASE=/home/airflow/.local'
-    dir: /home/airflow/
     entrypoint: python
     args: ['-m', 'pytest', 'tests/unit', '-vv']
     id: "unit-test-2"
