@@ -17,7 +17,6 @@ TASK_ID = "test-bq-generic-operator"
 DEFAULT_DATE = pytz.utc.localize(datetime(2017, 8, 1))
 TEST_DAG_ID = "test-bigquery-operators"
 
-
 NEW_SCHEMA_FIELDS_ADDED_COLUMN = [
     {"name": "visitorId", "type": "INTEGER", "mode": "NULLABLE"},
     {"name": "visitNumber", "type": "INTEGER", "mode": "NULLABLE"},

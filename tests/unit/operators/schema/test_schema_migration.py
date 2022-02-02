@@ -1,24 +1,18 @@
-import unittest
-from unittest import mock
-from unittest.mock import MagicMock
-import os
-
-import pytest
-from google.cloud.exceptions import Conflict
-
-from datetime import datetime
 import pytz
-
-from airflow.operators.dummy import DummyOperator
-from airflow.exceptions import AirflowException
-from airflow.models import DAG, TaskInstance, XCom, DagBag, DagRun, DagTag, DagModel
+import unittest
+from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.models.xcom import XCOM_RETURN_KEY
+from airflow.operators.dummy import DummyOperator
+from airflow.utils.session import create_session, provide_session
+from airflow.utils.state import State
+from datetime import datetime
+from unittest import mock
 
-from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import (
-    MigrateSchema,
-)
 from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_audit import (
     SchemaMigrationAudit,
+)
+from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import (
+    MigrateSchema,
 )
 
 TASK_ID = "test-bq-generic-operator"
@@ -28,10 +22,6 @@ TEST_TABLE_ID = "test-table-id"
 DEFAULT_DATE = pytz.utc.localize(datetime(2015, 1, 1))
 TEST_DAG_ID = "test-bigquery-operators"
 SCHEMA_FIELDS = [{"name": "column", "type": "STRING"}]
-
-from airflow.utils.session import create_session, provide_session
-from airflow.utils.state import State
-from airflow.utils import timezone
 
 
 @provide_session
@@ -142,7 +132,6 @@ class TestSchemaMigrationAudit(unittest.TestCase):
     def test_execute(
         self, mock_create_empty_table, mock_bq_client, mock_insert_change_log_rows
     ):
-
         migration_audit = SchemaMigrationAudit(
             project_id=TEST_GCP_PROJECT_ID, dataset_id=TEST_DATASET
         )
@@ -158,14 +147,14 @@ class TestSchemaMigrationAudit(unittest.TestCase):
             ]
         )
 
-        schema_fields = [
-            {"name": "table_id", "type": "STRING"},
-            {"name": "dataset_id", "type": "STRING"},
-            {"name": "schema_updated_at", "type": "TIMESTAMP"},
-            {"name": "migration_id", "type": "STRING"},
-            {"name": "column_name", "type": "STRING"},
-            {"name": "type_of_change", "type": "STRING"},
-        ]
+        # schema_fields = [
+        #     {"name": "table_id", "type": "STRING"},
+        #     {"name": "dataset_id", "type": "STRING"},
+        #     {"name": "schema_updated_at", "type": "TIMESTAMP"},
+        #     {"name": "migration_id", "type": "STRING"},
+        #     {"name": "column_name", "type": "STRING"},
+        #     {"name": "type_of_change", "type": "STRING"},
+        # ]
 
         # mock_create_empty_table.assert_called_once_with(
         #     project_id=TEST_GCP_PROJECT_ID,

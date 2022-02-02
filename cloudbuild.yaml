@@ -30,7 +30,7 @@ steps:
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     entrypoint: bin/bash
-    args: ['-c', 'flake8']
+    args: ['-c', 'flake8', '.']
 
 timeout: 1200s
 images:

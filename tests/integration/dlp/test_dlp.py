@@ -2,12 +2,15 @@ import logging
 import pytz
 import unittest
 from airflow.models import DAG
+from airflow.operators.dummy import DummyOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.utils import timezone
 from airflow.utils.state import State
+from airflow.utils.task_group import TaskGroup
+from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils.types import DagRunType
 from bq_test_utils import insert_to_bq_from_dict
 from datetime import datetime
-from google.cloud import bigquery
 from pytest_testconfig import config
 from test_utils import cleanup_xcom, clear_db_dags
 
@@ -21,11 +24,6 @@ from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup impo
     dlp_policy_tag_taskgroup_name,
 )
 from tests.integration.conftest import run_task
-from airflow.utils.task_group import TaskGroup
-from airflow.operators.dummy import DummyOperator
-from airflow.utils.trigger_rule import TriggerRule
-from airflow.utils import timezone
-
 
 TEST_TABLE = "test_table"
 
@@ -141,7 +139,7 @@ class TestDlp(unittest.TestCase):
         dlp_table_config = DlpTableConfig()
         dlp_table_config.set_source_config(dlp_source_config)
 
-        dlp_tasks = dlp_to_datacatalog_builder(
+        dlp_to_datacatalog_builder(
             taskgroup=dlp_taskgroup,
             datastore="test",
             project_id=project_id,
@@ -181,7 +179,7 @@ class TestDlp(unittest.TestCase):
 
         run_task(tasks["delete_old_dlp_results_task"])
         run_task(tasks["scan_table_task"])
-        ti_dlp_results = run_task(tasks["read_dlp_results_task"])
+        run_task(tasks["read_dlp_results_task"])
         run_task(tasks["update_tags_task"])
 
         # xcom_pull_res = ti.xcom_pull(task_ids='dlp_scan_table.read_dlp_results')

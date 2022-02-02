@@ -1,26 +1,12 @@
-from dataclasses import fields
-from urllib.parse import urlparse
 import logging
-
-from airflow.models.dag import DAG
-from airflow.operators.python_operator import PythonOperator
-from airflow.providers.google.cloud.transfers.gcs_to_bigquery import (
-    GCSToBigQueryOperator,
-)
-from airflow.sensors.external_task import ExternalTaskSensor
-from airflow.providers.google.cloud.hooks.kms import CloudKMSHook
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.models import Variable
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.providers.google.cloud.hooks.kms import CloudKMSHook
 
+import gcp_airflow_foundations.common.dataflow.jdbc.mysql.mysql_query_helpers as mysql_helpers
 from gcp_airflow_foundations.source_class.jdbc_dataflow_source import (
     JdbcToBQDataflowDagBuilder,
 )
-from gcp_airflow_foundations.base_class.data_source_table_config import (
-    DataSourceTablesConfig,
-)
-from gcp_airflow_foundations.source_class.source import DagBuilder
-from gcp_airflow_foundations.common.gcp.load_builder import load_builder
-import gcp_airflow_foundations.common.dataflow.jdbc.mysql.mysql_query_helpers as mysql_helpers
 
 
 class MySQLToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
