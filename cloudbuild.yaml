@@ -72,7 +72,7 @@ steps:
 #    args: ['-m', 'pytest', 'tests/unit', '-vv']
 #    id: "unit-test"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ["install-req", 'build-airflow2','test1']
+    waitFor: ['build-airflow2','test1']
     env:
       - 'PYTHONUSERBASE=/home/airflow/.local'
     entrypoint: python
