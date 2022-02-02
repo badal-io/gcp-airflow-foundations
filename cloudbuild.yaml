@@ -54,6 +54,11 @@ steps:
       pwd
       echo 'ls tests/integration/'
       ls tests/integration/
+      echo 'ls /workspace/tests/integration/'
+      ls /workspace/tests/integration/
+      echo 'ls /workspace/tests/integration/'
+      ls /workspace/tests/integration/
+
 
     id: "test1"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
