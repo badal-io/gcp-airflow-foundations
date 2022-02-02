@@ -76,14 +76,14 @@ steps:
     env:
       - 'PYTHONUSERBASE=/home/airflow/.local'
     entrypoint: python
-    args: ['-m', 'pytest', 'tests/unit', '-vv']
+    args: ['-m', 'pytest', 'tests/unit', '-vv',  '--cov=gcp_airflow_foundations']
     id: "unit-test"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     env:
       - 'PYTHONUSERBASE=/home/airflow/.local'
-    entrypoint: /bin/bash
-    args: ['-c', 'python', '-m', 'pytest', 'tests/integration', '-vv']
+    entrypoint: python
+    args: ['-m', 'pytest', '-vv', 'tests/integration', '--cov=gcp_airflow_foundations']
     id: "integration-test"
 
     # - -c
