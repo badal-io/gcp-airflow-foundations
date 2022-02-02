@@ -122,7 +122,7 @@ class TestMigrateSchemaColumnAddition(unittest.TestCase):
         clear_db_dags()
 
         BigQueryHook().run_copy(
-            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions_ODS',
+            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions',
             destination_project_dataset_table=f'{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}',
             write_disposition='WRITE_TRUNCATE',
             create_disposition='CREATE_IF_NEEDED'
@@ -167,7 +167,7 @@ class TestMigrateSchemaDataTypeChangeValid(unittest.TestCase):
         clear_db_dags()
 
         BigQueryHook().run_copy(
-            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions_ODS',
+            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions',
             destination_project_dataset_table=f'{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}',
             write_disposition='WRITE_TRUNCATE',
             create_disposition='CREATE_IF_NEEDED'
@@ -212,7 +212,7 @@ class TestMigrateSchemaDataTypeChangeInvalid(unittest.TestCase):
         clear_db_dags()
 
         BigQueryHook().run_copy(
-            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions_ODS',
+            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions',
             destination_project_dataset_table=f'{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}',
             write_disposition='WRITE_TRUNCATE',
             create_disposition='CREATE_IF_NEEDED'

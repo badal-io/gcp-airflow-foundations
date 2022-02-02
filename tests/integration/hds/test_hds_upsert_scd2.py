@@ -91,7 +91,7 @@ class TestIncrementalUpsertSCD2HDS(unittest.TestCase):
         clear_db_dags()
 
         BigQueryHook().run_copy(
-            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions_HDS',
+            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions',
             destination_project_dataset_table=f'{PROJECT_ID}.{DATASET}.{self.table_id}',
             write_disposition='WRITE_TRUNCATE',
             create_disposition='CREATE_IF_NEEDED'
@@ -165,7 +165,7 @@ class TestFullUpsertSCD2HDS(unittest.TestCase):
         clear_db_dags()
 
         BigQueryHook().run_copy(
-            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions_HDS',
+            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions',
             destination_project_dataset_table=f'{PROJECT_ID}.{DATASET}.{self.table_id}',
             write_disposition='WRITE_TRUNCATE',
             create_disposition='CREATE_IF_NEEDED'
