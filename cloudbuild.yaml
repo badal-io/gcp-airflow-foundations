@@ -38,7 +38,7 @@ steps:
 #    id: "install-req"
 
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2', 'install-req']
+    waitFor: ['build-airflow2']
     entrypoint: /bin/bash
     env:
       - 'PYTHONUSERBASE=/home/airflow/.local'
