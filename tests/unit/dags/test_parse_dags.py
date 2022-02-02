@@ -3,16 +3,12 @@ import pytest
 import unittest
 
 import airflow
-from airflow import DAG
-from airflow.models import DagBag
-from airflow.utils.dag_cycle_tester import test_cycle
 from airflow.exceptions import AirflowException
 
 from gcp_airflow_foundations.parse_dags import DagParser
 from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
 
 import logging
-
 
 class TestDagParser(unittest.TestCase):
     def setUp(self):
