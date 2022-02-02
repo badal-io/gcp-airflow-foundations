@@ -52,8 +52,6 @@ steps:
       python -m site
       echo 'pwd'
       pwd
-      echo 'pip show pytest'
-      pip show pytest
       echo 'ls tests/integration/'
       ls tests/integration/
 
