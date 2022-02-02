@@ -113,4 +113,3 @@ images:
   - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 options:
   substitution_option: 'ALLOW_LOOSE'
-  logging: CLOUD_LOGGING_ONLY
