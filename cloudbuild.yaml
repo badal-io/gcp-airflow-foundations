@@ -2,10 +2,8 @@
 substitutions:
   _BUILD_IMG_NAME: airflow2_cicd:latest
   _PYTHON_VERSION: '3.8'
-#  _PROJECT_ID: airflow-framework
 steps:
   # - Build a new Airflow2 image.
-  # [START build-airflow2]
   - id: build-airflow2
     name: gcr.io/kaniko-project/executor
     args:
@@ -13,69 +11,6 @@ steps:
       - --cache=true
       - --cache-ttl=2h
       - --dockerfile=docker/Dockerfile-ci
-  # - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-  #   waitFor: ['build-airflow2']
-  #   entrypoint: '/bin/bash'
-  #   args:
-  #     - '-c'
-  #     - 'python -V'
-  #   id: "python-versions"
-  # - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-  #   waitFor: ['build-airflow2']
-  #   entrypoint: '/bin/bash'
-  #   args: ['-c', 'python', 'import sys; print(sys.path)']
-  #   id: "python-list"
-#  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-#    waitFor: ['build-airflow2']
-#    entrypoint: pip
-#    args: ['install', '-r','docker/requirements-ci.txt', '--user']
-#    id: "python-install"
-
-#  - name: python
-#    waitFor: ['build-airflow2']
-#    entrypoint: pip
-#    args: ["install", "-r", "docker/requirements-ci.txt"]
-#    id: "install-req"
-
-  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
-    entrypoint: /bin/bash
-    env:
-      - 'PYTHONUSERBASE=/home/airflow/.local'
-    args:
-    - '-c'
-    - |
-      echo 'getting env'
-      env
-      echo 'PATH: ' $$PATH
-      echo 'python -m site'
-      python -m site
-      echo 'pwd'
-      pwd
-      echo 'ls tests/integration/'
-      ls tests/integration/
-      echo 'ls /workspace/tests/integration/'
-      ls /workspace/tests/integration/
-      echo 'ls /workspace/tests/integration/'
-      ls /workspace/tests/integration/
-
-
-    id: "test1"
-#  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-#    waitFor: ['build-airflow2']
-#    entrypoint: '/bin/bash'
-#    args:
-#      - '-c'
-#      - 'pip3 install --no-cache-dir -r docker/requirements-ci.txt'
-#    id: "unit-test-2"
-#  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-#    waitFor: ["install-req", 'build-airflow2','test1']
-#    env:
-#      - 'PYTHONPATH=/home/airflow/.local'
-#    entrypoint: python
-#    dir: /home/airflow/
-#    args: ['-m', 'pytest', 'tests/unit', '-vv']
-#    id: "unit-test"
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2','test1']
     env:
@@ -91,22 +26,6 @@ steps:
     args: ['-m', 'pytest', '--tc-file','tests/integration/config.ini', '-vv', 'tests/integration']
     id: "integration-test"
 
-
-    # - -c
-    # - |
-    # 'python', '-m', 'pytest', 'tests/unit', '-vv'|| { exit 1; }
-
-  #   id: "unit-test"
-
-  # - name: python:3.8
-  #   entrypoint: pip
-  #   args: ["install", "-r", "docker/requirements-ci.txt", "--user"]
-
-  # - name: python:3.8
-  #   entrypoint: python
-  #   args: ['-m', 'pytest', 'tests/unit']
-  
-  # [END unit-test]
 
 timeout: 1200s
 images:
