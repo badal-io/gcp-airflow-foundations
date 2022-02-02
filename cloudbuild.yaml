@@ -54,6 +54,8 @@ steps:
       pwd
       echo 'pip show pytest'
       pip show pytest
+      echo 'ls tests/integration/'
+      ls tests/integration/
 
     id: "test1"
 #  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
