@@ -1,6 +1,6 @@
 # - Airflow Env variables.
 substitutions:
-  _BUILD_IMG_NAME: airflow2_cicd_2:latest
+  _BUILD_IMG_NAME: airflow2_cicd:latest
   _PYTHON_VERSION: '3.8'
 #  _PROJECT_ID: airflow-framework
 steps:
