@@ -83,7 +83,7 @@ steps:
     env:
       - 'PYTHONUSERBASE=/home/airflow/.local'
     entrypoint: python
-    args: ['-m', 'pytest', '-vv', ' --tc-file',' tests/integration/config.ini', 'tests/integration']
+    args: ['-m', 'pytest',  ' --tc-file',' tests/integration/config.ini', '-vv', 'tests/integration']
     id: "integration-test"
 
     # - -c
