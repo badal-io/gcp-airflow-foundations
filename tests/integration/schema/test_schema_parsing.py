@@ -49,7 +49,7 @@ expected_xcom = {
         'socialEngagementType', 
         'customDimensions'
     ],
-    'af_test_hds.ga_sessions': [
+    'af_test_ods.ga_sessions_ODS': [
         {'name': 'visitorId', 'type': 'INTEGER', 'mode': 'NULLABLE'},
         {'name': 'visitNumber', 'type': 'INTEGER', 'mode': 'NULLABLE'}, 
         {'name': 'visitId', 'type': 'INTEGER', 'mode': 'NULLABLE'}, 
@@ -69,7 +69,7 @@ expected_xcom = {
         {'name': 'af_metadata_primary_key_hash', 'type': 'STRING'}, 
         {'name': 'af_metadata_row_hash', 'type': 'STRING'}
     ], 
-    'af_test_hds.ga_sessions': [
+    'af_test_hds.ga_sessions_HDS': [
         {'name': 'visitorId', 'type': 'INTEGER', 'mode': 'NULLABLE'}, 
         {'name': 'visitNumber', 'type': 'INTEGER', 'mode': 'NULLABLE'}, 
         {'name': 'visitId', 'type': 'INTEGER', 'mode': 'NULLABLE'}, 
