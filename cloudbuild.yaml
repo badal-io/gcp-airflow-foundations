@@ -13,22 +13,6 @@ steps:
       - --cache=true
       - --cache-ttl=2h
       - --dockerfile=docker/Dockerfile-ci
-  # - Unit tests.
-  # [START unit-test]
-  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
-    entrypoint: '/bin/bash'
-    args:
-      - '-c'
-      - 'whoami'
-    id: "whoami"
-  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-    waitFor: ['build-airflow2']
-    entrypoint: '/bin/bash'
-    args:
-      - '-c'
-      - 'pip list'
-    id: "list"
   # - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
   #   waitFor: ['build-airflow2']
   #   entrypoint: '/bin/bash'
@@ -47,18 +31,17 @@ steps:
 #    args: ['install', '-r','docker/requirements-ci.txt', '--user']
 #    id: "python-install"
 
-  - name: python
-    waitFor: ['build-airflow2']
-    entrypoint: pip
-    args: ["install", "-r", "docker/requirements-ci.txt"]
-    id: "install-req"
+#  - name: python
+#    waitFor: ['build-airflow2']
+#    entrypoint: pip
+#    args: ["install", "-r", "docker/requirements-ci.txt"]
+#    id: "install-req"
 
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2', 'install-req']
     entrypoint: /bin/bash
     env:
       - 'PYTHONUSERBASE=/home/airflow/.local'
-     # - 'PYTHONPATH=/home/airflow/.local'
     args:
     - '-c'
     - |
@@ -91,19 +74,17 @@ steps:
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ["install-req", 'build-airflow2','test1', 'install-req']
     env:
-      #- 'PYTHONPATH=/home/airflow/.local'
       - 'PYTHONUSERBASE=/home/airflow/.local'
     entrypoint: python
     args: ['-m', 'pytest', 'tests/unit', '-vv']
-    id: "unit-test-2"
-#  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
-#    waitFor: ['build-airflow2']
-#    env:
-#      - 'PYTHONHOME=/home/airflow/.local'
-#    entrypoint: /bin/bash
-#    dir: /home/airflow/
-#    args: ['-c', 'python', '-m', 'pytest', 'tests/integration', '-vv']
-#    id: "integration-test"
+    id: "unit-test"
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    env:
+      - 'PYTHONUSERBASE=/home/airflow/.local'
+    entrypoint: /bin/bash
+    args: ['-c', 'python', '-m', 'pytest', 'tests/integration', '-vv']
+    id: "integration-test"
 
     # - -c
     # - |
