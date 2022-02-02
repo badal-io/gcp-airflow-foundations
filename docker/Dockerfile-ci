@@ -1,3 +1,4 @@
+# TODO: use multi-stage builds. This file is exactly the same as Dockerfile except the last line
 ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
 
 FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
@@ -15,22 +16,19 @@ ENV PATH $PATH:/home/airflow/google-cloud-sdk/bin
 RUN mkdir /opt/airflow/gcp_airflow_foundations
 
 # Copying only files essential for installing gcp_airflow_foundations
-COPY setup.py /opt/airflow/setup.py
-COPY setup.cfg /opt/airflow/setup.cfg
-COPY README.md /opt/airflow/README.md
-COPY MANIFEST.in /opt/airflow/MANIFEST.in
+COPY setup.py setup.cfg README.md MANIFEST.in requirements.txt docker/requirements-ci.txt /opt/airflow/
 COPY gcp_airflow_foundations/__init__.py /opt/airflow/gcp_airflow_foundations/__init__.py
 COPY gcp_airflow_foundations/version.py /opt/airflow/gcp_airflow_foundations/version.py
 
+WORKDIR /opt/airflow
+
+RUN pip install  --upgrade pip
+
 # - Install CI/test dependencies
-COPY docker/requirements-ci.txt requirements-ci.txt
-RUN pip install --no-cache-dir -r requirements-ci.txt
+RUN pip install  --no-cache-dir -r requirements-ci.txt
 
 # - Install dependencies
-COPY requirements.txt requirements.txt
-#RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install  -e .
 
-WORKDIR /opt/airflow
-# RUN pip install --upgrade pip
-RUN pip install -e .
+RUN airflow db init
 

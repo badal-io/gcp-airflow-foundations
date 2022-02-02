@@ -31,7 +31,7 @@ class TestSqlHelperHDS(unittest.TestCase):
         ingestion_type = IngestionType.INCREMENTAL
 
         assert (
-            self.sql_helper.create_scd2_sql_with_hash(ingestion_type)
+            self.sql_helper.create_scd2_sql_with_hash(ingestion_type).strip()
             == """
             MERGE `target_dataset.target` T
             USING (SELECT  key AS join_key_key, key,column_a
@@ -51,15 +51,16 @@ class TestSqlHelperHDS(unittest.TestCase):
             WHEN MATCHED AND (MD5(TO_JSON_STRING(T.`column_b`)) != MD5(TO_JSON_STRING(S.`column_a`))) THEN UPDATE SET af_metadata_expired_at = CURRENT_TIMESTAMP()
             WHEN NOT MATCHED BY TARGET THEN INSERT (`key`,`column_b`, af_metadata_created_at, af_metadata_expired_at, af_metadata_row_hash)
             VALUES (`key`,`column_a`, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S))))
-
-        """
+        """.strip()
         )
 
     def test_full_scd2(self):
         ingestion_type = IngestionType.FULL
 
         assert (
-            self.sql_helper.create_scd2_sql_with_hash(ingestion_type=ingestion_type)
+            self.sql_helper.create_scd2_sql_with_hash(
+                ingestion_type=ingestion_type
+            ).strip()
             == """
             MERGE `target_dataset.target` T
             USING (SELECT  key AS join_key_key, key,column_a
@@ -80,7 +81,7 @@ class TestSqlHelperHDS(unittest.TestCase):
             WHEN NOT MATCHED BY TARGET THEN INSERT (`key`,`column_b`, af_metadata_created_at, af_metadata_expired_at, af_metadata_row_hash)
             VALUES (`key`,`column_a`, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S))))
             WHEN NOT MATCHED BY SOURCE THEN UPDATE SET T.af_metadata_expired_at = CURRENT_TIMESTAMP()
-        """
+        """.strip()
         )
 
     def test_snapshot(self):
@@ -92,7 +93,7 @@ class TestSqlHelperHDS(unittest.TestCase):
         assert (
             self.sql_helper.create_snapshot_sql_with_hash(
                 partition_timestamp=partition_timestamp
-            )
+            ).strip()
             == """
             SELECT
                 `key` AS `key`,`column_a` AS `column_b`,
@@ -100,5 +101,5 @@ class TestSqlHelperHDS(unittest.TestCase):
                 TIMESTAMP_TRUNC('2021-01-01T00:00:00', DAY) AS partition_column,
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS af_metadata_row_hash
             FROM `source_dataset.source` S
-        """
+        """.strip()
         )

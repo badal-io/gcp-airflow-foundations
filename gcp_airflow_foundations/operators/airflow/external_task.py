@@ -90,7 +90,7 @@ class TableIngestionSensor(BaseSensorOperator):
             dttm = context["execution_date"]
 
         dttm_filter = [dttm]
-        # serialized_dttm_filter = ",".join(dt.isoformat() for dt in dttm_filter)
+        serialized_dttm_filter = ",".join(dt.isoformat() for dt in dttm_filter)
 
         count_allowed = self.get_count(
             dttm_filter, context, session, self.allowed_states
@@ -118,6 +118,7 @@ class TableIngestionSensor(BaseSensorOperator):
         :type states: list
         :return: count of record against the filters
         """
+        TI = TaskInstance
         DR = DagRun
 
         external_dag_ids = self.get_external_dag_ids(context=context, session=session)
@@ -150,10 +151,10 @@ class TableIngestionSensor(BaseSensorOperator):
         external_dag_ids = []
 
         # Query all active dags
-        query = session.query(DagModel).filter(DagModel.is_active is True).all()
+        query = session.query(DagModel).filter(DagModel.is_active == True).all()
 
         if len(query) == 0:
-            raise AirflowException("No active dags found.")
+            raise AirflowException(f"No active dags found.")
 
         schedule_map = {}
         source_dag_map = {}
@@ -173,13 +174,13 @@ class TableIngestionSensor(BaseSensorOperator):
 
         if len(source_dag_map) == 0:
             raise AirflowException(
-                "Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly."
+                f"Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly."
             )
 
         for source, tables in self.external_source_tables.items():
             source_dags = source_dag_map.get(source, None)
 
-            if not source_dags:
+            if source_dags is None:
                 raise AirflowException(f"No active dags found for source {source}.")
 
             dags = []

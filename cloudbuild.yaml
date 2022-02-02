@@ -1,34 +1,34 @@
 # - Airflow Env variables.
 substitutions:
-  _GCP_PROJECT_ID: airflow-framework
   _BUILD_IMG_NAME: airflow2_cicd:latest
   _PYTHON_VERSION: '3.8'
 steps:
-# - Build a new Airflow2 image.
-  # [START build-airflow2]
-  - name: 'gcr.io/cloud-builders/docker'
-    waitFor: ['-']
-    entrypoint: 'bash'
+  # - Build a new Airflow2 image.
+  - id: build-airflow2
+    name: gcr.io/kaniko-project/executor
     args:
-      - '-c'
-      - |
-        docker build -t gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME} \
-        --build-arg PYTHON_VERSION=${_PYTHON_VERSION} \
-        -f docker/cloudbuild.Dockerfile .
-    #env:
-    #  - 'FOO=$_BAR'
-    dir: '.'
-    id: 'build-airflow2'
-  # [END build-airflow2]
-
-# - Unit tests.
-  # [START unit-test]
+      - --destination=gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}
+      - --cache=true
+      - --cache-ttl=2h
+      - --dockerfile=docker/Dockerfile-ci
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-          pytest tests/unit -vv
+    env:
+      - 'PYTHONUSERBASE=/home/airflow/.local'
+    entrypoint: python
+    args: ['-m', 'pytest', 'tests/unit', '-vv']
     id: "unit-test"
-  # [END unit-test]
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    env:
+      - 'PYTHONUSERBASE=/home/airflow/.local'
+    entrypoint: python
+    args: ['-m', 'pytest', '--tc-file','tests/integration/config.ini', '-vv', 'tests/integration']
+    id: "integration-test"
+
+
+timeout: 1200s
+images:
+  - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+options:
+  substitution_option: 'ALLOW_LOOSE'

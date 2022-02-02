@@ -3,9 +3,6 @@ import pytest
 import unittest
 
 import airflow
-from airflow import DAG
-from airflow.models import DagBag
-from airflow.utils.dag_cycle_tester import test_cycle
 from airflow.exceptions import AirflowException
 
 from gcp_airflow_foundations.parse_dags import DagParser

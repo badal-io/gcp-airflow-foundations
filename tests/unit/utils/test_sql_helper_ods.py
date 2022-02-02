@@ -28,7 +28,7 @@ class TestSqlHelperODS(unittest.TestCase):
 
     def test_full_sql(self):
         assert (
-            self.sql_helper.create_full_sql()
+            self.sql_helper.create_full_sql().strip()
             == """
             SELECT `key` AS `key`,`column_a` AS `column_b`,
                 CURRENT_TIMESTAMP() AS af_metadata_inserted_at,
@@ -36,13 +36,12 @@ class TestSqlHelperODS(unittest.TestCase):
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS af_metadata_row_hash,
                 TO_BASE64(MD5(ARRAY_TO_STRING([CAST(S.`key` AS STRING)], ""))) AS af_metadata_primary_key_hash
             FROM `source_dataset.source` S
-        """
+        """.strip()
         )
 
     def test_upsert_sql(self):
-        print(self.sql_helper.create_upsert_sql_with_hash())
         assert (
-            self.sql_helper.create_upsert_sql_with_hash()
+            self.sql_helper.create_upsert_sql_with_hash().strip()
             == """
             MERGE `target_dataset.target` T
             USING `source_dataset.source` S
@@ -52,5 +51,5 @@ class TestSqlHelperODS(unittest.TestCase):
                 SET `key`=S.`key`,`column_b`=S.`column_a`,af_metadata_updated_at=CURRENT_TIMESTAMP(),af_metadata_row_hash=TO_BASE64(MD5(TO_JSON_STRING(S)))
             WHEN NOT MATCHED THEN
                 INSERT (`key`,`column_b`, af_metadata_inserted_at, af_metadata_updated_at, af_metadata_row_hash, af_metadata_primary_key_hash)
-                VALUES (`key`,`column_a`, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([CAST(S.`key` AS STRING)], ""))))"""
+                VALUES (`key`,`column_a`, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), TO_BASE64(MD5(TO_JSON_STRING(S))), TO_BASE64(MD5(ARRAY_TO_STRING([CAST(S.`key` AS STRING)], ""))))""".strip()
         )
