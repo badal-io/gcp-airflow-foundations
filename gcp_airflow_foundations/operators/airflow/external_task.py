@@ -88,6 +88,7 @@ class TableIngestionSensor(BaseSensorOperator):
             dttm = context["execution_date"]
 
         dttm_filter = [dttm]
+        # serialized_dttm_filter = ",".join(dt.isoformat() for dt in dttm_filter)
 
         count_allowed = self.get_count(
             dttm_filter, context, session, self.allowed_states
@@ -115,6 +116,7 @@ class TableIngestionSensor(BaseSensorOperator):
         :type states: list
         :return: count of record against the filters
         """
+        # TI = TaskInstance
         DR = DagRun
 
         external_dag_ids = self.get_external_dag_ids(context=context, session=session)
@@ -147,7 +149,7 @@ class TableIngestionSensor(BaseSensorOperator):
         external_dag_ids = []
 
         # Query all active dags
-        query = session.query(DagModel).filter(DagModel.is_active is True).all()
+        query = session.query(DagModel).filter(DagModel.is_active == True).all()  # noqa
 
         if len(query) == 0:
             raise AirflowException("No active dags found.")

@@ -43,11 +43,11 @@ class TestSqlHelperODS(unittest.TestCase):
 
         assert (
             self.sql_helper.create_upsert_sql_with_hash()
-            == """ 
+            == """
             MERGE `target_dataset.target` T
             USING `source_dataset.source` S
             ON T.key=S.key 
-            WHEN MATCHED THEN UPDATE 
+            WHEN MATCHED THEN UPDATE
                 SET `key`=S.`key`,`column_b`=S.`column_a`,af_metadata_updated_at=CURRENT_TIMESTAMP(),af_metadata_row_hash=TO_BASE64(MD5(TO_JSON_STRING(S)))
             WHEN NOT MATCHED THEN
                 INSERT (`key`,`column_b`, af_metadata_inserted_at, af_metadata_updated_at, af_metadata_row_hash, af_metadata_primary_key_hash)
