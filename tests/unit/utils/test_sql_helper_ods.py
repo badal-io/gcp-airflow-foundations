@@ -47,7 +47,6 @@ class TestSqlHelperODS(unittest.TestCase):
             MERGE `target_dataset.target` T
             USING `source_dataset.source` S
             ON T.key=S.key
-
             WHEN MATCHED THEN UPDATE
                 SET `key`=S.`key`,`column_b`=S.`column_a`,af_metadata_updated_at=CURRENT_TIMESTAMP(),af_metadata_row_hash=TO_BASE64(MD5(TO_JSON_STRING(S)))
             WHEN NOT MATCHED THEN
