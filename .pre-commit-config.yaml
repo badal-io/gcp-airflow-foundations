@@ -9,5 +9,5 @@ repos:
       hooks:
         -   id: check-yaml
         -   id: end-of-file-fixer
-        -   id: trailing-whitespace
+#       -   id: trailing-whitespace - seems to break some units tests
         -   id: check-added-large-files
