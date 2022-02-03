@@ -512,7 +512,7 @@ class TestTableIngestionSensor(unittest.TestCase):
             execute_task(task=op, execution_date=DEFAULT_DATE)
         assert (
             str(ctx.value)
-            == f"Incompatible schedule intervals with that of the main DAG: @once."
+            == "Incompatible schedule intervals with that of the main DAG: @once."
         )
 
     def test_catch_delimiter_error(self):
@@ -546,5 +546,5 @@ class TestTableIngestionSensor(unittest.TestCase):
             execute_task(task=op, execution_date=DEFAULT_DATE)
         assert (
             str(ctx.value)
-            == f"Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly."
+            == "Unable to determine table ingestion DAGs. Make sure the period delimiter is used correctly."
         )
