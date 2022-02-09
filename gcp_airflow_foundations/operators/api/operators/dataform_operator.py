@@ -16,6 +16,8 @@ class DataformOperator(BaseOperator):
     :type schedule: str
     :param tags: (optional) A list of tags with which the action must have in order to be run. If not set, then all actions will run.
     :type tags: list[str]
+    :param wait_until_finished: (optional) wait until job finishes running, either return success or error
+    :type wait_until_finished: bool
 
     Instructions to prepare Dataform for the API call:
     1. create schedule in Dataform for REST API call
@@ -34,17 +36,19 @@ class DataformOperator(BaseOperator):
     ** Note: Schedules must be on the master branch. In Dataform, you'll have to create a branch first and then merge changes into master.
     '''
     @apply_defaults
-    def __init__(self, *, dataform_conn_id: str = 'dataform_default', environment: str, schedule: str, tags: Optional[str] = [], **kwargs: Any) -> None:
+    def __init__(self, *, dataform_conn_id: str = 'dataform_default', environment: str, schedule: str, tags: Optional[str] = [], wait_until_finished: bool = True, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.dataform_conn_id = dataform_conn_id
         self.environment = environment
         self.schedule = schedule
         self.tags = tags
+        self.wait_until_finished = wait_until_finished
 
     def execute(self, context) -> str:
         dataform_hook = DataformHook(dataform_conn_id=self.dataform_conn_id)
         dataform_hook.run_job(
             environment=self.environment,
             schedule=self.schedule,
-            tags=self.tags
+            tags=self.tags,
+            wait_until_finished=self.wait_until_finished
         )

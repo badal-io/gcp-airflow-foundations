@@ -22,6 +22,10 @@ class DataformHook(BaseHook):
     :type schedule: str
     :param tags: (optional) A list of tags with which the action must have in order to be run. If not set, then all actions will run.
     :type tags: list[str]
+    :param wait_until_finished: (optional) ait until job finishes running, either return success or error
+    :type wait_until_finished: bool
+    :param sleep_time: (optional) if status returns "RUNNING", wait for configured time before retry. Default is 60 seconds
+    :type sleep_time: int
 
     Instructions to prepare Dataform for the API call:
     1. create schedule in Dataform for REST API call
@@ -47,7 +51,7 @@ class DataformHook(BaseHook):
         self.project_id = self.conn.login
         self.api_key = self.conn.password
 
-    def run_job(self, environment: str, schedule: str, tags: Optional[str] = []) -> str:
+    def run_job(self, environment: str, schedule: str, tags: Optional[str] = [], wait_until_finished: bool = True, sleep_time: int = 60) -> str:
         base_url = f'https://api.dataform.co/v1/project/{self.project_id}/run'
         headers = {'Authorization': f'Bearer {self.api_key}'}
         run_create_request = {
@@ -67,16 +71,15 @@ class DataformHook(BaseHook):
         except Exception:
             raise AirflowException(f"Dataform ApiService Error: {response.json()}")
 
-        response = requests.get(run_url, headers=headers)
-
-        while response.json()['status'] == 'RUNNING':
-            time.sleep(10)
-            # retry after 10 seconds
+        while wait_until_finished:
             response = requests.get(run_url, headers=headers)
-            logging.info(response.json())
 
-        if response.json()['status'] == 'SUCCESSFUL':
-            return f"Dataform run completed: SUCCESSFUL see run logs at {response.json()['runLogUrl']}"
-        else:
-            raise AirflowException(
-                f"Dataform run {response.json()['status']} for {response.json()['id']}: see run logs at {response.json()['runLogUrl']}")
+            if response.json()['status'] == 'RUNNING':
+                response = requests.get(run_url, headers=headers)
+                logging.info(f'Dataform run in progress: {response.json()}')
+                time.sleep(sleep_time)
+            elif response.json()['status'] == 'SUCCESSFUL':
+                return f"Dataform run completed: SUCCESSFUL see run logs at {response.json()['runLogUrl']}"
+            else:
+                raise AirflowException(
+                    f"Dataform run {response.json()['status']} for {response.json()['id']}: see run logs at {response.json()['runLogUrl']}")
