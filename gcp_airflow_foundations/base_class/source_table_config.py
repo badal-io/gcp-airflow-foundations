@@ -13,7 +13,7 @@ from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetad
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
-
+from gcp_airflow_foundations.base_class.dataform_config import DataformConfig
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTableConfig
@@ -34,6 +34,7 @@ class SourceTableConfig:
         column_casting : Mapping used to cast columns into a specific data type. Note column name uses that of the landing zone table.
         ods_config : ODS table configuration. See :class:`gcp_airflow_foundations.base_class.ods_table_config.OdsTableConfig`.
         hds_config : HDS table configuration. See :class:`gcp_airflow_foundations.base_class.hds_table_config.HdsTableConfig`.
+        dataform_options: Dataform configuration. See :class:`gcp_airflow_foundations.dataform_config.DataformConfig`.
         facebook_table_config: Extra options for ingesting data from the Facebook API.
         extra_options: Field for storing additional configuration options.
         start_date : Start date override for DAG
@@ -52,6 +53,7 @@ class SourceTableConfig:
     cluster_fields: Optional[List[str]]
     column_casting: Optional[dict]
     hds_config: Optional[HdsTableConfig]
+    dataform_options: Optional[DataformConfig]
     facebook_table_config: Optional[FacebookTableConfig]
     start_date: Optional[str]
     extra_options: dict = field(default_factory=dict)

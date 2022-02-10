@@ -8,8 +8,8 @@ from gcp_airflow_foundations.base_class.source_config import SourceConfig
 from gcp_airflow_foundations.enums.schema_source_type import SchemaSourceType
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 from gcp_airflow_foundations.source_class.schema_source_config import AutoSchemaSourceConfig, GCSSchemaSourceConfig, BQLandingZoneSchemaSourceConfig
-
 import logging
+
 
 class DagBuilder(ABC):
     """A base DAG builder for creating a list of DAGs for a given source.
@@ -64,9 +64,9 @@ class DagBuilder(ABC):
                 **kwargs
             ) as dag:    
 
-                load_to_bq_landing = self.get_bq_ingestion_task(dag, table_config)
+                load_to_bq_landing = self.get_bq_ingestion_task(dag, table_config) # load data to BigQuery staging table
 
-                self.get_datastore_ingestion_task(dag, load_to_bq_landing, data_source, table_config)
+                self.get_datastore_ingestion_task(dag, load_to_bq_landing, data_source, table_config) # load data to BigQuery ODS/HDS tables
             
                 dags.append(dag)
                 
