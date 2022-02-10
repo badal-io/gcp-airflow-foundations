@@ -68,9 +68,9 @@ class MergeBigQueryODS(BigQueryOperator):
         delegate_to: Optional[str] = None,
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
-        column_casting: dict,
         ingestion_type: IngestionType,
         ods_table_config: OdsTableConfig,
+        column_casting: dict = {},
         location: Optional[str] = None,
         **kwargs,
     ) -> None:

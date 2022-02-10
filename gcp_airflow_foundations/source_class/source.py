@@ -60,6 +60,7 @@ class DagBuilder(ABC):
                 description=f"{data_source.name} to BigQuery load for {table_config.table_name}",
                 schedule_interval=data_source.ingest_schedule,
                 default_args=table_default_task_args,
+                catchup=data_source.catchup,
                 render_template_as_native_obj=True,
                 **kwargs
             ) as dag:    

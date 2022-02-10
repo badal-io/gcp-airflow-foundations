@@ -1,0 +1,29 @@
+# -- Dev Env Config:
+# - GCP project ID (required for GCP connection)
+#GCP_PROJECT_ID=airflow-framework
+
+# -- Airflow Configuration:
+AIRFLOW__API__AUTH_BACKEND=airflow.api.auth.backend.basic_auth
+AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=false
+AIRFLOW__CORE__LOAD_EXAMPLES=false
+AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=false
+AIRFLOW__WEBSERVER__RELOAD_ON_PLUGIN_CHANGE=true
+AIRFLOW__EMAIL__EMAIL_BACKEND=airflow.providers.sendgrid.utils.emailer.send_email
+AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL=60
+AIRFLOW__CORE__LAZY_LOAD_PLUGINS=false
+AIRFLOW__WEBSERVER__EXPOSE_CONFIG=true
+AIRFLOW__CORE__KILLED_TASK_CLEANUP_TIME=604800
+AIRFLOW__SCHEDULER__SCHEDULE_AFTER_TASK_EXECUTION=false
+AIRFLOW__SCHEDULER__SCHEDULER_HEALTH_CHECK_THRESHOLD=240
+
+# - GCP connection (gcloud auth)
+#GCP_AUTH_SCOPE='https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform'
+#AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT='google-cloud-platform://user:password@host/schema?extra__google_cloud_platform__scope=${TEST1_GCP_AUTH_SCOPE}&extra__google_cloud_platform__project=${GCP_PROJECT_ID}'
+
+
+## -- Uncomment to use -- ##
+# - GCP using service account keys json
+AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT='google-cloud-platform://user:password@host/schema?extra__google_cloud_platform__key_path=%2Fprivate_keys%2Fkeys.json&extra__google_cloud_platform__scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&extra__google_cloud_platform__project=${GCP_PROJECT_ID}&extra__google_cloud_platform__num_retries=5'
+
+# - Airflow variables (alternative to airflow-vars.json):
+#AIRFLOW_VAR_FOO=bar

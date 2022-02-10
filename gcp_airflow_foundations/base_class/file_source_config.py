@@ -19,12 +19,15 @@ class FileSourceConfig:
         delete_gcs_files: whether to delete the GCS after transferring them to BigQuery
         sensor_timeout: time, in seconds, before the sensors time out: default is 10800 (3 hours)
     """
-    file_name_template: Optional[str]
-    file_prefix_filtering: bool
-    date_format: str
-    airflow_date_template: str
-    delimeter: str
+
     source_format: str
-    delete_gcs_files: bool
-    gcs_bucket_prefix: str
+    file_name_template: Optional[str]
+
+    file_prefix_filtering: bool = False
+
+    date_format: str = "%Y-%m-%d"
+    airflow_date_template: str = "ds"
+    delete_gcs_files: bool = True
+    gcs_bucket_prefix: str = False
+    delimeter: str = ","
     sensor_timeout: int = 10800

@@ -1,33 +1,33 @@
 from airflow import DAG
-from airflow.exceptions import AirflowException
 
 from airflow.utils.task_group import TaskGroup
 
-from airflow.providers.google.cloud.operators.bigquery import (
-    BigQueryCreateEmptyTableOperator,
-    BigQueryExecuteQueryOperator
-)
+from typing import List, Optional
 
 from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
 from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import MigrateSchema
 
 from gcp_airflow_foundations.operators.gcp.create_table import CustomBigQueryCreateEmptyTableOperator
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+
+from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
+
 
 
 def ods_builder(
-    project_id,
-    table_id,
-    dataset_id,
-    landing_zone_dataset,
-    landing_zone_table_name_override,
-    column_mapping,
-    column_casting,
-    surrogate_keys,
-    ingestion_type,
-    ods_table_config,
-    partition_expiration,
-    location,
-    dag,
+    project_id: str,
+    table_id: str,
+    dataset_id: str,
+    landing_zone_dataset: str,
+    landing_zone_table_name_override: Optional[str],
+    column_mapping: Optional[dict],
+    column_casting:  Optional[dict],
+    surrogate_keys: List[str],
+    ingestion_type: IngestionType,
+    ods_table_config: Optional[OdsTableConfig],
+    partition_expiration: Optional[int],
+    location: str,
+    dag: DAG,
     cluster_fields=None,
     labels=None,
     encryption_configuration=None) -> TaskGroup:

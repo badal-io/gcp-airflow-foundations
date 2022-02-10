@@ -9,10 +9,8 @@ import datetime
 from typing import List, Optional
 
 from gcp_airflow_foundations.base_class.ods_metadata_config import OdsTableMetadataConfig
-from gcp_airflow_foundations.base_class.hds_metadata_config import HdsTableMetadataConfig
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
-from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
 
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig

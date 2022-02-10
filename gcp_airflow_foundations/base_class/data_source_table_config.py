@@ -3,7 +3,6 @@ from pydantic.dataclasses import dataclass
 from datetime import timedelta
 from datetime import datetime
 from typing import List
-
 from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
 from gcp_airflow_foundations.base_class.source_config import SourceConfig
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
