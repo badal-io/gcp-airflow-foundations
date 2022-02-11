@@ -7,7 +7,7 @@ from airflow.utils import timezone
 from airflow.utils.session import create_session
 from airflow.utils.state import State
 
-from gcp_airflow_foundations.operators.branch.BranchOnCronOperator import (
+from gcp_airflow_foundations.operators.branch.branch_on_cron_operator import (
     BranchOnCronOperator,
 )
 

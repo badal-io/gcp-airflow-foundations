@@ -11,14 +11,13 @@ from google.cloud.bigquery.dataset import DatasetReference
 from google.cloud.bigquery.table import TableReference
 
 from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
-from gcp_airflow_foundations.operators.branch.BranchOnCronOperator import (
+from gcp_airflow_foundations.operators.branch.branch_on_cron_operator import (
     BranchOnCronOperator,
 )
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_helpers import (
     results_to_bq_policy_tags,
 )
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_job_helpers import (
-    build_job_trigger,
     build_inspect_job_config,
 )
 from gcp_airflow_foundations.operators.gcp.dlp.get_dlp_bq_inspection_results_operator import (
