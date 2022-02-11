@@ -1,11 +1,15 @@
-import logging
+from pytest_testconfig import config
 import os
-import pytz
 import sys
-from airflow import DAG
+
+from datetime import datetime
+
 from airflow.models import TaskInstance
 from airflow.models.xcom import XCOM_RETURN_KEY
-from datetime import datetime
+from airflow import DAG
+import pytz
+
+import logging
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../test_utils"))
 DEFAULT_DATE = pytz.utc.localize(datetime(2015, 1, 1))
@@ -16,6 +20,7 @@ def test_dag():
 
 
 def run_task(task, context=None, dagassert_success=True):
+
     logging.info(f"run_task {task}")
     ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 

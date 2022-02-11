@@ -1,4 +1,3 @@
-from pydantic import validator
 from pydantic.dataclasses import dataclass
 
 from typing import List, Optional

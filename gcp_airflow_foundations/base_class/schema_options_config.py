@@ -1,4 +1,3 @@
-from dacite import Config
 from pydantic import validator, root_validator
 from pydantic.dataclasses import dataclass
 

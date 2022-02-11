@@ -11,7 +11,6 @@ from google.cloud import bigquery
 class SchemaMigrationAudit:
     """
     Inserts the the audit log rows of the schema migration operations that are executed by the MigrateSchema class. The table is created if it does not exist.
-
     :param project_id: GCP project ID
     :type project_id: str
     :param table_id: Target table name

@@ -1,15 +1,12 @@
 import datetime
-import os
-from typing import Any, Callable, FrozenSet, Iterable, Optional, Union
 import re
-
-from sqlalchemy import func
-
 from airflow.exceptions import AirflowException
-from airflow.models import BaseOperatorLink, DagBag, DagModel, DagRun, TaskInstance
+from airflow.models import DagModel, DagRun
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.session import provide_session
 from airflow.utils.state import State
+from sqlalchemy import func
+from typing import Iterable, Optional
 
 DELIMITER = "."
 
@@ -56,7 +53,7 @@ class TableIngestionSensor(BaseSensorOperator):
         self,
         *,
         external_source_tables: dict,
-        mode: Optional[str] = "reschedule",
+        # mode: Optional[str] = "reschedule",
         allowed_states: Optional[Iterable[str]] = None,
         failed_states: Optional[Iterable[str]] = None,
         execution_delta: Optional[datetime.timedelta] = None,
@@ -68,12 +65,9 @@ class TableIngestionSensor(BaseSensorOperator):
         )
         self.failed_states = list(failed_states) if failed_states else []
 
-        total_states = self.allowed_states + self.failed_states
-        total_states = set(total_states)
-
         if set(self.failed_states).intersection(set(self.allowed_states)):
             raise AirflowException(
-                "Duplicate values provided as allowed"
+                f"Duplicate values provided as allowed "
                 f"`{self.allowed_states}` and failed states `{self.failed_states}`"
             )
 
@@ -88,7 +82,6 @@ class TableIngestionSensor(BaseSensorOperator):
             dttm = context["execution_date"]
 
         dttm_filter = [dttm]
-        # serialized_dttm_filter = ",".join(dt.isoformat() for dt in dttm_filter)
 
         count_allowed = self.get_count(
             dttm_filter, context, session, self.allowed_states
@@ -149,7 +142,7 @@ class TableIngestionSensor(BaseSensorOperator):
         external_dag_ids = []
 
         # Query all active dags
-        query = session.query(DagModel).filter(DagModel.is_active == True).all()  # noqa
+        query = session.query(DagModel).filter(DagModel.is_active is True).all()
 
         if len(query) == 0:
             raise AirflowException("No active dags found.")

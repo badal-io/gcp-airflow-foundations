@@ -1,27 +1,23 @@
-from gcp_airflow_foundations.operators.gcp.hds.load_hds_taskgroup import hds_builder
-from gcp_airflow_foundations.operators.gcp.ods.load_ods_taskgroup import ods_builder
-
-from gcp_airflow_foundations.operators.gcp.schema_parsing.schema_parsing_operator import (
-    ParseSchema,
-)
-from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
-from gcp_airflow_foundations.operators.gcp.delete_staging_table import (
-    BigQueryDeleteStagingTableOperator,
-)
-from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
-from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
-from gcp_airflow_foundations.base_class.source_config import SourceConfig
-from gcp_airflow_foundations.source_class.schema_source_config import SchemaSourceConfig
-from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup import (
-    schedule_dlp_to_datacatalog_taskgroup,
-    schedule_dlp_to_datacatalog_taskgroup_multiple_tables,
-)
-from airflow.models.dag import DAG
 from airflow.models import BaseOperator
+from airflow.models.dag import DAG
 from airflow.operators.dummy import DummyOperator
 from airflow.utils.trigger_rule import TriggerRule
 
-import logging
+from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
+from gcp_airflow_foundations.base_class.source_config import SourceConfig
+from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
+from gcp_airflow_foundations.operators.gcp.delete_staging_table import (
+    BigQueryDeleteStagingTableOperator,
+)
+from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup import (
+    schedule_dlp_to_datacatalog_taskgroup_multiple_tables,
+)
+from gcp_airflow_foundations.operators.gcp.hds.load_hds_taskgroup import hds_builder
+from gcp_airflow_foundations.operators.gcp.ods.load_ods_taskgroup import ods_builder
+from gcp_airflow_foundations.operators.gcp.schema_parsing.schema_parsing_operator import (
+    ParseSchema,
+)
+from gcp_airflow_foundations.source_class.schema_source_config import SchemaSourceConfig
 
 
 def load_builder(

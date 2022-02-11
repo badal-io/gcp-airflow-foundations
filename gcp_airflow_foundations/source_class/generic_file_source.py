@@ -126,10 +126,6 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         """
         pass
 
-    # @abstractmethod
-    # def load_to_landing_task(self, table_config):
-    #     pass
-
     @abstractmethod
     def delete_gcs_files(table_config, taskgroup):
         pass
@@ -143,7 +139,6 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         )
 
     def get_list_of_files(self, table_config, **kwargs):
-        gcs_hook = GCSHook()
         airflow_date_template = self.file_source_config.airflow_date_template
         if airflow_date_template == "ds":
             ds = kwargs["ds"]
@@ -164,13 +159,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             kwargs["ti"].xcom_push(key="file_list", value=file_list)
             return
         else:
-            bucket = self.config.source.extra_options["gcs_bucket"]
             if self.file_table_config.metadata_file:
-                gcs_hook.download(
-                    bucket_name=bucket,
-                    object_name=self.file_table_config.metadata_file,
-                    filename="metadata.csv",
-                )
                 file_list = []
                 with open("metadata.csv", newline="") as f:
                     for line in f:
