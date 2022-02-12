@@ -23,7 +23,7 @@ source:
   landing_zone_options:
     landing_zone_dataset: test-dataset
   schema_options:
-    schema_source_type: AUTO 
+    schema_source_type: AUTO
 tables:
   - table_name: test-table-id
     ingestion_type: FULL

@@ -7,7 +7,9 @@ from airflow.utils import timezone
 from airflow.utils.session import create_session
 from airflow.utils.state import State
 
-from gcp_airflow_foundations.operators.branch.BranchOnCronOperator import BranchOnCronOperator
+from gcp_airflow_foundations.operators.branch.branch_on_cron_operator import (
+    BranchOnCronOperator,
+)
 
 DEFAULT_DATE = timezone.datetime(2020, 2, 5)  # Wednesday
 INTERVAL = datetime.timedelta(hours=12)
@@ -27,9 +29,7 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
 
     def setUp(self):
         self.dag = DAG(
-            "branch_cron_test",
-            start_date=DEFAULT_DATE,
-            schedule_interval=INTERVAL,
+            "branch_cron_test", start_date=DEFAULT_DATE, schedule_interval=INTERVAL
         )
         self.branch_1 = DummyOperator(task_id="branch_1", dag=self.dag)
         self.branch_2 = DummyOperator(task_id="branch_2", dag=self.dag)
@@ -48,7 +48,7 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
             try:
                 expected_state = task_ids_to_states[ti.task_id]
             except KeyError:
-                raise ValueError(f'Invalid task id {ti.task_id} found!')
+                raise ValueError(f"Invalid task id {ti.task_id} found!")
             else:
                 if isinstance(expected_state, list):
                     assert ti.state in expected_state
@@ -88,9 +88,12 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
         self._assert_task_ids_match_states(
             dr,
             {
-                'make_choice': State.SUCCESS,
-                'branch_1': [State.SUCCESS, None],  # Results seem to be inconsistent - either option is fine
-                'branch_2': State.SKIPPED,
+                "make_choice": State.SUCCESS,
+                "branch_1": [
+                    State.SUCCESS,
+                    None,
+                ],  # Results seem to be inconsistent - either option is fine
+                "branch_2": State.SKIPPED,
             },
         )
 
@@ -122,9 +125,9 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
         self._assert_task_ids_match_states(
             dr,
             {
-                'make_choice': State.SUCCESS,
-                'branch_1': State.SKIPPED,
-                'branch_2': [State.SUCCESS, None],
+                "make_choice": State.SUCCESS,
+                "branch_1": State.SKIPPED,
+                "branch_2": [State.SUCCESS, None],
             },
         )
 
@@ -156,8 +159,8 @@ class TestBranchDayOfWeekOperator(unittest.TestCase):
         self._assert_task_ids_match_states(
             dr,
             {
-                'make_choice': State.SUCCESS,
-                'branch_1': [State.SUCCESS, None],
-                'branch_2': State.SKIPPED,
+                "make_choice": State.SUCCESS,
+                "branch_1": [State.SUCCESS, None],
+                "branch_2": State.SKIPPED,
             },
         )

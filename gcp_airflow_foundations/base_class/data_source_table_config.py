@@ -11,35 +11,37 @@ from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
 import logging
 
 
-partitioning_options = {
-    "HOUR":"@hourly",
-    "DAY":"@daily", 
-    "MONTH":"@monthly"
-}
+partitioning_options = {"HOUR": "@hourly", "DAY": "@daily", "MONTH": "@monthly"}
 
 
 @dataclass
 class DataSourceTablesConfig:
-    """ 
+    """
     Main configuration class used to map the fields from the configuration file.
 
     Attributes:
         source: The data source configuration
         tables: The table configuration
     """
+
     source: SourceConfig
     tables: List[SourceTableConfig]
 
     @root_validator(pre=True)
     def valid_partitioning(cls, values):
-        ingest_schedule = values['source'].ingest_schedule
+        ingest_schedule = values["source"].ingest_schedule
 
-        for table in values['tables']:
-            if (table.hds_config is not None) and (table.hds_config.hds_table_time_partitioning is not None) and (table.hds_config.hds_table_type == HdsTableType.SNAPSHOT):
+        for table in values["tables"]:
+            if (
+                (table.hds_config is not None)
+                and (table.hds_config.hds_table_time_partitioning is not None)
+                and (table.hds_config.hds_table_type == HdsTableType.SNAPSHOT)
+            ):
                 partitioning_time = table.hds_config.hds_table_time_partitioning.value
-                assert partitioning_options[partitioning_time] == ingest_schedule, \
-                    f"Invalid partitioning time selection for table `{table.table_name}` - partitioning time `{partitioning_time}` must match ingestion schedule `{ingest_schedule}`"
-            
+                assert (
+                    partitioning_options[partitioning_time] == ingest_schedule
+                ), f"Invalid partitioning time selection for table `{table.table_name}` - partitioning time `{partitioning_time}` must match ingestion schedule `{ingest_schedule}`"
+
         return values
 
     def dagrun_timeout(self):

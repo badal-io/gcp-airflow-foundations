@@ -7,11 +7,11 @@ from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from google.cloud import bigquery
 
+
 class SchemaMigrationAudit:
     """
     Inserts the the audit log rows of the schema migration operations that are executed by the MigrateSchema class. The table is created if it does not exist.
-    
-    :param project_id: GCP project ID  
+    :param project_id: GCP project ID
     :type project_id: str
     :param table_id: Target table name
     :type table_id: str
@@ -27,9 +27,9 @@ class SchemaMigrationAudit:
         self,
         project_id,
         dataset_id,
-        table_id='schema_migration_audit_table',
-        gcp_conn_id='google_cloud_default',
-        delegate_to=None
+        table_id="schema_migration_audit_table",
+        gcp_conn_id="google_cloud_default",
+        delegate_to=None,
     ):
 
         self.project_id = project_id
@@ -41,13 +41,11 @@ class SchemaMigrationAudit:
         self.migration_id = uuid.uuid4().hex
         self.migration_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        self.bq_hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to)
+        self.bq_hook = BigQueryHook(
+            gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to
+        )
 
-
-    def insert_change_log_rows(
-        self, 
-        change_log: list
-    ):
+    def insert_change_log_rows(self, change_log: list):
         """
         :param change_log: The schema migration operations executed by the MigrateSchema class
         :type change_log: list
@@ -56,51 +54,31 @@ class SchemaMigrationAudit:
         self.create_audit_table()
 
         for i in change_log:
-            i['schema_updated_at'] = self.migration_time
-            i['migration_id'] = self.migration_id
-            
+            i["schema_updated_at"] = self.migration_time
+            i["migration_id"] = self.migration_id
+
         client = self.bq_hook.get_client(project_id=self.project_id)
 
         table_ref = client.dataset(self.dataset_id).table(self.table_id)
         table = client.get_table(table_ref)
 
-        results = client.insert_rows(table, change_log)
-               
+        client.insert_rows(table, change_log)
 
     def create_audit_table(self):
-            self.bq_hook.create_empty_table(
-                project_id=self.project_id,
-                dataset_id=self.dataset_id,
-                table_id=self.table_id,
-                schema_fields=self.__audit_table_schema_fields(),
-                exists_ok=True
-            )
-
+        self.bq_hook.create_empty_table(
+            project_id=self.project_id,
+            dataset_id=self.dataset_id,
+            table_id=self.table_id,
+            schema_fields=self.__audit_table_schema_fields(),
+            exists_ok=True,
+        )
 
     def __audit_table_schema_fields(self):
         return [
-            {
-                "name":"table_id",
-                "type":"STRING"
-            },
-            {
-                "name":"dataset_id",
-                "type":"STRING"
-            },
-            {
-                "name":"schema_updated_at",
-                "type":"TIMESTAMP"
-            },
-            {
-                "name":"migration_id",
-                "type":"STRING"
-            },
-            {
-                "name":"column_name",
-                "type":"STRING"
-            },
-            {
-                "name":"type_of_change",
-                "type":"STRING"
-            }
+            {"name": "table_id", "type": "STRING"},
+            {"name": "dataset_id", "type": "STRING"},
+            {"name": "schema_updated_at", "type": "TIMESTAMP"},
+            {"name": "migration_id", "type": "STRING"},
+            {"name": "column_name", "type": "STRING"},
+            {"name": "type_of_change", "type": "STRING"},
         ]

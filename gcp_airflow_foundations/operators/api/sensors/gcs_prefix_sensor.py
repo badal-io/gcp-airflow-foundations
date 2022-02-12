@@ -36,19 +36,15 @@ class GCSObjectPrefixListExistenceSensor(BaseSensorOperator):
     :type impersonation_chain: Union[str, Sequence[str]]
     """
 
-    template_fields = (
-        'bucket',
-        'prefixes',
-        'impersonation_chain',
-    )
-    ui_color = '#f0eee4'
+    template_fields = ("bucket", "prefixes", "impersonation_chain")
+    ui_color = "#f0eee4"
 
     def __init__(
         self,
         *,
         bucket: str,
         prefixes: list,
-        google_cloud_conn_id: str = 'google_cloud_default',
+        google_cloud_conn_id: str = "google_cloud_default",
         delegate_to: Optional[str] = None,
         impersonation_chain: Optional[Union[str, Sequence[str]]] = None,
         **kwargs,
@@ -63,7 +59,11 @@ class GCSObjectPrefixListExistenceSensor(BaseSensorOperator):
 
     def poke(self, context: dict) -> bool:
         for prefix in self.prefixes:
-            self.log.info('Sensor checks existence of file with prefix : %s, %s', self.bucket, prefix)
+            self.log.info(
+                "Sensor checks existence of file with prefix : %s, %s",
+                self.bucket,
+                prefix,
+            )
         hook = GCSHook(
             gcp_conn_id=self.google_cloud_conn_id,
             delegate_to=self.delegate_to,
@@ -73,9 +73,9 @@ class GCSObjectPrefixListExistenceSensor(BaseSensorOperator):
         all_files_exist = True
         for prefix in self.prefixes:
             logging.info(object)
-            matching = hook.list(bucket_name=self.bucket, prefix=prefix) 
+            matching = hook.list(bucket_name=self.bucket, prefix=prefix)
             logging.info(matching)
             if matching == []:
                 all_files_exist = False
-    
+
         return all_files_exist

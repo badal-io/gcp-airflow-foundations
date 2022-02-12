@@ -14,12 +14,12 @@ def dataflow_taskgroup_builder(
     system_name,
     create_job_params,
     run_dataflow_job,
-    create_table
+    create_table,
 ) -> TaskGroup:
 
     """
     Method for returning a Task Group for JDBC->BQ Dataflow DAGS
-        Either returns a taskgroup for 
+        Either returns a taskgroup for
             1) Table ingestion
             2) Schema ingestion
     """
@@ -28,25 +28,29 @@ def dataflow_taskgroup_builder(
 
     create_job_parameters = PythonOperator(
         task_id="create_job_parameters",
-        op_kwargs={"config_params": dataflow_job_params,
-                    "table_name": table_name,
-                    "destination_table": destination_table,
-                    "destination_schema_table": destination_schema_table,
-                    "query_schema": query_schema,
-                    "owner": dataflow_job_params["database_owner"]},
+        op_kwargs={
+            "config_params": dataflow_job_params,
+            "table_name": table_name,
+            "destination_table": destination_table,
+            "destination_schema_table": destination_schema_table,
+            "query_schema": query_schema,
+            "owner": dataflow_job_params["database_owner"],
+        },
         python_callable=create_job_params,
         task_group=taskgroup,
     )
 
     trigger_dataflow_job = PythonOperator(
         task_id="run_dataflow_job_to_bq",
-        op_kwargs={"template_path": dataflow_job_params["template_path"],
-                    "system_name": system_name,
-                    "table_name": table_name,
-                    "query_schema": query_schema},
+        op_kwargs={
+            "template_path": dataflow_job_params["template_path"],
+            "system_name": system_name,
+            "table_name": table_name,
+            "query_schema": query_schema,
+        },
         python_callable=run_dataflow_job,
         task_group=taskgroup,
-        pool=dataflow_job_params["connection_pool"]
+        pool=dataflow_job_params["connection_pool"],
     )
 
     if not query_schema:
@@ -58,9 +62,11 @@ def dataflow_taskgroup_builder(
 
         create_table = PythonOperator(
             task_id="create_table_if_needed",
-            op_kwargs={"destination_table": destination_table,
-            "schema_table": destination_schema_table,
-            "source_table": table_name},
+            op_kwargs={
+                "destination_table": destination_table,
+                "schema_table": destination_schema_table,
+                "source_table": table_name,
+            },
             python_callable=create_table,
             task_group=taskgroup,
         )

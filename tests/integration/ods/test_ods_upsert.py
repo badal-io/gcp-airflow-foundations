@@ -1,65 +1,47 @@
-import unittest
-from unittest import mock
-from unittest.mock import MagicMock
-import os
-
-import pytest
-from google.cloud.exceptions import Conflict
-
-from datetime import datetime
 import pytz
-
+import unittest
+from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.operators.dummy import DummyOperator
-from airflow.exceptions import AirflowException
-from airflow.models import (
-    DAG,
-    TaskInstance,
-    XCom,
-    DagBag, 
-    DagRun, 
-    DagTag,
-    DagModel
-)
-from airflow.models.xcom import XCOM_RETURN_KEY
-
-from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import MergeBigQueryODS
-from gcp_airflow_foundations.enums.ingestion_type import IngestionType
-from gcp_airflow_foundations.base_class.ods_metadata_config import OdsTableMetadataConfig
-from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
-from gcp_airflow_foundations.parse_dags import DagParser
-from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
-
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
-
-PROJECT_ID = 'airflow-framework'
-STAGING_DATASET = 'af_test_landing_zone'
-DATASET = 'af_test_ods'
-TABLE_NAME = 'ga_sessions'
-TASK_ID = 'test-bq-generic-operator'
-DEFAULT_DATE = pytz.utc.localize(datetime(2017, 7, 31))
-TEST_DAG_ID = 'test-bigquery-operators'
-
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
-from airflow.utils import timezone
+from datetime import datetime
 
-SURROGATE_KEYS = ['visitId','date','userId','clientId']
+from gcp_airflow_foundations.base_class.ods_metadata_config import (
+    OdsTableMetadataConfig,
+)
+from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
+from gcp_airflow_foundations.enums.ingestion_type import IngestionType
+from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import (
+    MergeBigQueryODS,
+)
+
+PROJECT_ID = "airflow-framework"
+STAGING_DATASET = "af_test_landing_zone"
+DATASET = "af_test_ods"
+TABLE_NAME = "ga_sessions"
+TASK_ID = "test-bq-generic-operator"
+DEFAULT_DATE = pytz.utc.localize(datetime(2017, 7, 31))
+TEST_DAG_ID = "test-bigquery-operators"
+SURROGATE_KEYS = ["visitId", "date", "userId", "clientId"]
 SOURCE_TABLE_COLUMNS = [
-    'visitorId', 
-    'visitNumber', 
-    'visitId', 
-    'visitStartTime', 
-    'date', 
-    'fullVisitorId', 
-    'userId', 
-    'clientId', 
-    'channelGrouping', 
-    'socialEngagementType'
+    "visitorId",
+    "visitNumber",
+    "visitId",
+    "visitStartTime",
+    "date",
+    "fullVisitorId",
+    "userId",
+    "clientId",
+    "channelGrouping",
+    "socialEngagementType",
 ]
+
 
 @provide_session
 def cleanup_xcom(session=None):
     session.query(XCom).delete()
+
 
 def clear_db_dags():
     with create_session() as session:
@@ -68,37 +50,40 @@ def clear_db_dags():
         session.query(DagRun).delete()
         session.query(TaskInstance).delete()
 
-    
+
 class TestIncrementalUpsertODS(unittest.TestCase):
     def setUp(self):
-        args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
-        self.dag = DAG('TEST_DAG_ID', default_args=args, schedule_interval='@once')
+        args = {"owner": "airflow", "start_date": DEFAULT_DATE}
+        self.dag = DAG("TEST_DAG_ID", default_args=args, schedule_interval="@once")
 
         self.dag.create_dagrun(
-            run_id='test', start_date=DEFAULT_DATE, execution_date=DEFAULT_DATE, state=State.SUCCESS
+            run_id="test",
+            start_date=DEFAULT_DATE,
+            execution_date=DEFAULT_DATE,
+            state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id='dummy', dag=self.dag)
+        task = DummyOperator(task_id="dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
 
-        self.table_id = f'{TABLE_NAME}_ODS'
+        self.table_id = f"{TABLE_NAME}_ODS"
 
     def doCleanups(self):
         cleanup_xcom()
         clear_db_dags()
 
         BigQueryHook().run_copy(
-            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions_ODS',
-            destination_project_dataset_table=f'{PROJECT_ID}.{DATASET}.{self.table_id}',
-            write_disposition='WRITE_TRUNCATE',
-            create_disposition='CREATE_IF_NEEDED'
+            source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
+            destination_project_dataset_table=f"{PROJECT_ID}.{DATASET}.{self.table_id}",
+            write_disposition="WRITE_TRUNCATE",
+            create_disposition="CREATE_IF_NEEDED",
         )
 
     def test_execute(self):
         ods_upsert_data = MergeBigQueryODS(
-            task_id=f"upsert_ods",
+            task_id="upsert_ods",
             project_id=PROJECT_ID,
             stg_dataset_name=STAGING_DATASET,
             data_dataset_name=DATASET,
@@ -106,10 +91,10 @@ class TestIncrementalUpsertODS(unittest.TestCase):
             data_table_name=self.table_id,
             surrogate_keys=SURROGATE_KEYS,
             columns=SOURCE_TABLE_COLUMNS,
-            column_mapping={column:column for column in SOURCE_TABLE_COLUMNS},
+            column_mapping={column: column for column in SOURCE_TABLE_COLUMNS},
             ingestion_type=IngestionType.INCREMENTAL,
             ods_table_config=OdsTableConfig(ods_metadata=OdsTableMetadataConfig()),
-            location='US'
+            location="US",
         )
 
         ods_upsert_data.pre_execute(context=self.template_context)
@@ -118,18 +103,18 @@ class TestIncrementalUpsertODS(unittest.TestCase):
 
         original_rows = BigQueryHook().get_pandas_df(
             sql=f"""
-                SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])} 
+                SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])}
                     FROM `{PROJECT_ID}.{DATASET}.{self.table_id}`
                 WHERE date = '20170801'""",
-            dialect='standard'
+            dialect="standard",
         )
 
         added_rows = BigQueryHook().get_pandas_df(
             sql=f"""
-                SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])} 
+                SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])}
                     FROM `{PROJECT_ID}.{DATASET}.{self.table_id}`
                 WHERE date = '20170731'""",
-            dialect='standard'
+            dialect="standard",
         )
 
         assert len(added_rows) == 1000 and len(original_rows) == 1000
@@ -137,34 +122,37 @@ class TestIncrementalUpsertODS(unittest.TestCase):
 
 class TestFullUpsertODS(unittest.TestCase):
     def setUp(self):
-        args = {'owner': 'airflow', 'start_date': DEFAULT_DATE}
-        self.dag = DAG('TEST_DAG_ID', default_args=args, schedule_interval='@once')
+        args = {"owner": "airflow", "start_date": DEFAULT_DATE}
+        self.dag = DAG("TEST_DAG_ID", default_args=args, schedule_interval="@once")
 
         self.dag.create_dagrun(
-            run_id='test', start_date=DEFAULT_DATE, execution_date=DEFAULT_DATE, state=State.SUCCESS
+            run_id="test",
+            start_date=DEFAULT_DATE,
+            execution_date=DEFAULT_DATE,
+            state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id='dummy', dag=self.dag)
+        task = DummyOperator(task_id="dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
 
-        self.table_id = f'{TABLE_NAME}_ODS'
+        self.table_id = f"{TABLE_NAME}_ODS"
 
     def doCleanups(self):
         cleanup_xcom()
         clear_db_dags()
 
         BigQueryHook().run_copy(
-            source_project_dataset_tables='airflow-framework.test_tables.ga_sessions_ODS',
-            destination_project_dataset_table=f'{PROJECT_ID}.{DATASET}.{self.table_id}',
-            write_disposition='WRITE_TRUNCATE',
-            create_disposition='CREATE_IF_NEEDED'
+            source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
+            destination_project_dataset_table=f"{PROJECT_ID}.{DATASET}.{self.table_id}",
+            write_disposition="WRITE_TRUNCATE",
+            create_disposition="CREATE_IF_NEEDED",
         )
 
     def test_execute(self):
         ods_upsert_data = MergeBigQueryODS(
-            task_id=f"upsert_ods",
+            task_id="upsert_ods",
             project_id=PROJECT_ID,
             stg_dataset_name=STAGING_DATASET,
             data_dataset_name=DATASET,
@@ -172,10 +160,10 @@ class TestFullUpsertODS(unittest.TestCase):
             data_table_name=self.table_id,
             surrogate_keys=SURROGATE_KEYS,
             columns=SOURCE_TABLE_COLUMNS,
-            column_mapping={column:column for column in SOURCE_TABLE_COLUMNS},
+            column_mapping={column: column for column in SOURCE_TABLE_COLUMNS},
             ingestion_type=IngestionType.FULL,
             ods_table_config=OdsTableConfig(ods_metadata=OdsTableMetadataConfig()),
-            location='US'
+            location="US",
         )
 
         ods_upsert_data.pre_execute(context=self.template_context)
@@ -184,18 +172,18 @@ class TestFullUpsertODS(unittest.TestCase):
 
         original_rows = BigQueryHook().get_pandas_df(
             sql=f"""
-                SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])} 
+                SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])}
                     FROM `{PROJECT_ID}.{DATASET}.{self.table_id}`
                 WHERE date = '20170801'""",
-            dialect='standard'
+            dialect="standard",
         )
 
         added_rows = BigQueryHook().get_pandas_df(
             sql=f"""
-                SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])} 
+                SELECT {','.join([column for column in SOURCE_TABLE_COLUMNS])}
                     FROM `{PROJECT_ID}.{DATASET}.{self.table_id}`
                 WHERE date = '20170731'""",
-            dialect='standard'
+            dialect="standard",
         )
 
         assert len(added_rows) == 1000 and len(original_rows) == 0

@@ -17,7 +17,7 @@ source:
   landing_zone_options:
     landing_zone_dataset: af_test_landing_zone
   schema_options:
-    schema_source_type: AUTO 
+    schema_source_type: AUTO
 tables:
   - table_name: ga_sessions
     ingestion_type: FULL

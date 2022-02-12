@@ -32,7 +32,7 @@ class ParseSchema(BaseOperator):
         column_casting=None,
         data_source=None,
         table_config=None,
-        **kwargs
+        **kwargs,
     ) -> list:
         super().__init__(**kwargs)
 
@@ -46,16 +46,20 @@ class ParseSchema(BaseOperator):
         self.hds_table_config = table_config.hds_config
 
     def execute(self, context):
-        ds = context['ds']
+        ds = context["ds"]
 
         schema_source_config_class = self.schema_config
         schema_method = schema_source_config_class().schema_method()
-        schema_method_arguments = schema_source_config_class().schema_method_arguments(self.data_source, self.table_config, ds=ds)
+        schema_method_arguments = schema_source_config_class().schema_method_arguments(
+            self.data_source, self.table_config, ds=ds
+        )
 
         source_schema_fields = schema_method(**schema_method_arguments)
         logging.info(f"Parsed schema using: {schema_method}")
 
-        schema_xcom = {'source_table_columns':[field["name"] for field in source_schema_fields]}
+        schema_xcom = {
+            "source_table_columns": [field["name"] for field in source_schema_fields]
+        }
 
         if self.column_casting:
             for field in source_schema_fields:
@@ -67,17 +71,21 @@ class ParseSchema(BaseOperator):
                 if field["name"] in self.column_mapping:
                     field["name"] = self.column_mapping[field["name"]]
 
-        if self.ods_table_config: 
-            schema_xcom[f"{self.data_source.dataset_data_name}.{self.ods_table_config.table_id}"] = parse_ods_schema(
+        if self.ods_table_config:
+            schema_xcom[
+                f"{self.data_source.dataset_data_name}.{self.ods_table_config.table_id}"
+            ] = parse_ods_schema(
                 schema_fields=source_schema_fields,
-                ods_metadata=self.ods_table_config.ods_metadata
+                ods_metadata=self.ods_table_config.ods_metadata,
             )
 
         if self.hds_table_config:
-            schema_xcom[f"{self.data_source.dataset_hds_override}.{self.hds_table_config.table_id}"] = parse_hds_schema(
+            schema_xcom[
+                f"{self.data_source.dataset_hds_override}.{self.hds_table_config.table_id}"
+            ] = parse_hds_schema(
                 schema_fields=source_schema_fields,
                 hds_metadata=self.hds_table_config.hds_metadata,
-                hds_table_type=self.hds_table_config.hds_table_type
+                hds_table_type=self.hds_table_config.hds_table_type,
             )
 
         return schema_xcom

@@ -14,7 +14,9 @@ from airflow.exceptions import AirflowException
 
 import logging
 
-from gcp_airflow_foundations.operators.gcp.hds.hds_sql_upsert_helpers import SqlHelperHDS
+from gcp_airflow_foundations.operators.gcp.hds.hds_sql_upsert_helpers import (
+    SqlHelperHDS,
+)
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
@@ -23,8 +25,8 @@ from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 class MergeBigQueryHDS(BigQueryOperator):
     """
     Merges data into a BigQuery HDS table.
-    
-    :param project_id: GCP project ID  
+
+    :param project_id: GCP project ID
     :type project_id: str
     :param stg_table_name: Source table name
     :type stg_table_name: str
@@ -46,15 +48,11 @@ class MergeBigQueryHDS(BigQueryOperator):
     :type ingestion_type: IngestionType
     :param hds_table_config: User-provided HDS configuration options
     :type hds_table_config: HdsTableConfig
-    :param location: The geographic location of the job. 
+    :param location: The geographic location of the job.
     :type location: str
     """
-    
-    template_fields = (
-        "stg_table_name",
-        "data_table_name",
-        "stg_dataset_name"
-    )
+
+    template_fields = ("stg_table_name", "data_table_name", "stg_dataset_name")
 
     @apply_defaults
     def __init__(
@@ -103,7 +101,9 @@ class MergeBigQueryHDS(BigQueryOperator):
 
     def pre_execute(self, context) -> None:
         if not self.columns:
-            staging_columns = self.xcom_pull(context=context, task_ids="schema_parsing")['source_table_columns']
+            staging_columns = self.xcom_pull(
+                context=context, task_ids="schema_parsing"
+            )["source_table_columns"]
         else:
             staging_columns = self.columns
 
@@ -111,15 +111,18 @@ class MergeBigQueryHDS(BigQueryOperator):
             for i in staging_columns:
                 if i not in self.column_mapping:
                     self.column_mapping[i] = i
-            
-            self.surrogate_keys  = [self.column_mapping[i] for i in self.surrogate_keys]
+
+            self.surrogate_keys = [self.column_mapping[i] for i in self.surrogate_keys]
             source_columns = [self.column_mapping[i] for i in staging_columns]
-            self.column_mapping = {self.column_mapping[i]:self.column_mapping[i] for i in self.column_mapping}
+            self.column_mapping = {
+                self.column_mapping[i]: self.column_mapping[i]
+                for i in self.column_mapping
+            }
 
         else:
             source_columns = staging_columns
-            self.column_mapping = {i:i for i in staging_columns}
-                    
+            self.column_mapping = {i: i for i in staging_columns}
+
         self.log.info(
             f"Execute BigQueryMergeTableOperator {self.stg_table_name}, {self.data_table_name}"
         )
@@ -135,15 +138,17 @@ class MergeBigQueryHDS(BigQueryOperator):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             column_casting=self.column_casting,
-            hds_metadata=self.hds_table_config.hds_metadata
+            hds_metadata=self.hds_table_config.hds_metadata,
         )
 
         if self.hds_table_config.hds_table_type == HdsTableType.SNAPSHOT:
-            partitioning_dimension = self.hds_table_config.hds_table_time_partitioning.value
+            partitioning_dimension = (
+                self.hds_table_config.hds_table_time_partitioning.value
+            )
             sql_helper.time_partitioning = partitioning_dimension
-        
-            ts = context['ts']
-            now = datetime.strptime(ts, '%Y-%m-%dT%H:%M:%S%z')
+
+            ts = context["ts"]
+            now = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S%z")
             if partitioning_dimension == "HOUR":
                 partition_id = now.strftime("%Y%m%d%H")
             elif partitioning_dimension == "DAY":
@@ -151,13 +156,17 @@ class MergeBigQueryHDS(BigQueryOperator):
             elif partitioning_dimension == "MONTH":
                 partition_id = now.strftime("%Y%m")
             else:
-                raise AirflowException(f"Could not determine partition ID format from `{partitioning_dimension}`")
+                raise AirflowException(
+                    f"Could not determine partition ID format from `{partitioning_dimension}`"
+                )
 
             sql = sql_helper.create_snapshot_sql_with_hash(partition_timestamp=ts)
 
             self.write_disposition = "WRITE_TRUNCATE"
             self.create_disposition = "CREATE_IF_NEEDED"
-            self.destination_dataset_table = f"{self.data_dataset_name}.{self.data_table_name}${partition_id}"
+            self.destination_dataset_table = (
+                f"{self.data_dataset_name}.{self.data_table_name}${partition_id}"
+            )
 
         elif self.hds_table_config.hds_table_type == HdsTableType.SCD2:
             sql = sql_helper.create_scd2_sql_with_hash(
@@ -165,7 +174,9 @@ class MergeBigQueryHDS(BigQueryOperator):
             )
 
         else:
-            raise AirflowException("Invalid HDS table type", self.hds_table_config.hds_table_type)
+            raise AirflowException(
+                "Invalid HDS table type", self.hds_table_config.hds_table_type
+            )
 
         logging.info(f"Executing sql: {sql}")
 

@@ -20,11 +20,11 @@ from google.cloud import bigquery
 class JobStatus(Enum):
     """Available options for facebook async task status"""
 
-    COMPLETED = 'Job Completed'
-    STARTED = 'Job Started'
-    RUNNING = 'Job Running'
-    FAILED = 'Job Failed'
-    SKIPPED = 'Job Skipped'
+    COMPLETED = "Job Completed"
+    STARTED = "Job Started"
+    RUNNING = "Job Running"
+    FAILED = "Job Failed"
+    SKIPPED = "Job Skipped"
 
 
 class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
@@ -38,30 +38,25 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
     :type api_version: Optional[str]
     """
 
-    conn_name_attr = 'facebook_conn_id'
-    default_conn_name = 'facebook_custom'
+    conn_name_attr = "facebook_conn_id"
+    default_conn_name = "facebook_custom"
 
     def __init__(
         self,
         facebook_conn_id: str = default_conn_name,
         api_version: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         super(CustomFacebookAdsReportingHook, self).__init__(
-            facebook_conn_id=facebook_conn_id,
-            api_version=api_version,
-            **kwargs
+            facebook_conn_id=facebook_conn_id, api_version=api_version, **kwargs
         )
 
         self.facebook_conn_id = facebook_conn_id
         self.api_version = api_version
         self.client_required_fields = ["app_id", "app_secret", "access_token"]
-        self.config = self.facebook_ads_config      
+        self.config = self.facebook_ads_config
 
-    def _get_service(
-        self, 
-        facebook_acc_id
-    ) -> FacebookAdsApi:
+    def _get_service(self, facebook_acc_id) -> FacebookAdsApi:
         """Returns Facebook Ads Client using a service account"""
 
         return FacebookAdsApi.init(
@@ -102,7 +97,9 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
             request = _async.api_get()
             async_status = request[AdReportRun.Field.async_status]
             percent = request[AdReportRun.Field.async_percent_completion]
-            self.log.info("%s %s completed, async_status: %s", percent, "%", async_status)
+            self.log.info(
+                "%s %s completed, async_status: %s", percent, "%", async_status
+            )
             if async_status == JobStatus.COMPLETED.value:
                 self.log.info("Job run completed")
                 break
@@ -125,10 +122,10 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         while True:
             max_current_usage = self.usage_throttle(insights)
             if max_current_usage >= 75:
-                self.log.info('75% Rate Limit Reached. Cooling Time 5 Minutes.')
+                self.log.info("75% Rate Limit Reached. Cooling Time 5 Minutes.")
                 time.sleep(300)
             try:
-                rows.append( next(insights) )
+                rows.append(next(insights))
             except StopIteration:
                 break
 
@@ -164,11 +161,7 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
 
         return [dict(row) for row in rows]
 
-    def get_campaigns(
-        self,
-        facebook_acc_id: str,
-        params: Dict[str, Any]
-    ) -> List[dict]:
+    def get_campaigns(self, facebook_acc_id: str, params: Dict[str, Any]) -> List[dict]:
         """
         Pulls campaign data from the Facebook Ads API using sync calls.
         :param facebook_acc_id: The Facebook account ID to pull data from.
@@ -184,36 +177,36 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         ad_account = AdAccount(api.get_default_account_id(), api=api)
 
         campaigns = ad_account.get_campaigns(
-            params={'limit':'20000','time_range':params['time_range']},
+            params={"limit": "20000", "time_range": params["time_range"]},
             fields=[
-            'account_id',
-            #'name', TO-DO: troubleshoot why pyarrow fails to convert the `name` column
-            'daily_budget',
-            'effective_status',
-            'lifetime_budget',
-            'start_time',
-            'stop_time'
-            ]
+                "account_id",
+                # 'name', TO-DO: troubleshoot why pyarrow fails to convert the `name` column
+                "daily_budget",
+                "effective_status",
+                "lifetime_budget",
+                "start_time",
+                "stop_time",
+            ],
         )
 
         rows = []
         for row in campaigns:
             converted_row = row._data
-            if 'name' in converted_row:
-                converted_row['name'] = str(converted_row['name'])
-            if 'start_time' in converted_row:
-                converted_row['start_time'] = datetime.strptime(converted_row['start_time'],'%Y-%m-%dT%H:%M:%S%z')
-            if 'stop_time' in row:
-                converted_row['stop_time'] = datetime.strptime(converted_row['stop_time'],'%Y-%m-%dT%H:%M:%S%z')
+            if "name" in converted_row:
+                converted_row["name"] = str(converted_row["name"])
+            if "start_time" in converted_row:
+                converted_row["start_time"] = datetime.strptime(
+                    converted_row["start_time"], "%Y-%m-%dT%H:%M:%S%z"
+                )
+            if "stop_time" in row:
+                converted_row["stop_time"] = datetime.strptime(
+                    converted_row["stop_time"], "%Y-%m-%dT%H:%M:%S%z"
+                )
             rows.append(converted_row)
 
         return rows
 
-    def get_adsets(
-        self,
-        facebook_acc_id: str,
-        params: Dict[str, Any]
-    ) -> List[dict]:
+    def get_adsets(self, facebook_acc_id: str, params: Dict[str, Any]) -> List[dict]:
         """
         Pulls adset data from the Facebook Ads API using sync calls.
         :param facebook_acc_id: The Facebook account ID to pull data from.
@@ -229,37 +222,37 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         ad_account = AdAccount(api.get_default_account_id(), api=api)
 
         adsets = ad_account.get_ad_sets(
-            params={'limit':'20000','time_range':params['time_range']},
+            params={"limit": "20000", "time_range": params["time_range"]},
             fields=[
-                'account_id',
-                'name',
-                'campaign_id',
-                'daily_budget',
-                'effective_status',
-                'lifetime_budget',
-                'created_time',
-                'end_time'
-            ]
+                "account_id",
+                "name",
+                "campaign_id",
+                "daily_budget",
+                "effective_status",
+                "lifetime_budget",
+                "created_time",
+                "end_time",
+            ],
         )
 
         rows = []
         for row in adsets:
             converted_row = row._data
-            if 'name' in converted_row:
-                converted_row['name'] = str(converted_row['name'])
-            if 'created_time' in converted_row:
-                converted_row['created_time'] = datetime.strptime(converted_row['created_time'],'%Y-%m-%dT%H:%M:%S%z')
-            if 'end_time' in row:
-                converted_row['end_time'] = datetime.strptime(converted_row['end_time'],'%Y-%m-%dT%H:%M:%S%z')
+            if "name" in converted_row:
+                converted_row["name"] = str(converted_row["name"])
+            if "created_time" in converted_row:
+                converted_row["created_time"] = datetime.strptime(
+                    converted_row["created_time"], "%Y-%m-%dT%H:%M:%S%z"
+                )
+            if "end_time" in row:
+                converted_row["end_time"] = datetime.strptime(
+                    converted_row["end_time"], "%Y-%m-%dT%H:%M:%S%z"
+                )
             rows.append(converted_row)
 
         return rows
 
-    def get_active_accounts_from_bq(
-        self, 
-        project_id, 
-        table_id
-     ) -> List[str]:
+    def get_active_accounts_from_bq(self, project_id, table_id) -> List[str]:
         """
         Pulls a list of Facebook account IDs from a BigQuery table.
         :param project_id: The Google Cloud Platform project ID.
@@ -280,9 +273,7 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
 
         return [f"act_{i}" for i in df.account_id]
 
-    def get_all_accounts(
-        self
-    ) -> List[str]:
+    def get_all_accounts(self) -> List[str]:
         """
         Pulls a list of Facebook account IDs from the Facebook API.
         :return: A list with the Facebook account IDs.
@@ -294,23 +285,17 @@ class CustomFacebookAdsReportingHook(FacebookAdsReportingHook):
         user_id = self.config["user_id"]
 
         URL = f"https://graph.facebook.com/v12.0/{user_id}/adaccounts"
-        params = {
-            "access_token":self.config["access_token"],
-            "limit":10000
-        }
+        params = {"access_token": self.config["access_token"], "limit": 10000}
 
-        accounts = requests.get(URL, params=params).json()['data']
+        accounts = requests.get(URL, params=params).json()["data"]
 
-        return [i['id'] for i in accounts]
+        return [i["id"] for i in accounts]
 
-    def usage_throttle(
-        self, 
-        insights
-    ) -> int:
+    def usage_throttle(self, insights) -> int:
         """
         Queries the 'x-business-use-case-usage' header of the Cursor object returned by the Facebook API.
         """
-        
-        usage_header = json.loads(insights._headers['x-business-use-case-usage'])
+
+        usage_header = json.loads(insights._headers["x-business-use-case-usage"])
         values = list(usage_header.values())[0][0]
-        return max(values['call_count'], values['total_cputime'], values['total_time'])
+        return max(values["call_count"], values["total_cputime"], values["total_time"])

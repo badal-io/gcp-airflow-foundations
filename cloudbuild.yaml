@@ -18,6 +18,7 @@ steps:
     entrypoint: python
     args: ['-m', 'pytest', 'tests/unit', '-vv']
     id: "unit-test"
+
   - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
     waitFor: ['build-airflow2']
     env:
@@ -26,6 +27,12 @@ steps:
     args: ['-m', 'pytest', '--tc-file','tests/integration/config.ini', '-vv', 'tests/integration']
     id: "integration-test"
 
+  - name: 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
+    waitFor: ['build-airflow2']
+    env:
+      - 'PYTHONUSERBASE=/home/airflow/.local'
+    entrypoint: python
+    args: ['-m', 'flake8', '.']
 
 timeout: 1200s
 images:

@@ -13,7 +13,9 @@ import pyarrow
 
 from airflow.exceptions import AirflowException
 
-from gcp_airflow_foundations.operators.facebook.hooks.ads import CustomFacebookAdsReportingHook
+from gcp_airflow_foundations.operators.facebook.hooks.ads import (
+    CustomFacebookAdsReportingHook,
+)
 from gcp_airflow_foundations.enums.facebook import AccountLookupScope, ApiObject
 
 from airflow.models import BaseOperator, Variable
@@ -39,7 +41,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
     :param accounts_bq_table: BigQuery table with the Facebook Account IDs to query data from. String in dotted (<project>.)<dataset>.<table> format.
     :type accounts_bq_table: str
     :param time_range: Time range used in the Graph API query.
-    :type time_range: Dict[str, Any] 
+    :type time_range: Dict[str, Any]
     :param gcp_conn_id: Airflow Google Cloud connection ID
     :type gcp_conn_id: str
     :param facebook_conn_id: Airflow Facebook Ads connection ID
@@ -64,11 +66,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
     :type impersonation_chain: Union[str, Sequence[str]]
     """
 
-    template_fields = (
-        "facebook_conn_id",
-        "impersonation_chain",
-        "parameters",
-    )
+    template_fields = ("facebook_conn_id", "impersonation_chain", "parameters")
 
     def __init__(
         self,
@@ -87,9 +85,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         impersonation_chain: Optional[Union[str, Sequence[str]]] = None,
         **kwargs,
     ) -> None:
-        super(FacebookAdsReportToBqOperator, self).__init__(
-            **kwargs
-        )
+        super(FacebookAdsReportToBqOperator, self).__init__(**kwargs)
 
         self.api_object = api_object
         self.gcp_project = gcp_project
@@ -104,23 +100,21 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         self.time_range = time_range
         self.impersonation_chain = impersonation_chain
 
-    def execute(
-        self, 
-        context: dict
-    ):
+    def execute(self, context: dict):
 
-        dag_id = context['dag'].dag_id
-        ds = context['ds']
+        ds = context["ds"]
 
-        interval_start = datetime.strptime(ds, '%Y-%m-%d')
-        interval_end = interval_start + relativedelta(day=31)
-        
         if not self.time_range:
-            self.parameters['time_range'] = {'since':ds, 'until':ds}
+            self.parameters["time_range"] = {"since": ds, "until": ds}
         else:
-            self.parameters['time_range'] = {'since':self.time_range['since'], 'until':ds}
+            self.parameters["time_range"] = {
+                "since": self.time_range["since"],
+                "until": ds,
+            }
 
-        self.log.info("Currently loading data for date range: %s", self.parameters['time_range'])
+        self.log.info(
+            "Currently loading data for date range: %s", self.parameters["time_range"]
+        )
 
         service = CustomFacebookAdsReportingHook(
             facebook_conn_id=self.facebook_conn_id, api_version=self.api_version
@@ -131,8 +125,7 @@ class FacebookAdsReportToBqOperator(BaseOperator):
 
         elif self.account_lookup_scope == AccountLookupScope.ACTIVE:
             facebook_acc_ids = service.get_active_accounts_from_bq(
-                project_id=self.gcp_project, 
-                table_id=self.accounts_bq_table
+                project_id=self.gcp_project, table_id=self.accounts_bq_table
             )
 
         shuffle(facebook_acc_ids)
@@ -141,29 +134,46 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         while True:
             for facebook_acc_id in facebook_acc_ids:
 
-                self.log.info("Currently loading data from Account ID: %s", facebook_acc_id)
-            
+                self.log.info(
+                    "Currently loading data from Account ID: %s", facebook_acc_id
+                )
+
                 try:
                     if self.api_object == ApiObject.INSIGHTS:
-                        rows = service.bulk_facebook_report_async(facebook_acc_id=facebook_acc_id, params=self.parameters, fields=self.fields)
+                        rows = service.bulk_facebook_report_async(
+                            facebook_acc_id=facebook_acc_id,
+                            params=self.parameters,
+                            fields=self.fields,
+                        )
                         if rows == -1:
-                            self.log.info("Rate Limit has reached 75%. Moving on to the next account. Will retry later")
+                            self.log.info(
+                                "Rate Limit has reached 75%. Moving on to the next account. Will retry later"
+                            )
                             continue
 
                     elif self.api_object == ApiObject.CAMPAIGNS:
-                        rows = service.get_campaigns(facebook_acc_id=facebook_acc_id, params=self.parameters)
+                        rows = service.get_campaigns(
+                            facebook_acc_id=facebook_acc_id, params=self.parameters
+                        )
 
                     elif self.api_object == ApiObject.ADSETS:
-                        rows = service.get_adsets(facebook_acc_id=facebook_acc_id, params=self.parameters)
+                        rows = service.get_adsets(
+                            facebook_acc_id=facebook_acc_id, params=self.parameters
+                        )
 
                     converted_rows.extend(rows)
 
                     facebook_acc_ids.remove(facebook_acc_id)
 
-                    self.log.info("Extracting data for account %s completed", facebook_acc_id)
-                except:
-                    self.log.info("Extracting data for account %s failed. Will retry later.", facebook_acc_id)
-                
+                    self.log.info(
+                        "Extracting data for account %s completed", facebook_acc_id
+                    )
+                except:  # noqa: E722
+                    self.log.info(
+                        "Extracting data for account %s failed. Will retry later.",
+                        facebook_acc_id,
+                    )
+
             if len(facebook_acc_ids) == 0:
                 break
 
@@ -175,15 +185,11 @@ class FacebookAdsReportToBqOperator(BaseOperator):
 
         writer = pyarrow.BufferOutputStream()
         pq.write_table(
-            pyarrow.Table.from_pandas(df),
-            writer,
-            use_compliant_nested_type=True
+            pyarrow.Table.from_pandas(df), writer, use_compliant_nested_type=True
         )
         reader = pyarrow.BufferReader(writer.getvalue())
 
-        hook = BigQueryHook(
-            gcp_conn_id=self.gcp_conn_id
-        )
+        hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id)
 
         client = hook.get_client(project_id=self.gcp_project)
 
@@ -193,16 +199,15 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         job_config = bigquery.LoadJobConfig()
         job_config.source_format = bigquery.SourceFormat.PARQUET
         job_config.parquet_options = parquet_options
-        job_config.write_disposition='WRITE_TRUNCATE'
+        job_config.write_disposition = "WRITE_TRUNCATE"
 
-        job = client.load_table_from_file(
-            reader, f"{self.destination_project_dataset_table}_{ds}", job_config=job_config
+        client.load_table_from_file(
+            reader,
+            f"{self.destination_project_dataset_table}_{ds}",
+            job_config=job_config,
         )
 
-    def transform_data_types(
-        self, 
-        rows
-    ):
+    def transform_data_types(self, rows):
         """
         Transforms the fields returned by the Facebook API to float or date data types as appropriate.
 
@@ -210,23 +215,20 @@ class FacebookAdsReportToBqOperator(BaseOperator):
         :type rows: List[dict]
         """
         for i in rows:
-            i.pop('date_stop')
-            i['date_start'] = datetime.strptime(i['date_start'], '%Y-%m-%d').date()
+            i.pop("date_stop")
+            i["date_start"] = datetime.strptime(i["date_start"], "%Y-%m-%d").date()
             for j in i:
-                if j.endswith('id') or j.endswith('name'):
+                if j.endswith("id") or j.endswith("name"):
                     continue
                 elif type(i[j]) == str:
                     i[j] = self.get_float(i[j])
                 elif type(i[j]) == list:
                     for k in i[j]:
                         for w in k:
-                            if (type(k[w]) == str) and (not w.endswith('id')):
+                            if (type(k[w]) == str) and (not w.endswith("id")):
                                 k[w] = self.get_float(k[w])
 
-    def get_float(
-        self, 
-        element
-    ):
+    def get_float(self, element):
         """
         Attempts to cast a string object into float.
 

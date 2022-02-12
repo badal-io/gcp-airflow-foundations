@@ -1,9 +1,10 @@
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
+
 class SqlHelperHDS:
     """
     SQL helper class used to formulate the SQL queries for the merge operations of HDS tables.
-    
+
     :param source: Source table name
     :type source: str
     :param target: Target table name
@@ -38,7 +39,8 @@ class SqlHelperHDS:
         column_casting,
         hds_metadata,
         time_partitioning=None,
-        gcp_conn_id='google_cloud_default'):
+        gcp_conn_id="google_cloud_default",
+    ):
 
         self.source_dataset = source_dataset
         self.target_dataset = target_dataset
@@ -58,38 +60,40 @@ class SqlHelperHDS:
 
         self.columns_str_source: str = ",".join(["`{}`".format(col) for col in columns])
         self.columns_str_keys: str = ",".join(surrogate_keys)
-        self.columns_str_target: str = ",".join(["`{}`".format(column_mapping[i]) for i in columns])
+        self.columns_str_target: str = ",".join(
+            ["`{}`".format(column_mapping[i]) for i in columns]
+        )
 
     def create_scd2_sql_with_hash(self, ingestion_type):
-        comma = ","
-
         TEMPLATE = """
             MERGE `{target}` T
             USING ({source_query}) S
             ON {merge_condition}
             WHEN MATCHED AND {search_condition} THEN {matched_clause}
-            WHEN NOT MATCHED BY TARGET THEN {not_matched_clause} 
+            WHEN NOT MATCHED BY TARGET THEN {not_matched_clause}
             {not_matched_by_source_clause}
         """
 
         target = f"{self.target_dataset}.{self.target}"
         source_query = f"""SELECT  {",".join(["{} AS join_key_{}".format(surrogate_key, surrogate_key) for surrogate_key in self.surrogate_keys])}, {",".join([col for col in self.columns])}
             FROM `{self.source_dataset}.{self.source}`
-            UNION ALL 
+            UNION ALL
             SELECT
                 {",".join(["NULL" for col in self.surrogate_keys])},
                 {",".join(["source.`{}`".format(col) for col in self.columns])}
                 FROM `{self.source_dataset}.{self.source}` source
                 JOIN `{self.target_dataset}.{self.target}` target
                 ON {' AND '.join([f'target.{self.column_mapping[surrogate_key]}=source.{surrogate_key}' for surrogate_key in self.surrogate_keys])}
-                WHERE ( 
+                WHERE (
                         ({' OR '.join([f'MD5(TO_JSON_STRING(target.`{self.column_mapping[col]}`)) != MD5(TO_JSON_STRING(source.`{col}`))' for col in self.columns if col not in self.surrogate_keys])})
                         AND target.{self.eff_end_time_column_name} IS NULL
                     )"""
 
         merge_condition = f"{' AND '.join([f'T.`{self.column_mapping[surrogate_key]}`=S.`join_key_{surrogate_key}`' for surrogate_key in self.surrogate_keys])}"
         search_condition = f"({' OR '.join([f'MD5(TO_JSON_STRING(T.`{self.column_mapping[col]}`)) != MD5(TO_JSON_STRING(S.`{col}`))' for col in self.columns if col not in self.surrogate_keys])})"
-        matched_clause = f"UPDATE SET {self.eff_end_time_column_name} = CURRENT_TIMESTAMP()"
+        matched_clause = (
+            f"UPDATE SET {self.eff_end_time_column_name} = CURRENT_TIMESTAMP()"
+        )
         not_matched_clause = f"""INSERT ({self.columns_str_target}, {self.eff_start_time_column_name}, {self.eff_end_time_column_name}, {self.hash_column_name})
             VALUES ({",".join(["`{}`".format(col) for col in self.columns])}, CURRENT_TIMESTAMP(), NULL, TO_BASE64(MD5(TO_JSON_STRING(S))))"""
 
@@ -97,7 +101,7 @@ class SqlHelperHDS:
             not_matched_by_source_clause = ""
 
         elif ingestion_type == IngestionType.FULL:
-            not_matched_by_source_clause = f"""WHEN NOT MATCHED BY SOURCE THEN UPDATE SET T.{self.eff_end_time_column_name} = CURRENT_TIMESTAMP()"""  
+            not_matched_by_source_clause = f"""WHEN NOT MATCHED BY SOURCE THEN UPDATE SET T.{self.eff_end_time_column_name} = CURRENT_TIMESTAMP()"""
 
         sql = TEMPLATE.format(
             target=target,
@@ -106,7 +110,7 @@ class SqlHelperHDS:
             search_condition=search_condition,
             matched_clause=matched_clause,
             not_matched_clause=not_matched_clause,
-            not_matched_by_source_clause=not_matched_by_source_clause
+            not_matched_by_source_clause=not_matched_by_source_clause,
         )
 
         return sql
@@ -115,13 +119,17 @@ class SqlHelperHDS:
 
         if self.column_casting:
             COLUMNS = ",".join(
-                f"{self.column_casting[col]['function'].format(column=f'`{col}`')} AS `{self.column_mapping[col]}`" if col in self.column_casting \
-                    else f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns
+                f"{self.column_casting[col]['function'].format(column=f'`{col}`')} AS `{self.column_mapping[col]}`"
+                if col in self.column_casting
+                else f"`{col}` AS `{self.column_mapping[col]}`"
+                for col in self.columns
             )
 
         else:
-            COLUMNS = ','.join(f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns)
-        
+            COLUMNS = ",".join(
+                f"`{col}` AS `{self.column_mapping[col]}`" for col in self.columns
+            )
+
         sql = f"""
             SELECT
                 {COLUMNS},

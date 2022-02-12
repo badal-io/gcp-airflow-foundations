@@ -6,7 +6,7 @@ class Level(Enum):
     AD = "ad"
     ADSET = "adset"
     CAMPAIGN = "campaign"
-    ACCOUNT = 'account'
+    ACCOUNT = "account"
 
 
 @unique

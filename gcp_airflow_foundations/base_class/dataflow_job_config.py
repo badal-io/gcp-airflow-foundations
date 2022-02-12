@@ -3,11 +3,12 @@ from pydantic.dataclasses import dataclass
 
 from typing import List, Optional
 
+
 @dataclass
 class DataflowJobConfig:
     """
     Dataflow configuration class.
-    
+
     Attributes:
         project: the GCP project in which the Dataflow job runs
         region: the region in which the Dataflow job should run
@@ -23,6 +24,7 @@ class DataflowJobConfig:
         sql_casts: a dictionary of sql casts to use when querying the source DB
         database_owner: owner of the tables to query (query scope)
     """
+
     system_name: str
     project: str
     region: str

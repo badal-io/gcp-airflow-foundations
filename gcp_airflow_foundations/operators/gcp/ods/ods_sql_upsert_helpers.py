@@ -1,7 +1,7 @@
 class SqlHelperODS:
     """
     SQL helper class used to formulate the SQL queries for the merge operations of ODS tables.
-    
+
     :param source: Source table name
     :type source: str
     :param target: Target table name
@@ -38,7 +38,8 @@ class SqlHelperODS:
         partition_column_name=None,
         time_partitioning=None,
         partition_timestamp=None,
-        gcp_conn_id='google_cloud_default'):
+        gcp_conn_id="google_cloud_default",
+    ):
 
         self.source_dataset = source_dataset
         self.target_dataset = target_dataset
@@ -60,15 +61,23 @@ class SqlHelperODS:
 
         if column_casting:
             self.columns_str_source: str = ",".join(
-                [column_casting[col]["function"].format(column=col) if col in column_casting \
-                    else "`{}`".format(col) for col in columns]
+                [
+                    column_casting[col]["function"].format(column=col)
+                    if col in column_casting
+                    else "`{}`".format(col)
+                    for col in columns
+                ]
             )
 
         else:
-            self.columns_str_source: str = ",".join(["`{}`".format(col) for col in columns])
+            self.columns_str_source: str = ",".join(
+                ["`{}`".format(col) for col in columns]
+            )
 
         self.columns_str_keys: str = ",".join(surrogate_keys)
-        self.columns_str_target: str = ",".join(["`{}`".format(self.column_mapping[i]) for i in columns])
+        self.columns_str_target: str = ",".join(
+            ["`{}`".format(self.column_mapping[i]) for i in columns]
+        )
 
     def create_insert_sql(self):
         rows = f"""{self.columns_str_target}, {self.ingestion_time_column_name}, {self.update_time_column_name}, {self.hash_column_name}, {self.primary_key_hash_column_name}"""
@@ -78,39 +87,49 @@ class SqlHelperODS:
     def create_full_sql(self):
         if self.column_casting:
             COLUMNS = ",".join(
-                f"{self.column_casting[col]['function'].format(column=f'`{col}`')} AS `{self.column_mapping[col]}`" if col in self.column_casting \
-                    else f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns
+                f"{self.column_casting[col]['function'].format(column=f'`{col}`')} AS `{self.column_mapping[col]}`"
+                if col in self.column_casting
+                else f"`{col}` AS `{self.column_mapping[col]}`"
+                for col in self.columns
             )
 
         else:
-            COLUMNS = ','.join(f'`{col}` AS `{self.column_mapping[col]}`' for col in self.columns)
+            COLUMNS = ",".join(
+                f"`{col}` AS `{self.column_mapping[col]}`" for col in self.columns
+            )
 
         return f"""
             SELECT {COLUMNS},
                 CURRENT_TIMESTAMP() AS {self.ingestion_time_column_name},
-                CURRENT_TIMESTAMP() AS {self.update_time_column_name}, 
-                TO_BASE64(MD5(TO_JSON_STRING(S))) AS {self.hash_column_name}, 
+                CURRENT_TIMESTAMP() AS {self.update_time_column_name},
+                TO_BASE64(MD5(TO_JSON_STRING(S))) AS {self.hash_column_name},
                 TO_BASE64(MD5(ARRAY_TO_STRING([{",".join(["CAST(S.`{}` AS STRING)".format(surrogate_key) for surrogate_key in self.surrogate_keys])}], ""))) AS {self.primary_key_hash_column_name}
             FROM `{self.source_dataset}.{self.source}` S
         """
 
     def create_upsert_sql_with_hash(self):
         if self.column_casting:
-            UPDATE_COLUMNS = ','.join(f"`{self.column_mapping[col]}`={self.column_casting[col]['function'].format(column=f'S.{col}')}" if col in self.column_casting \
-                else f"`{self.column_mapping[col]}`=S.`{col}`" for col in self.columns)
+            UPDATE_COLUMNS = ",".join(
+                f"`{self.column_mapping[col]}`={self.column_casting[col]['function'].format(column=f'S.{col}')}"
+                if col in self.column_casting
+                else f"`{self.column_mapping[col]}`=S.`{col}`"
+                for col in self.columns
+            )
         else:
-            UPDATE_COLUMNS = ','.join(f"`{self.column_mapping[col]}`=S.`{col}`" for col in self.columns)
+            UPDATE_COLUMNS = ",".join(
+                f"`{self.column_mapping[col]}`=S.`{col}`" for col in self.columns
+            )
 
         comma = ","
 
         rows, values = self.create_insert_sql()
-        
+
         if self.time_partitioning:
             partition_filter = f"""
-                AND 
-                    T.`{self.column_mapping[self.partition_column_name]}` = TIMESTAMP_TRUNC('{self.partition_timestamp}', {self.time_partitioning}) 
                 AND
-                    S.`{self.partition_column_name}` = TIMESTAMP_TRUNC('{self.partition_timestamp}', {self.time_partitioning}) 
+                    T.`{self.column_mapping[self.partition_column_name]}` = TIMESTAMP_TRUNC('{self.partition_timestamp}', {self.time_partitioning})
+                AND
+                    S.`{self.partition_column_name}` = TIMESTAMP_TRUNC('{self.partition_timestamp}', {self.time_partitioning})
             """
         else:
             partition_filter = ""
@@ -118,9 +137,7 @@ class SqlHelperODS:
         return f"""
             MERGE `{self.target_dataset}.{self.target}` T
             USING `{self.source_dataset}.{self.source}` S
-            ON {' AND '.join(
-                [f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])}
-            {partition_filter}
+            ON {' AND '.join([f'T.{self.column_mapping[surrogate_key]}=S.{surrogate_key}' for surrogate_key in self.surrogate_keys])} {partition_filter}
             WHEN MATCHED THEN UPDATE
                 SET {UPDATE_COLUMNS + f'{comma}' + f'{self.update_time_column_name}=CURRENT_TIMESTAMP()' + f'{comma}' +  f'{self.hash_column_name}=TO_BASE64(MD5(TO_JSON_STRING(S)))' }
             WHEN NOT MATCHED THEN

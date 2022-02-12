@@ -3,8 +3,9 @@ from gcp_airflow_foundations.operators.api.hooks.dataform_hook import DataformHo
 from airflow.utils.decorators import apply_defaults
 from typing import Any, Optional
 
+
 class DataformOperator(BaseOperator):
-    '''
+    """
     This operator will use the custom DataformHook to POST to Dataform's ApiService_RunCreate to initiate a new dataform run.
     If no tags are provided, Dataform will run all.
     Once a run is created, it will use ApiService_RunGet to return information about the run every 10 seconds until the status is no longer RUNNING.
@@ -34,9 +35,19 @@ class DataformOperator(BaseOperator):
     - Helpful Medium tutorial: https://medium.com/google-cloud/cloud-composer-apache-airflow-dataform-bigquery-de6e3eaabeb3
 
     ** Note: Schedules must be on the master branch. In Dataform, you'll have to create a branch first and then merge changes into master.
-    '''
+    """
+
     @apply_defaults
-    def __init__(self, *, dataform_conn_id: str = 'dataform_default', environment: str, schedule: str, tags: Optional[str] = [], wait_until_finished: bool = True, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *,
+        dataform_conn_id: str = "dataform_default",
+        environment: str,
+        schedule: str,
+        tags: Optional[str] = [],
+        wait_until_finished: bool = True,
+        **kwargs: Any
+    ) -> None:
         super().__init__(**kwargs)
         self.dataform_conn_id = dataform_conn_id
         self.environment = environment
@@ -50,5 +61,5 @@ class DataformOperator(BaseOperator):
             environment=self.environment,
             schedule=self.schedule,
             tags=self.tags,
-            wait_until_finished=self.wait_until_finished
+            wait_until_finished=self.wait_until_finished,
         )

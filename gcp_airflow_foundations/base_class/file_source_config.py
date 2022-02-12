@@ -3,7 +3,6 @@ from pydantic.dataclasses import dataclass
 
 from typing import List, Optional
 
-from pydantic.networks import stricturl
 
 @dataclass
 class FileSourceConfig:

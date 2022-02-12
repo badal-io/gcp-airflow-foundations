@@ -1,7 +1,8 @@
 import logging
 
+
 def get_twilio_schema(tableId=None):
-    if tableId == 'twilio_text_messages':
+    if tableId == "twilio_text_messages":
         schema_fields = [
             {"name": "account_sid", "type": "STRING", "mode": "NULLABLE"},
             {"name": "api_version", "type": "STRING", "mode": "NULLABLE"},
@@ -23,10 +24,9 @@ def get_twilio_schema(tableId=None):
             {"name": "to", "type": "STRING", "mode": "NULLABLE"},
             {"name": "uri", "type": "STRING", "mode": "NULLABLE"},
             {"name": "feedback", "type": "STRING", "mode": "NULLABLE"},
-            {"name": "media", "type": "STRING", "mode": "NULLABLE"}
+            {"name": "media", "type": "STRING", "mode": "NULLABLE"},
         ]
         return schema_fields
     else:
         logging.info(f"Schema unavailable for {tableId}")
         raise Exception(f"Schema unavailable for {tableId}")
-

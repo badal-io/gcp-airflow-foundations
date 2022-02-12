@@ -36,19 +36,15 @@ class GCSObjectListExistenceSensor(BaseSensorOperator):
     :type impersonation_chain: Union[str, Sequence[str]]
     """
 
-    template_fields = (
-        'bucket',
-        'objects',
-        'impersonation_chain',
-    )
-    ui_color = '#f0eee4'
+    template_fields = ("bucket", "objects", "impersonation_chain")
+    ui_color = "#f0eee4"
 
     def __init__(
         self,
         *,
         bucket: str,
         objects: list,
-        google_cloud_conn_id: str = 'google_cloud_default',
+        google_cloud_conn_id: str = "google_cloud_default",
         delegate_to: Optional[str] = None,
         impersonation_chain: Optional[Union[str, Sequence[str]]] = None,
         **kwargs,
@@ -63,7 +59,7 @@ class GCSObjectListExistenceSensor(BaseSensorOperator):
 
     def poke(self, context: dict) -> bool:
         for object in self.objects:
-            self.log.info('Sensor checks existence of : %s, %s', self.bucket, object)
+            self.log.info("Sensor checks existence of : %s, %s", self.bucket, object)
         hook = GCSHook(
             gcp_conn_id=self.google_cloud_conn_id,
             delegate_to=self.delegate_to,

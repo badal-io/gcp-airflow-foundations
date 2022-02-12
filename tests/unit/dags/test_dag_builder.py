@@ -11,7 +11,7 @@ from gcp_airflow_foundations.source_class import (
     oracle_dataflow_source,
     salesforce_source,
     twilio_source,
-    facebook
+    facebook,
 )
 
 
@@ -24,7 +24,7 @@ class TestDagBuilder(unittest.TestCase):
             gcs_source.GCSFileIngestionDagBuilder,
             jdbc_dataflow_source.JdbcToBQDataflowDagBuilder,
             oracle_dataflow_source.OracleToBQDataflowDagBuilder,
-            salesforce_source.SalesforcetoBQDagBuilder
+            salesforce_source.SalesforcetoBQDagBuilder,
         ]
 
     def test_dag_builder(self):

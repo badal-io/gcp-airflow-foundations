@@ -6,6 +6,8 @@ from croniter import croniter
 from datetime import datetime, timedelta
 
 import logging
+
+
 class BranchOnCronOperator(BaseBranchOperator):
     """
     Branches into one of two lists of tasks depending on the current day and cron expressions
@@ -24,14 +26,14 @@ class BranchOnCronOperator(BaseBranchOperator):
     """
 
     def __init__(
-            self,
-            *,
-            follow_task_ids_if_true: Union[str, Iterable[str]],
-            follow_task_ids_if_false: Union[str, Iterable[str]],
-            cron_expression: str,
-            use_task_execution_day: bool = True,
-            run_on_first_execution: bool = True,
-            **kwargs,
+        self,
+        *,
+        follow_task_ids_if_true: Union[str, Iterable[str]],
+        follow_task_ids_if_false: Union[str, Iterable[str]],
+        cron_expression: str,
+        use_task_execution_day: bool = True,
+        run_on_first_execution: bool = True,
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self.follow_task_ids_if_true = follow_task_ids_if_true
@@ -41,9 +43,7 @@ class BranchOnCronOperator(BaseBranchOperator):
         self.run_on_first_execution = run_on_first_execution
 
         if not croniter.is_valid(cron_expression):
-            raise TypeError(
-                'Unsupported cron expression {}'.format(cron_expression)
-            )
+            raise TypeError("Unsupported cron expression {}".format(cron_expression))
 
     def choose_branch(self, context: Dict) -> Union[str, Iterable[str]]:
         logging.info(f"context {context}")
@@ -63,7 +63,6 @@ class BranchOnCronOperator(BaseBranchOperator):
             return self.follow_task_ids_if_true
         else:
             return self.follow_task_ids_if_false
-
 
     def match(self, cron_expression, date):
         iter = croniter(cron_expression, date)
