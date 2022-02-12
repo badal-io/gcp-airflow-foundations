@@ -2,7 +2,7 @@
 Data Lost Prevention
 ********************
 
-GCP Airflow Foundations provides a blueprint for deploying of a secure Data Lake, with abiltiy to discover, classify, and protect your most sensitive data
+GCP Airflow Foundations provides a blueprint for deploying a secure Data Lake, with abiltiy to discover, classify, and protect your most sensitive data
 
 .. landing_zone: 
 1. Landing Zone
