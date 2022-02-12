@@ -45,8 +45,6 @@ See the [gcp-airflow-foundations documentation](https://gcp-airflow-foundations.
 - Rebuild docker image if requirements changed: ```docker-compose build```
 ### Sample DAGs
 Sample DAGs that ingest publicly available GCS files can be found in the dags folder, and are started as soon Airflow is ran locally
-### Sample DAGs
-Sample DAGs that ingest publicly available GCS files can be found in the dags folder, and are started as soon Airflow is ran locally 
 # Contributing
 ## Install pre-commit hook
 Install pre-commit hooks for linting, format checking, etc.
