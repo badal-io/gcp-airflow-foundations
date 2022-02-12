@@ -30,6 +30,7 @@ We have written an opinionated yet flexible ingestion framework for building an 
    data_plugins
    data_extraction
    features
+   data_loss_prevention
    custom_source
    sample_config
    api
