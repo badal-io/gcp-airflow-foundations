@@ -26,7 +26,7 @@ We have written an opinionated yet flexible ingestion framework for building an 
 pip install 'gcp-airflow-foundations'
 ```
 
-## Usage
+## Full Documentation 
 See the [gcp-airflow-foundations documentation](https://gcp-airflow-foundations.readthedocs.io/en/latest/) for more details.
 
 ## Running locally
