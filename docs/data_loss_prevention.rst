@@ -31,4 +31,3 @@ While outside of the scope of this framework, we recommend deploying Composer as
 For more details please see `these instructions <https://cloud.google.com/composer/docs/configuring-vpc-sc>`_ 
 
   
-https://cloud.google.com/vpc-service-controls
