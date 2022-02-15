@@ -12,11 +12,13 @@ from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_ope
 )
 
 from gcp_airflow_foundations.operators.gcp.create_table import (
-    CustomBigQueryCreateEmptyTableOperator,
+    CustomBigQueryCreateEmptyTableOperator
 )
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
+
+from gcp_airflow_foundations.operators.gcp.create_dataset import CustomBigQueryCreateEmptyDatasetOperator
 
 
 def ods_builder(
@@ -62,6 +64,16 @@ def ods_builder(
     else:
         time_partitioning = None
 
+    create_dataset = CustomBigQueryCreateEmptyDatasetOperator(
+        task_id="create_ods_dataset",
+        project_id=project_id,
+        dataset_id=dataset_id,
+        location=location,
+        exists_ok=True,
+        task_group=taskgroup,
+        dag=dag
+    )
+
     # 1 Check if ODS table exists and if not create an empty table
     create_table = CustomBigQueryCreateEmptyTableOperator(
         task_id="create_ods_table",
@@ -71,7 +83,7 @@ def ods_builder(
         cluster_fields=cluster_fields,
         time_partitioning=time_partitioning,
         task_group=taskgroup,
-        dag=dag,
+        dag=dag
     )
 
     # 2 Migrate schema
@@ -81,7 +93,7 @@ def ods_builder(
         table_id=table_id,
         dataset_id=dataset_id,
         task_group=taskgroup,
-        dag=dag,
+        dag=dag
     )
 
     # 3 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
@@ -99,9 +111,9 @@ def ods_builder(
         ods_table_config=ods_table_config,
         location=location,
         task_group=taskgroup,
-        dag=dag,
+        dag=dag
     )
 
-    create_table >> migrate_schema >> insert
-
+    create_dataset >> create_table >> migrate_schema >> insert
+    
     return taskgroup
