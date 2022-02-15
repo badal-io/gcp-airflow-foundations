@@ -1,21 +1,18 @@
-from typing import Optional, List, Sequence
+from typing import Optional, Sequence
 
-from airflow.utils.decorators import apply_defaults
-
-from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator
 
-from google.cloud.bigquery.dataset import AccessEntry, Dataset, DatasetListItem
+from google.cloud.bigquery.dataset import Dataset
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 
 class CustomBigQueryCreateEmptyDatasetOperator(BaseOperator):
     """
-    This operator is used to create new dataset for your Project in BigQuery.
-    :param project_id: The name of the project where we want to create the dataset.
-    :param dataset_id: The id of dataset. Don't need to provide, if datasetId in dataset_reference.
+    This operator is used to create new dataset for your Project.
+    :param project_id: The name of the project.
+    :param dataset_id: The id of dataset.
     :param location: The geographic location where the dataset should reside.
-    :param exists_ok: If ``True``, ignore "already exists" errors when creating the dataset.
+    :param exists_ok: If ``True``, ignore "already exists" errors.
     """
 
     template_fields: Sequence[str] = (
@@ -44,14 +41,13 @@ class CustomBigQueryCreateEmptyDatasetOperator(BaseOperator):
 
         super().__init__(**kwargs)
 
-    def execute(self, context: 'Context') -> None:
+    def execute(self, context) -> None:
         dataset_reference = {
             "datasetReference": {
-                "datasetId":self.dataset_id, 
-                "projectId":self.project_id
-            }, 
-            "location":self.location
-        }
+                "datasetId": self.dataset_id,
+                "projectId": self.project_id
+            },
+            "location": self.location}
 
         bq_hook = BigQueryHook(
             gcp_conn_id=self.gcp_conn_id,
@@ -65,6 +61,12 @@ class CustomBigQueryCreateEmptyDatasetOperator(BaseOperator):
 
         dataset: Dataset = Dataset.from_api_repr(dataset_reference)
 
-        self.log.info('Creating dataset: %s in project: %s ', self.dataset_id, self.project_id)
+        self.log.info(
+            'Creating dataset: %s in project: %s ',
+            self.dataset_id,
+            self.project_id
+        )
+
         bq_client.create_dataset(dataset=dataset, exists_ok=self.exists_ok)
+
         self.log.info('Dataset created successfully.')
