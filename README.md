@@ -3,7 +3,6 @@
 [![Cloud Build Status](https://storage.googleapis.com/public-cloudbuild/build/cloudbuild_status.svg)](https://storage.googleapis.com/public-cloudbuild/build/cloudbuild_status.svg)
 [![Documentation Status](https://readthedocs.org/projects/gcp-airflow-foundations/badge/?version=latest)](https://gcp-airflow-foundations.readthedocs.io/en/latest/?badge=latest)
 
-
 ![airflow](./docs/_static/airflow_diagram.png)
 
 Airflow is an awesome open source orchestration framework that is the go-to for building data ingestion pipelines on GCP (using Composer - a hosted AIrflow service). However, most companies using it face the same set of problems
