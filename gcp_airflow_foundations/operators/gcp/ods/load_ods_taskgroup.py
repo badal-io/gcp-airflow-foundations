@@ -5,7 +5,7 @@ from airflow.utils.task_group import TaskGroup
 from typing import List, Optional
 
 from gcp_airflow_foundations.operators.gcp.ods.ods_merge_table_operator import (
-    MergeBigQueryODS,
+    MergeBigQueryODS
 )
 from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_operator import (
     MigrateSchema,
@@ -115,5 +115,5 @@ def ods_builder(
     )
 
     create_dataset >> create_table >> migrate_schema >> insert
-    
+
     return taskgroup
