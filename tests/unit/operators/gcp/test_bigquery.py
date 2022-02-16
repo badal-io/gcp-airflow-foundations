@@ -9,11 +9,17 @@ from datetime import datetime
 from unittest import mock
 
 from gcp_airflow_foundations.operators.gcp.create_table import (
-    CustomBigQueryCreateEmptyTableOperator,
+    CustomBigQueryCreateEmptyTableOperator
 )
 from gcp_airflow_foundations.operators.gcp.delete_staging_table import (
-    BigQueryDeleteStagingTableOperator,
+    BigQueryDeleteStagingTableOperator
 )
+
+from gcp_airflow_foundations.operators.gcp.create_dataset import (
+    CustomBigQueryCreateEmptyDatasetOperator
+)
+
+from google.cloud.bigquery.dataset import Dataset
 
 TASK_ID = "test-bq-generic-operator"
 TEST_DATASET = "test-dataset"
@@ -43,6 +49,43 @@ def clear_db_dags():
         session.query(DagRun).delete()
         session.query(TaskInstance).delete()
 
+
+class TestBCustomBigQueryCreateEmptyDatasetOperator(unittest.TestCase):
+    def setUp(self):
+        args = {"owner": "airflow", "start_date": DEFAULT_DATE}
+        self.dag = DAG("TEST_DAG_ID", default_args=args, schedule_interval="@once")
+
+        self.dag.create_dagrun(
+            run_id="test",
+            start_date=DEFAULT_DATE,
+            execution_date=DEFAULT_DATE,
+            state=State.SUCCESS,
+        )
+
+        task = DummyOperator(task_id="dummy", dag=self.dag)
+        self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
+
+        self.template_context = self.ti.get_template_context()
+
+    def doCleanups(self):
+        cleanup_xcom()
+        clear_db_dags()
+
+    @mock.patch("airflow.providers.google.cloud.operators.bigquery.BigQueryHook.get_client")
+    def test_execute(self, mock_hook):
+        operator = CustomBigQueryCreateEmptyDatasetOperator(
+            task_id=TASK_ID,
+            dataset_id=TEST_DATASET,
+            project_id=TEST_GCP_PROJECT_ID,
+            location='US',
+            exists_ok=True
+        )
+
+        operator.execute(context=self.template_context)
+
+        ds = self.template_context["ds"]
+
+        mock_hook.return_value.create_dataset.assert_called_once()
 
 class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
     def setUp(self):
