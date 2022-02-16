@@ -19,8 +19,6 @@ from gcp_airflow_foundations.operators.gcp.create_dataset import (
     CustomBigQueryCreateEmptyDatasetOperator
 )
 
-from google.cloud.bigquery.dataset import Dataset
-
 TASK_ID = "test-bq-generic-operator"
 TEST_DATASET = "test-dataset"
 TEST_GCP_PROJECT_ID = "test-project"
@@ -83,9 +81,8 @@ class TestBCustomBigQueryCreateEmptyDatasetOperator(unittest.TestCase):
 
         operator.execute(context=self.template_context)
 
-        ds = self.template_context["ds"]
-
         mock_hook.return_value.create_dataset.assert_called_once()
+
 
 class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
     def setUp(self):
