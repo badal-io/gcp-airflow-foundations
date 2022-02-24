@@ -100,12 +100,12 @@ class TestMergeBigQuerySnapshotHDS(unittest.TestCase):
                 CURRENT_TIMESTAMP() AS af_metadata_created_at,
                 TIMESTAMP_TRUNC('2021-01-01T00:00:00+00:00', DAY) AS partition_time,
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS af_metadata_row_hash
-            FROM `{TEST_DATASET}.{TEST_STG_TABLE_ID}` S
+            FROM `{TEST_GCP_PROJECT_ID}.{TEST_DATASET}.{TEST_STG_TABLE_ID}` S
         """
 
         mock_hook.return_value.run_query.assert_called_once_with(
             sql=sql,
-            destination_dataset_table=f"{TEST_DATASET}.{TEST_TABLE_ID}${ds.replace('-', '')}",
+            destination_dataset_table=f"{TEST_GCP_PROJECT_ID}.{TEST_DATASET}.{TEST_TABLE_ID}${ds.replace('-', '')}",
             write_disposition="WRITE_TRUNCATE",
             allow_large_results=False,
             flatten_results=None,
@@ -174,15 +174,15 @@ class TestMergeBigQuerySCD2HDS(unittest.TestCase):
         operator.execute(MagicMock())
 
         sql = f"""
-            MERGE `{TEST_DATASET}.{TEST_TABLE_ID}` T
+            MERGE `{TEST_GCP_PROJECT_ID}.{TEST_DATASET}.{TEST_TABLE_ID}` T
             USING (SELECT  column_a AS join_key_column_a, column_a,column_b
-            FROM `{TEST_DATASET}.{TEST_STG_TABLE_ID}`
+            FROM `{TEST_GCP_PROJECT_ID}.{TEST_DATASET}.{TEST_STG_TABLE_ID}`
             UNION ALL
             SELECT
                 NULL,
                 source.`column_a`,source.`column_b`
-                FROM `{TEST_DATASET}.{TEST_STG_TABLE_ID}` source
-                JOIN `{TEST_DATASET}.{TEST_TABLE_ID}` target
+                FROM `{TEST_GCP_PROJECT_ID}.{TEST_DATASET}.{TEST_STG_TABLE_ID}` source
+                JOIN `{TEST_GCP_PROJECT_ID}.{TEST_DATASET}.{TEST_TABLE_ID}` target
                 ON target.column_a=source.column_a
                 WHERE (
                         (MD5(TO_JSON_STRING(target.`column_b`)) != MD5(TO_JSON_STRING(source.`column_b`)))
