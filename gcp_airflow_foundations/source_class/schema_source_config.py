@@ -42,4 +42,5 @@ class BQLandingZoneSchemaSourceConfig(SchemaSourceConfig):
         return {
             "dataset_id": data_source.landing_zone_options.landing_zone_dataset,
             "table_id": f"{table_config.landing_zone_table_name_override}_{ds}",
+            "project_id": data_source.gcp_project
         }

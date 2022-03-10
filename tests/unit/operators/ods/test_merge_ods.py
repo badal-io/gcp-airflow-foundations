@@ -96,12 +96,12 @@ class TestMergeBigQueryODS(unittest.TestCase):
                 CURRENT_TIMESTAMP() AS af_metadata_updated_at,
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS af_metadata_row_hash,
                 TO_BASE64(MD5(ARRAY_TO_STRING([CAST(S.`column` AS STRING)], ""))) AS af_metadata_primary_key_hash
-            FROM `test-dataset.test-staging-table-id_{ds}` S
+            FROM `test-project.test-dataset.test-staging-table-id_{ds}` S
         """
 
         mock_hook.return_value.run_query.assert_called_once_with(
             sql=sql,
-            destination_dataset_table=f"{TEST_DATASET}.{TEST_TABLE_ID}",
+            destination_dataset_table=f"{TEST_GCP_PROJECT_ID}.{TEST_DATASET}.{TEST_TABLE_ID}",
             write_disposition="WRITE_TRUNCATE",
             allow_large_results=False,
             flatten_results=None,

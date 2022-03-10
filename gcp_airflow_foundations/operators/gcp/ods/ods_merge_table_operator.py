@@ -124,8 +124,8 @@ class MergeBigQueryODS(BigQueryOperator):
         sql = ""
 
         sql_helper = SqlHelperODS(
-            source_dataset=self.stg_dataset_name,
-            target_dataset=self.data_dataset_name,
+            source_dataset=f"{self.project_id}.{self.stg_dataset_name}",
+            target_dataset=f"{self.project_id}.{self.data_dataset_name}",
             source=f"{self.stg_table_name}_{ds}",
             target=self.data_table_name,
             columns=source_columns,
@@ -156,7 +156,7 @@ class MergeBigQueryODS(BigQueryOperator):
                 sql = sql_helper.create_full_sql()
                 self.write_disposition = "WRITE_APPEND"
                 self.destination_dataset_table = (
-                    f"{self.data_dataset_name}.{self.data_table_name}"
+                    f"{self.project_id}.{self.data_dataset_name}.{self.data_table_name}"
                 )
 
         elif self.ingestion_type == IngestionType.FULL:
@@ -164,7 +164,7 @@ class MergeBigQueryODS(BigQueryOperator):
             sql = sql_helper.create_full_sql()
             self.write_disposition = "WRITE_TRUNCATE"
             self.destination_dataset_table = (
-                f"{self.data_dataset_name}.{self.data_table_name}"
+                f"{self.project_id}.{self.data_dataset_name}.{self.data_table_name}"
             )
 
         else:

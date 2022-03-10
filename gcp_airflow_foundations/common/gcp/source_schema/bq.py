@@ -5,6 +5,7 @@ from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 
 def read_schema_from_bq(
+    project_id,
     dataset_id,
     table_id,
     google_cloud_storage_conn_id="google_cloud_default",
@@ -17,6 +18,6 @@ def read_schema_from_bq(
 
     bq_hook = BigQueryHook(bigquery_conn_id=bigquery_conn_id, delegate_to=None)
 
-    schema = bq_hook.get_schema(dataset_id=dataset_id, table_id=table_id)
+    schema = bq_hook.get_schema(dataset_id=dataset_id, table_id=table_id, project_id=project_id)
 
     return schema["fields"]

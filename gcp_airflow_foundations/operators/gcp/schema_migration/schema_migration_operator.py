@@ -85,12 +85,13 @@ class MigrateSchema(BaseOperator):
                 self.hook.run_query(
                     sql=query,
                     use_legacy_sql=False,
-                    destination_dataset_table=f"{self.dataset_id}.{self.table_id}",
+                    destination_dataset_table=f"{self.project_id}.{self.dataset_id}.{self.table_id}",
                     write_disposition="WRITE_TRUNCATE",
                 )
 
             if schema_fields_updates:
                 self.hook.update_table_schema(
+                    project_id=self.project_id,
                     dataset_id=self.dataset_id,
                     table_id=self.table_id,
                     schema_fields_updates=schema_fields_updates,

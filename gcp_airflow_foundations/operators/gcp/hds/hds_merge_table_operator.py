@@ -130,8 +130,8 @@ class MergeBigQueryHDS(BigQueryOperator):
         sql = ""
 
         sql_helper = SqlHelperHDS(
-            source_dataset=self.stg_dataset_name,
-            target_dataset=self.data_dataset_name,
+            source_dataset=f"{self.project_id}.{self.stg_dataset_name}",
+            target_dataset=f"{self.project_id}.{self.data_dataset_name}",
             source=self.stg_table_name,
             target=self.data_table_name,
             columns=source_columns,
@@ -165,7 +165,7 @@ class MergeBigQueryHDS(BigQueryOperator):
             self.write_disposition = "WRITE_TRUNCATE"
             self.create_disposition = "CREATE_IF_NEEDED"
             self.destination_dataset_table = (
-                f"{self.data_dataset_name}.{self.data_table_name}${partition_id}"
+                f"{self.project_id}.{self.data_dataset_name}.{self.data_table_name}${partition_id}"
             )
 
         elif self.hds_table_config.hds_table_type == HdsTableType.SCD2:

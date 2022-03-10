@@ -103,7 +103,7 @@ class TestParseSchema(unittest.TestCase):
         }
 
         mock_hook.assert_called_once_with(
-            dataset_id=TEST_DATASET, table_id=f"{TEST_TABLE_ID}_{ds}"
+            dataset_id=TEST_DATASET, table_id=f"{TEST_TABLE_ID}_{ds}", project_id='airflow-framework'
         )
 
         assert return_value == schema_xcom
