@@ -276,13 +276,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                 allow_quoted_newlines = table_config.extra_options.get("file_table_config")["allow_quoted_newlines"]
 
             if parquet_upload_option == "GCS" and source_format == "PARQUET":
-                # overwrite files_to_upload
-                #partition_prefix = ti.xcom_pull(key='partition_prefix', task_ids='ftp_taskgroup.load_sftp_to_gcs')
                 prefix = ""
-                #if not partition_prefix:
-                #    partition_prefix = self.config.source.extra_options["sftp_source_config"]["partition_prefix"]
-                #    partition_prefix = partition_prefix.replace("date", table_config.extra_options.get("sftp_table_config")["date_column"])
-                #    partition_prefix = partition_prefix.replace("ds", kwargs['prev_ds'])
                 if "prefix" in table_config.extra_options.get("file_table_config"):
                     prefix = table_config.extra_options.get("file_table_config")["prefix"]
                 prefix = destination_path_prefix + "/" + prefix
