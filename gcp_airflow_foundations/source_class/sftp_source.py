@@ -243,7 +243,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             gcs_bucket_prefix += "/"
 
         table_name = table_config.table_name
-        source_path_prefix = dir_prefix + "/*"
 
         if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
             private_key_name = self.config.source.extra_options["sftp_source_config"]["sftp_private_key_secret_name"]
@@ -272,7 +271,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             destination_path_prefix = gcs_bucket_prefix + table_name + "/" + date
 
         gcs_hook = GCSHook()
-        #local_files = [f for f in os.listdir(my_path) if os.path.isfile(os.join(my_path, f))]
         for file in files_to_load:
             obj = destination_path_prefix + "/" + file
             gcs_hook.upload(
@@ -281,7 +279,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
                 filename=my_path + "/" + file
                 )
         # delete data
-        #shutil.rmtree(my_path)
+        shutil.rmtree(my_path)
 
         if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
             if os.path.isfile("id_rsa"):
@@ -308,7 +306,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         date_column = table_config.extra_options.get("sftp_table_config")["date_column"]
         full_dir_download = table_config.extra_options.get("sftp_table_config")["full_dir_download"]
         table_name = table_config.table_name
-        source_path_prefix = dir_prefix + "/*"
         destination_path_prefix = gcs_bucket_prefix + table_name + "/" + ds 
 
         if "sftp_private_key_secret_name" in self.config.source.extra_options["sftp_source_config"]:
@@ -333,12 +330,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             map = map[0]
 
         # get list of files, create local directory structure, download
-        #if full_dir_download:
         files_to_upload = [x for x in map]
-        #else:
-        #    files_to_upload = [x for x in map if f"{date_column}={source_file_date}" in x]
-
-        flag_file = flag_file_path.split("/")[-1]
         # delete prefix up until the external partitions
         local_file_prefix_to_drop = ""
         if not files_to_upload == []:
@@ -350,7 +342,6 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         local_files_list = [my_path + "/" + file for file in files_to_upload]
 
         for remote_file in files_to_upload:
-            conn = sftp_hook.get_conn()
             file = my_path + "/" + remote_file
             path_to_create = file.rsplit('/', 1)[0]
             if not os.path.exists(path_to_create):
