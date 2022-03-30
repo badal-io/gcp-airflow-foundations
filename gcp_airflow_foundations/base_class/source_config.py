@@ -71,7 +71,7 @@ class SourceConfig:
     start_date: str
     schema_options: SchemaOptionsConfig = SchemaOptionsConfig()
     facebook_options: Optional[FacebookConfig] = None  # TODO: Move into extra_configs
-    full_ingestion_options: Optional[FullIngestionConfig]
+    full_ingestion_options: FullIngestionConfig = FullIngestionConfig()
     catchup: bool = True
     start_date_tz: str = "EST"
     ods_suffix: str = ""
