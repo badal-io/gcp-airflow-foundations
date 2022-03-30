@@ -19,6 +19,8 @@ class SqlHelperODS:
     :type gcp_conn_id: str
     :param column_mapping: Column mapping
     :type column_mapping: dict
+    :param column_adding: Column adding
+    :type column_adding: dict
     :param time_partitioning: Time partitioning option for BigQuery target table. One of HOUR, DAY, or MONTH
     :type time_partitioning: str
     :param ods_metadata: User-provided options for ODS metadata column naming
@@ -71,12 +73,10 @@ class SqlHelperODS:
                     for col in columns
                 ]
             )
-
         else:
             self.columns_str_source: str = ",".join(
                 ["`{}`".format(col) for col in columns]
             )
-        logging.info(self.columns_str_source)
 
         if self.column_adding:
             keys = list(self.column_adding.keys())
@@ -85,7 +85,6 @@ class SqlHelperODS:
                     column_adding[col]["function"]
                     for col in keys
                 )
-        logging.info(self.columns_str_source)
 
         self.columns_str_keys: str = ",".join(surrogate_keys)
         self.columns_str_target: str = ",".join(

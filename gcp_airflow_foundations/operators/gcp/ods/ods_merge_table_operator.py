@@ -43,6 +43,8 @@ class MergeBigQueryODS(BigQueryOperator):
     :type gcp_conn_id: str
     :param column_mapping: Column mapping
     :type column_mapping: dict
+    :param column_adding: Column adding
+    :type column_adding: dict
     :param ingestion_type: Source table ingestion time (Full or Incremental)
     :type ingestion_type: IngestionType
     :param ods_table_config: User-provided ODS configuration options
