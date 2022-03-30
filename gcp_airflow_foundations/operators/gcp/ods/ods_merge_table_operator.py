@@ -70,6 +70,7 @@ class MergeBigQueryODS(BigQueryOperator):
         ingestion_type: IngestionType,
         ods_table_config: OdsTableConfig,
         column_casting: dict = {},
+        column_adding: dict = {},
         location: Optional[str] = None,
         **kwargs,
     ) -> None:
@@ -94,6 +95,7 @@ class MergeBigQueryODS(BigQueryOperator):
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
         self.column_casting = column_casting
+        self.column_adding = column_adding
         self.ingestion_type = ingestion_type
         self.ods_table_config = ods_table_config
 
@@ -132,6 +134,7 @@ class MergeBigQueryODS(BigQueryOperator):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             column_casting=self.column_casting,
+            column_adding=self.column_adding,
             ods_metadata=self.ods_table_config.ods_metadata,
         )
 

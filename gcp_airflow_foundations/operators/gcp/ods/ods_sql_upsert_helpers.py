@@ -1,3 +1,4 @@
+import logging
 class SqlHelperODS:
     """
     SQL helper class used to formulate the SQL queries for the merge operations of ODS tables.
@@ -33,6 +34,7 @@ class SqlHelperODS:
         surrogate_keys,
         column_mapping,
         column_casting,
+        column_adding,
         columns,
         ods_metadata,
         partition_column_name=None,
@@ -48,6 +50,7 @@ class SqlHelperODS:
         self.surrogate_keys = surrogate_keys
         self.column_mapping = column_mapping
         self.column_casting = column_casting
+        self.column_adding = column_adding
         self.ods_metadata = ods_metadata
         self.gcp_conn_id = gcp_conn_id
         self.columns = columns
@@ -73,6 +76,16 @@ class SqlHelperODS:
             self.columns_str_source: str = ",".join(
                 ["`{}`".format(col) for col in columns]
             )
+        logging.info(self.columns_str_source)
+
+        if self.column_adding:
+            keys = list(self.column_adding.keys())
+            self.columns_str_source = self.columns_str_source + "," + \
+                ",".join(
+                    column_adding[col]["function"]
+                    for col in keys
+                )
+        logging.info(self.columns_str_source)
 
         self.columns_str_keys: str = ",".join(surrogate_keys)
         self.columns_str_target: str = ",".join(
@@ -95,7 +108,13 @@ class SqlHelperODS:
 
         else:
             COLUMNS = ",".join(
-                f"`{col}` AS `{self.column_mapping[col]}`" for col in self.columns
+                f"{col} AS `{self.column_mapping[col]}`" for col in self.columns
+            )
+
+        if self.column_adding:
+            keys = list(self.column_adding.keys())
+            COLUMNS = COLUMNS + "," + ",".join(
+                f"{self.column_adding[col]['function']} AS `{self.column_mapping[col]}`" for col in keys
             )
 
         return f"""
@@ -118,6 +137,12 @@ class SqlHelperODS:
         else:
             UPDATE_COLUMNS = ",".join(
                 f"`{self.column_mapping[col]}`=S.`{col}`" for col in self.columns
+            )
+
+        if self.column_adding:
+            keys = list(self.column_adding.keys())
+            COLUMNS = COLUMNS + "," + ",".join(
+                f"{col} AS `{self.column_mapping[col]}`" for col in keys
             )
 
         comma = ","

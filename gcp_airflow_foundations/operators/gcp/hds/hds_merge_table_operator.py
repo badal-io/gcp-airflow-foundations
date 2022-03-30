@@ -44,6 +44,8 @@ class MergeBigQueryHDS(BigQueryOperator):
     :type gcp_conn_id: str
     :param column_mapping: Column mapping
     :type column_mapping: dict
+    :param column_adding: Columna dding
+    :type column_adding: dict
     :param ingestion_type: Source table ingestion time (Full or Incremental)
     :type ingestion_type: IngestionType
     :param hds_table_config: User-provided HDS configuration options
@@ -69,6 +71,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
         column_casting: dict = {},
+        column_adding: dict = {},
         ingestion_type: IngestionType,
         hds_table_config: HdsTableConfig,
         location: Optional[str] = None,
@@ -96,6 +99,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         self.columns = columns
         self.column_mapping = column_mapping
         self.column_casting = column_casting
+        self.column_adding = column_adding
         self.ingestion_type = ingestion_type
         self.hds_table_config = hds_table_config
 
@@ -138,6 +142,7 @@ class MergeBigQueryHDS(BigQueryOperator):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             column_casting=self.column_casting,
+            column_adding=self.column_adding,
             hds_metadata=self.hds_table_config.hds_metadata,
         )
 
