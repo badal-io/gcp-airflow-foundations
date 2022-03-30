@@ -96,6 +96,7 @@ class TestMigrateSchema(unittest.TestCase):
         )
 
         mock_bq_update_table_schema.assert_called_once_with(
+            project_id=TEST_GCP_PROJECT_ID,
             dataset_id=TEST_DATASET,
             table_id=TEST_TABLE_ID,
             schema_fields_updates=SCHEMA_FIELDS,
