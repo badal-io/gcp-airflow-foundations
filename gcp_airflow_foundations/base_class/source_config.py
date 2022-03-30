@@ -8,14 +8,15 @@ from gcp_airflow_foundations.enums.source_type import SourceType
 from gcp_airflow_foundations.base_class.landing_zone_config import LandingZoneConfig
 from gcp_airflow_foundations.base_class.schema_options_config import SchemaOptionsConfig
 from gcp_airflow_foundations.base_class.facebook_config import FacebookConfig
-from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
+from gcp_airflow_foundations.base_class.source_ingestion_config import FullIngestionConfig
+
 
 partition_limit = 4000
 ms_day = 86400000
 expiration_options = {
-    "@hourly": partition_limit / 24,
-    "@daily": partition_limit,
-    "@monthly": partition_limit * 30,
+    "@hourly":partition_limit/24,
+    "@daily":partition_limit, 
+    "@monthly":partition_limit*30
 }
 
 
@@ -23,13 +24,13 @@ expiration_options = {
 class SourceConfig:
     """
     Source configuration data class.
-
     Attributes:
         name : Name of source
         source_type : Source type selection. See SourceType class
         ingest_schedule : Ingestion schedule. Currently only supporting @hourly, @daily, @weekly, and @monthly
         gcp_project : Google Cloud Platform project ID
         dataset_data_name : Target dataset name
+        connection : Aiflow Google Cloud Platform connection
         extra_options : Google Cloud Storage bucket and objects for source data if loading from GCS
         landing_zone_options : Staging dataset name
         acceptable_delay_minutes : Delay minutes limit
@@ -37,20 +38,14 @@ class SourceConfig:
         owner : Airflow user owning the DAG
         partition_expiration: Expiration time for HDS Snapshot partitions in days.
         facebook_options: Extra options for ingesting data from Facebook Marketing API.
-        catchup: Run all dag runs since start_date. https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#catchup
-        dag_args: Optional dictionary of parameters to be passed as keyword arguments to the ingestion DAG.
+        dag_args: Optional dictionary of parameters to be passed as keyword arguments to the ingestion DAG. 
                     Refer to :class:`airflow.models.dag.DAG` for the available parameters.
         location: BigQuery job location.
         start_date : Start date for DAG
         start_date_tz : Timezone
-        ods_suffix : Suffix for ODS tables. Defaults to empty string.
-        hds_suffix : Suffix for HDS tables. Defaults to empty string.
         version : The Dag version. Can be incremented if logic changes
         sla_mins : Service Level Agreement (SLA) timeout minutes. This is is an expectation for the maximum time a Task should take.
-        connection  : Aiflow Google Cloud Platform connection
-
     """
-
     name: str
     source_type: str
     ingest_schedule: str
@@ -58,26 +53,24 @@ class SourceConfig:
     gcp_project: str
     dataset_data_name: str
     dataset_hds_override: Optional[str]
+    connection: str
     extra_options: Optional[dict]
-    landing_zone_options: LandingZoneConfig
     landing_zone_options: LandingZoneConfig
     acceptable_delay_minutes: int
     notification_emails: List[str]
     owner: str
     partition_expiration: Optional[int]
+    schema_options: SchemaOptionsConfig
+    facebook_options: Optional[FacebookConfig]
+    full_ingestion_options: Optional[FullIngestionConfig]
     dag_args: Optional[dict]
     location: str
     start_date: str
-    schema_options: SchemaOptionsConfig = SchemaOptionsConfig()
-    facebook_options: Optional[FacebookConfig] = None  # TODO: Move into extra_configs
-    catchup: bool = True
     start_date_tz: str = "EST"
-    ods_suffix: str = ""
-    hds_suffix: str = ""
     version: int = 1
     sla_mins: int = 900
-    dlp_config: DlpSourceConfig = None
-    connection: str = "google_cloud_default"
+    regex_matching: bool = False
+
 
     @validator("name")
     def valid_name(cls, v):
@@ -92,9 +85,8 @@ class SourceConfig:
 
     @validator("ingest_schedule")
     def valid_ingest_schedule(cls, v):
-        assert v in ["@hourly", "@daily", "@weekly", "@monthly"] or croniter.is_valid(
-            v
-        ), "invalid ingest schedule: see Airflow documentation for more details"
+        assert (v in ["@hourly", "@daily", "@weekly", "@monthly"] or croniter.is_valid(v)), \
+            "invalid ingest schedule: see Airflow documentation for more details"
         return v
 
     @validator("landing_zone_options")
@@ -104,36 +96,25 @@ class SourceConfig:
 
     @validator("start_date")
     def valid_start_date(cls, v):
-        assert datetime.datetime.strptime(
-            v, "%Y-%m-%d"
-        ), "The date format for Start Date should be YYYY-MM-DD"
+        assert datetime.datetime.strptime(v, "%Y-%m-%d"), \
+            "The date format for Start Date should be YYYY-MM-DD"
         return v
 
     @validator("schema_options")
     def valid_schema_options(cls, v):
-        assert v is not None, "Schema options configuration must be provided"
+        assert v is not None, 'Schema options configuration must be provided'
         return v
 
     @root_validator(pre=True)
     def valid_partition_expiration(cls, values):
-        if values["partition_expiration"] is not None:
-            assert (
-                values["partition_expiration"]
-                < expiration_options[values["ingest_schedule"]]
-            ), f"The partition limit should be smaller than {expiration_options[values['ingest_schedule']]} days. It is currently set to {values['partition_expiration']}"
-            values["partition_expiration"] = values["partition_expiration"] * ms_day
+        if values['partition_expiration'] is not None:
+            assert values['partition_expiration'] < expiration_options[values['ingest_schedule']], \
+                f"The partition limit should be smaller than {expiration_options[values['ingest_schedule']]} days. It is currently set to {values['partition_expiration']}"
+            values['partition_expiration'] = values['partition_expiration']*ms_day
         return values
 
     @root_validator(pre=True)
     def valid_hds_dataset(cls, values):
-        if values["dataset_hds_override"] is None:
-            values["dataset_hds_override"] = values["dataset_data_name"]
-        return values
-
-    @root_validator(pre=True)
-    def valid_table_suffix(cls, values):
-        if values["hds_suffix"] == values["ods_suffix"]:
-            assert (
-                values["dataset_hds_override"] is not None
-            ), "ODS and HDS table must reside in separate datasets if they share the same suffix."
+        if values['dataset_hds_override'] is None:
+            values['dataset_hds_override'] = values['dataset_data_name']
         return values
