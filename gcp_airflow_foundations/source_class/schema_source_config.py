@@ -13,7 +13,6 @@ class SchemaSourceConfig(ABC):
     def schema_method_arguments(self, data_source, table_config, ds):
         pass
 
-
 class AutoSchemaSourceConfig(SchemaSourceConfig):
     def schema_method(self):
         return

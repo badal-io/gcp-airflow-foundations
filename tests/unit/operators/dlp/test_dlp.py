@@ -174,7 +174,7 @@ class TestDlpSubTask(unittest.TestCase):
             job_id=None,
             retry=None,
             timeout=None,
-            metadata=None,
+            metadata=(),
             wait_until_finished=True,
         )
 

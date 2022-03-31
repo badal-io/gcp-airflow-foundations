@@ -7,7 +7,7 @@ from airflow.utils.task_group import TaskGroup
 
 from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateEmptyTableOperator,
-    BigQueryExecuteQueryOperator,
+    BigQueryExecuteQueryOperator
 )
 
 from gcp_airflow_foundations.operators.gcp.hds.hds_merge_table_operator import (
@@ -20,6 +20,8 @@ from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_ope
 from gcp_airflow_foundations.operators.gcp.create_table import (
     CustomBigQueryCreateEmptyTableOperator,
 )
+
+from gcp_airflow_foundations.operators.gcp.create_dataset import CustomBigQueryCreateEmptyDatasetOperator
 
 
 def hds_builder(
@@ -61,6 +63,16 @@ def hds_builder(
             "Invalid HDS table type", hds_table_config.hds_table_type
         )
 
+    create_dataset = CustomBigQueryCreateEmptyDatasetOperator(
+        task_id="create_hds_dataset",
+        project_id=project_id,
+        dataset_id=dataset_id,
+        location=location,
+        exists_ok=True,
+        task_group=taskgroup,
+        dag=dag
+    )
+
     # 1 Check if HDS table exists and if not create an empty table
     create_table = CustomBigQueryCreateEmptyTableOperator(
         task_id="create_hds_table",
@@ -70,7 +82,7 @@ def hds_builder(
         cluster_fields=cluster_fields,
         time_partitioning=time_partitioning,
         task_group=taskgroup,
-        dag=dag,
+        dag=dag
     )
 
     # 2 Migrate schema
@@ -80,7 +92,7 @@ def hds_builder(
         table_id=table_id,
         dataset_id=dataset_id,
         task_group=taskgroup,
-        dag=dag,
+        dag=dag
     )
 
     # 3 Load staging table to HDS table
@@ -98,9 +110,9 @@ def hds_builder(
         hds_table_config=hds_table_config,
         location=location,
         task_group=taskgroup,
-        dag=dag,
+        dag=dag
     )
 
-    create_table >> migrate_schema >> insert
+    create_dataset >> create_table >> migrate_schema >> insert
 
     return taskgroup
