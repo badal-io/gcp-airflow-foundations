@@ -10,7 +10,6 @@ class DataformHook(BaseHook):
     Airflow Hook to connect to Dataform's API and run Dataform jobs.
     This hook will POST to Dataform's ApiService_RunCreate to initiate a new dataform run.
     If no tags are provided, Dataform will run all.
-    Once a run is created, it will use ApiService_RunGet to return information about the run every 10 seconds until the status is no longer RUNNING.
 
     Attributes:
     :param project_id: project_id
@@ -43,7 +42,6 @@ class DataformHook(BaseHook):
 
     def __init__(self, dataform_conn_id='datafrom_default') -> None:
         self.conn = self.get_connection(dataform_conn_id)
-        # self.project_id = self.conn.login
         self.api_key = self.conn.password
         self.headers = {'Authorization': f'Bearer {self.api_key}'}
 
