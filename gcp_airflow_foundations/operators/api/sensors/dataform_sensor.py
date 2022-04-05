@@ -1,7 +1,7 @@
+from gcp_airflow_foundations.operators.api.hooks.dataform_hook import DataformHook
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.exceptions import AirflowException
-from gcp_airflow_foundations.operators.api.hooks.dataform_hook import DataformHook
 from typing import Any
 import logging
 

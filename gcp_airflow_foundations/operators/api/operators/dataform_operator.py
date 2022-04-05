@@ -20,8 +20,8 @@ class DataformOperator(BaseOperator):
     :type schedule: str
     :param tags: (optional) A list of tags with which the action must have in order to be run. If not set, then all actions will run.
     :type tags: list[str]
-    :param validate_job_submitted: (optional) Validate dataform job after sending. If not set, default value is False and operator will return run url.
-    :type validate_job_submitted: bool
+    :param submit_mode: (optional) Valid options are 'submit_job_only' (default), 'validate_job_submitted', and 'wait_for_job_to_finish'.
+    :type submit_mode: str
     :param retry_period_seconds: (optional) Amount of time to wait for retry if validation job doesn't return SUCCESSFUL. If not set, then default value is 10 seconds.
     :type retry_period_seconds: int
 
@@ -51,7 +51,7 @@ class DataformOperator(BaseOperator):
             environment: str,
             schedule: str,
             tags: Optional[str] = [],
-            validate_job_submitted: bool = False,
+            submit_mode: str = 'submit_job_only',
             retry_period_seconds: Optional[int] = 10,
             **kwargs: Any) -> None:
 
@@ -61,7 +61,7 @@ class DataformOperator(BaseOperator):
         self.environment = environment
         self.schedule = schedule
         self.tags = tags
-        self.validate_job_submitted = validate_job_submitted
+        self.submit_mode = submit_mode
         self.retry_period_seconds = retry_period_seconds
 
     def execute(self, context) -> str:
@@ -73,7 +73,19 @@ class DataformOperator(BaseOperator):
             tags=self.tags
         )
 
-        while self.validate_job_submitted:
+        if self.submit_mode == 'submit_job_only':
+            return run_url
+
+        while self.submit_mode == 'validate_job_submitted':
+            response = dataform_hook.check_job_status(run_url)
+            logging.info(f'dataform job status: {response} run rul: {run_url}')
+
+            if response in ('SUCCESSFUL', 'RUNNING'):
+                return run_url
+            else:
+                time.sleep(self.retry_period_seconds)
+
+        while self.submit_mode == 'wait_for_job_to_finish':
             response = dataform_hook.check_job_status(run_url)
             logging.info(f'dataform job status: {response} run rul: {run_url}')
 
@@ -83,20 +95,3 @@ class DataformOperator(BaseOperator):
                 raise AirflowException(f"Dataform ApiService Error: {response}")
             else:
                 time.sleep(self.retry_period_seconds)
-
-        if not self.validate_job_submitted:
-            response = dataform_hook.check_job_status(run_url)
-            logging.info(f'dataform job status: {response} run rul: {run_url}')
-
-            if response in ('SUCCESSFUL', 'RUNNING'):
-                return run_url
-            else:
-                time.sleep(self.retry_period_seconds)
-
-                response2 = dataform_hook.check_job_status(run_url)
-                logging.info(f'dataform job status 2nd check: {response2} run rul: {run_url}')
-
-                if response2 in ('SUCCESSFUL', 'RUNNING'):
-                    return run_url
-                else:
-                    raise AirflowException(f"Dataform ApiService Error: {response}")
