@@ -18,7 +18,7 @@ from gcp_airflow_foundations.operators.gcp.schema_parsing.schema_parsing_operato
     ParseSchema,
 )
 from gcp_airflow_foundations.source_class.schema_source_config import SchemaSourceConfig
-
+from gcp_airflow_foundations.operators.gcp.create_dataset import CustomBigQueryCreateEmptyDatasetOperator
 
 def load_builder(
     data_source: SourceConfig,
@@ -118,6 +118,16 @@ def load_builder(
     done = DummyOperator(task_id="done", trigger_rule=TriggerRule.ALL_DONE)
 
     if dlp_table_config.get_is_on():
+
+        create_dlp_dataset = CustomBigQueryCreateEmptyDatasetOperator(
+            task_id="create_dlp_dataset",
+            project_id=project_id,
+            dataset_id=data_source.dlp_config.results_dataset_id,
+            location=location,
+            exists_ok=True,
+            dag=dag
+        )
+
         dlp_tasks_configs = [
             {
                 "datastore": "ods",
@@ -143,6 +153,6 @@ def load_builder(
             dag=dag,
         )
 
-        delete_staging_table >> ods_dlp_task_groups >> done
+        delete_staging_table >> create_dlp_dataset >> ods_dlp_task_groups >> done
     else:
         delete_staging_table >> done
