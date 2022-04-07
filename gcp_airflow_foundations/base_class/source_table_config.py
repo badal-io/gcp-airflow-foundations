@@ -52,6 +52,7 @@ class SourceTableConfig:
     column_mapping: Optional[dict]
     cluster_fields: Optional[List[str]]
     column_casting: Optional[dict]
+    column_adding: Optional[dict]
     hds_config: Optional[HdsTableConfig]
     facebook_table_config: Optional[FacebookTableConfig]
     start_date: Optional[str]
@@ -112,4 +113,20 @@ class SourceTableConfig:
                 assert (
                     values["hds_config"].hds_table_type != HdsTableType.SCD2
                 ), "Column casting is not currently supported for HDS SCD2 tables."
+        return values
+    
+    @root_validator(pre=True)
+    def valid_column_adding(cls, values):
+        if values["column_adding"] is not None:
+            assert all(
+                [
+                    set(values["column_casting"][col].keys()) == {'function', 'output_type'} 
+                    for col in values["column_casting"]
+                ]
+            ), "Column adding must only contain 'function' and 'output_type' keys with corresponding values."
+
+            if values["hds_config"] is not None:
+                assert (
+                    values["hds_config"].hds_table_type != HdsTableType.SCD2
+                ), "Column adding is not currently supported for HDS SCD2 tables."
         return values
