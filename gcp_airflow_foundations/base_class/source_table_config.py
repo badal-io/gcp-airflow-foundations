@@ -120,8 +120,8 @@ class SourceTableConfig:
         if values["column_adding"] is not None:
             assert all(
                 [
-                    set(values["column_casting"][col].keys()) == {'function', 'output_type'} 
-                    for col in values["column_casting"]
+                    set(values["column_adding"][col].keys()) == {'function', 'output_type'} 
+                    for col in values["column_adding"]
                 ]
             ), "Column adding must only contain 'function' and 'output_type' keys with corresponding values."
 
