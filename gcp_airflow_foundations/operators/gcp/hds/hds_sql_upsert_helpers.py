@@ -21,6 +21,8 @@ class SqlHelperHDS:
     :type gcp_conn_id: str
     :param column_mapping: Column mapping
     :type column_mapping: dict
+    :param column_adding: Column adding
+    :type column_adding: dict
     :param time_partitioning: Time partitioning option for BigQuery target table. One of HOUR, DAY, or MONTH
     :type time_partitioning: str
     :param hds_metadata: User-provided options for HDS metadata column naming
@@ -37,6 +39,7 @@ class SqlHelperHDS:
         surrogate_keys,
         column_mapping,
         column_casting,
+        column_adding,
         hds_metadata,
         time_partitioning=None,
         gcp_conn_id="google_cloud_default",
@@ -49,6 +52,7 @@ class SqlHelperHDS:
         self.surrogate_keys = surrogate_keys
         self.column_mapping = column_mapping
         self.column_casting = column_casting
+        self.column_adding = column_adding
         self.hds_metadata = hds_metadata
         self.gcp_conn_id = gcp_conn_id
         self.time_partitioning = time_partitioning
@@ -128,6 +132,12 @@ class SqlHelperHDS:
         else:
             COLUMNS = ",".join(
                 f"`{col}` AS `{self.column_mapping[col]}`" for col in self.columns
+            )
+        
+        if self.column_adding:
+            keys = list(self.column_adding.keys())
+            COLUMNS = COLUMNS + "," + ",".join(
+                f"{self.column_adding[col]['function']} AS `{self.column_mapping[col]}`" for col in keys
             )
 
         sql = f"""

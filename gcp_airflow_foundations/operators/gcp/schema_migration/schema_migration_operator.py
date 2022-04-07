@@ -121,7 +121,7 @@ class MigrateSchema(BaseOperator):
         """
 
         self.current_schema_fields = self.hook.get_schema(
-            dataset_id=self.dataset_id, table_id=self.table_id
+            project_id=self.project_id, dataset_id=self.dataset_id, table_id=self.table_id
         ).get("fields", None)
 
         logging.info(f"The current schema is: {self.current_schema_fields}")
