@@ -55,7 +55,7 @@ class SourceTableConfig:
     column_mapping: Optional[dict]
     cluster_fields: Optional[List[str]]
     column_casting: Optional[dict]
-    column_adding: Optional[dict]
+    new_column_udfs: Optional[dict]
     hds_config: Optional[HdsTableConfig]
     facebook_table_config: Optional[FacebookTableConfig]
     start_date: Optional[str]
@@ -119,17 +119,15 @@ class SourceTableConfig:
         return values
     
     @root_validator(pre=True)
-    def valid_column_adding(cls, values):
-        if values["column_adding"] is not None:
+    def valid_new_column_udfs(cls, values):
+        if values["new_column_udfs"] is not None:
             assert all(
-                    #[set(values["column_adding"][col].keys()) == {'function', 'output_type'} 
-                    #for col in values["column_adding"]
-                    [from_dict(data_class=ColumnUDFConfig, data=values["column_adding"][col]) for col in values["column_adding"].keys()]
-            ), "Column adding must only contain 'function' and 'output_type' keys with corresponding values."
+                    [from_dict(data_class=ColumnUDFConfig, data=values["new_column_udfs"][col]) for col in values["new_column_udfs"].keys()]
+            ), "New column UDFs must only contain 'function' and 'output_type' keys with corresponding values."
 
             if values["hds_config"] is not None:
                 assert (
                     values["hds_config"].hds_table_type != HdsTableType.SCD2
-                ), "Column adding is not currently supported for HDS SCD2 tables."
+                ), "New column UDFs is not currently supported for HDS SCD2 tables."
         return values
     

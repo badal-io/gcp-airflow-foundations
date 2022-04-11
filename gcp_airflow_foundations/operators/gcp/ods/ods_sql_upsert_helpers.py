@@ -19,8 +19,8 @@ class SqlHelperODS:
     :type gcp_conn_id: str
     :param column_mapping: Column mapping
     :type column_mapping: dict
-    :param column_adding: Column adding
-    :type column_adding: dict
+    :param new_column_udfs: New column UDFs
+    :type new_column_udfs: dict
     :param time_partitioning: Time partitioning option for BigQuery target table. One of HOUR, DAY, or MONTH
     :type time_partitioning: str
     :param ods_metadata: User-provided options for ODS metadata column naming
@@ -36,7 +36,7 @@ class SqlHelperODS:
         surrogate_keys,
         column_mapping,
         column_casting,
-        column_adding,
+        new_column_udfs,
         columns,
         ods_metadata,
         partition_column_name=None,
@@ -52,7 +52,7 @@ class SqlHelperODS:
         self.surrogate_keys = surrogate_keys
         self.column_mapping = column_mapping
         self.column_casting = column_casting
-        self.column_adding = column_adding
+        self.new_column_udfs = new_column_udfs
         self.ods_metadata = ods_metadata
         self.gcp_conn_id = gcp_conn_id
         self.columns = columns
@@ -78,11 +78,11 @@ class SqlHelperODS:
                 ["`{}`".format(col) for col in columns]
             )
 
-        if self.column_adding:
-            keys = list(self.column_adding.keys())
+        if self.new_column_udfs:
+            keys = list(self.new_column_udfs.keys())
             self.columns_str_source = self.columns_str_source + "," + \
                 ",".join(
-                    column_adding[col]["function"]
+                    new_column_udfs[col]["function"]
                     for col in keys
                 )
 
@@ -110,10 +110,10 @@ class SqlHelperODS:
                 f"{col} AS `{self.column_mapping[col]}`" for col in self.columns
             )
 
-        if self.column_adding:
-            keys = list(self.column_adding.keys())
+        if self.new_column_udfs:
+            keys = list(self.new_column_udfs.keys())
             COLUMNS = COLUMNS + "," + ",".join(
-                f"{self.column_adding[col]['function']} AS `{self.column_mapping[col]}`" for col in keys
+                f"{self.new_column_udfs[col]['function']} AS `{self.column_mapping[col]}`" for col in keys
             )
 
         return f"""
@@ -138,8 +138,8 @@ class SqlHelperODS:
                 f"`{self.column_mapping[col]}`=S.`{col}`" for col in self.columns
             )
 
-        if self.column_adding:
-            keys = list(self.column_adding.keys())
+        if self.new_column_udfs:
+            keys = list(self.new_column_udfs.keys())
             COLUMNS = COLUMNS + "," + ",".join(
                 f"{col} AS `{self.column_mapping[col]}`" for col in keys
             )

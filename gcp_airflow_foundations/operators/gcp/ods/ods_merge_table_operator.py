@@ -43,8 +43,8 @@ class MergeBigQueryODS(BigQueryOperator):
     :type gcp_conn_id: str
     :param column_mapping: Column mapping
     :type column_mapping: dict
-    :param column_adding: Column adding
-    :type column_adding: dict
+    :param new_column_udfs: New column UDFs
+    :type new_column_udfs: dict
     :param ingestion_type: Source table ingestion time (Full or Incremental)
     :type ingestion_type: IngestionType
     :param ods_table_config: User-provided ODS configuration options
@@ -72,7 +72,7 @@ class MergeBigQueryODS(BigQueryOperator):
         ingestion_type: IngestionType,
         ods_table_config: OdsTableConfig,
         column_casting: dict = {},
-        column_adding: dict = {},
+        new_column_udfs: dict = {},
         location: Optional[str] = None,
         **kwargs,
     ) -> None:
@@ -97,7 +97,7 @@ class MergeBigQueryODS(BigQueryOperator):
         self.delegate_to = delegate_to
         self.column_mapping = column_mapping
         self.column_casting = column_casting
-        self.column_adding = column_adding
+        self.new_column_udfs = new_column_udfs
         self.ingestion_type = ingestion_type
         self.ods_table_config = ods_table_config
 
@@ -136,7 +136,7 @@ class MergeBigQueryODS(BigQueryOperator):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             column_casting=self.column_casting,
-            column_adding=self.column_adding,
+            new_column_udfs=self.new_column_udfs,
             ods_metadata=self.ods_table_config.ods_metadata,
         )
 

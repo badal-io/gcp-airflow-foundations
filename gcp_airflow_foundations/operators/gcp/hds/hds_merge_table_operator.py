@@ -44,8 +44,8 @@ class MergeBigQueryHDS(BigQueryOperator):
     :type gcp_conn_id: str
     :param column_mapping: Column mapping
     :type column_mapping: dict
-    :param column_adding: Column adding
-    :type column_adding: dict
+    :param new_column_udfs: New column UDFs
+    :type new_column_udfs: dict
     :param ingestion_type: Source table ingestion time (Full or Incremental)
     :type ingestion_type: IngestionType
     :param hds_table_config: User-provided HDS configuration options
@@ -71,7 +71,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         gcp_conn_id: str = "google_cloud_default",
         column_mapping: dict,
         column_casting: dict = {},
-        column_adding: dict = {},
+        new_column_udfs: dict = {},
         ingestion_type: IngestionType,
         hds_table_config: HdsTableConfig,
         location: Optional[str] = None,
@@ -99,7 +99,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         self.columns = columns
         self.column_mapping = column_mapping
         self.column_casting = column_casting
-        self.column_adding = column_adding
+        self.new_column_udfs = new_column_udfs
         self.ingestion_type = ingestion_type
         self.hds_table_config = hds_table_config
 
@@ -142,7 +142,7 @@ class MergeBigQueryHDS(BigQueryOperator):
             surrogate_keys=self.surrogate_keys,
             column_mapping=self.column_mapping,
             column_casting=self.column_casting,
-            column_adding=self.column_adding,
+            new_column_udfs=self.new_column_udfs,
             hds_metadata=self.hds_table_config.hds_metadata,
         )
 
