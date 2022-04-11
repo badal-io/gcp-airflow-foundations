@@ -9,6 +9,7 @@ from gcp_airflow_foundations.base_class.landing_zone_config import LandingZoneCo
 from gcp_airflow_foundations.base_class.schema_options_config import SchemaOptionsConfig
 from gcp_airflow_foundations.base_class.facebook_config import FacebookConfig
 from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
+from gcp_airflow_foundations.base_class.source_ingestion_config import FullIngestionConfig
 
 partition_limit = 4000
 ms_day = 86400000
@@ -70,6 +71,7 @@ class SourceConfig:
     start_date: str
     schema_options: SchemaOptionsConfig = SchemaOptionsConfig()
     facebook_options: Optional[FacebookConfig] = None  # TODO: Move into extra_configs
+    full_ingestion_options: FullIngestionConfig = FullIngestionConfig()
     catchup: bool = True
     start_date_tz: str = "EST"
     ods_suffix: str = ""
@@ -77,6 +79,7 @@ class SourceConfig:
     version: int = 1
     sla_mins: int = 900
     dlp_config: DlpSourceConfig = None
+    regex_matching: bool = False
     connection: str = "google_cloud_default"
 
     @validator("name")

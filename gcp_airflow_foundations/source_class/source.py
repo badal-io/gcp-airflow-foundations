@@ -20,7 +20,6 @@ import logging
 
 class DagBuilder(ABC):
     """A base DAG builder for creating a list of DAGs for a given source.
-
     Attributes
     ----------
     sources : list(DagBuilder)
@@ -81,7 +80,10 @@ class DagBuilder(ABC):
 
                 dags.append(dag)
 
-        dags = dags + self.get_extra_dags()
+        extra_dags=  self.get_extra_dags()
+        if extra_dags is not None and not extra_dags == []:
+            dags = dags + self.get_extra_dags()
+            
         return dags
 
     @abstractmethod

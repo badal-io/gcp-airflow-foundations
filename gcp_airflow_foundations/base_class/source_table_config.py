@@ -2,6 +2,8 @@ from airflow.exceptions import AirflowException
 
 from dacite import Config
 from dataclasses import dataclass, field
+from dacite import from_dict
+
 
 from pydantic import validator, root_validator
 
@@ -17,6 +19,7 @@ from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTableConfig
+from gcp_airflow_foundations.base_class.column_udf_config import ColumnUDFConfig
 
 
 @dataclass
@@ -52,6 +55,7 @@ class SourceTableConfig:
     column_mapping: Optional[dict]
     cluster_fields: Optional[List[str]]
     column_casting: Optional[dict]
+    new_column_udfs: Optional[dict]
     hds_config: Optional[HdsTableConfig]
     facebook_table_config: Optional[FacebookTableConfig]
     start_date: Optional[str]
@@ -113,3 +117,17 @@ class SourceTableConfig:
                     values["hds_config"].hds_table_type != HdsTableType.SCD2
                 ), "Column casting is not currently supported for HDS SCD2 tables."
         return values
+    
+    @root_validator(pre=True)
+    def valid_new_column_udfs(cls, values):
+        if values["new_column_udfs"] is not None:
+            assert all(
+                    [from_dict(data_class=ColumnUDFConfig, data=values["new_column_udfs"][col]) for col in values["new_column_udfs"].keys()]
+            ), "New column UDFs must only contain 'function' and 'output_type' keys with corresponding values."
+
+            if values["hds_config"] is not None:
+                assert (
+                    values["hds_config"].hds_table_type != HdsTableType.SCD2
+                ), "New column UDFs is not currently supported for HDS SCD2 tables."
+        return values
+    
