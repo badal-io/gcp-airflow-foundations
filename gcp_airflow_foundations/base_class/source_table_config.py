@@ -2,6 +2,8 @@ from airflow.exceptions import AirflowException
 
 from dacite import Config
 from dataclasses import dataclass, field
+from dacite import from_dict
+
 
 from pydantic import validator, root_validator
 
@@ -17,6 +19,7 @@ from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTableConfig
+from gcp_airflow_foundations.base_class.column_udf_config import ColumnUDFConfig
 
 
 @dataclass
@@ -119,10 +122,9 @@ class SourceTableConfig:
     def valid_column_adding(cls, values):
         if values["column_adding"] is not None:
             assert all(
-                [
-                    set(values["column_adding"][col].keys()) == {'function', 'output_type'} 
-                    for col in values["column_adding"]
-                ]
+                    #[set(values["column_adding"][col].keys()) == {'function', 'output_type'} 
+                    #for col in values["column_adding"]
+                    [from_dict(data_class=ColumnUDFConfig, data=values["column_adding"][col]) for col in values["column_adding"].keys()]
             ), "Column adding must only contain 'function' and 'output_type' keys with corresponding values."
 
             if values["hds_config"] is not None:
@@ -130,3 +132,4 @@ class SourceTableConfig:
                     values["hds_config"].hds_table_type != HdsTableType.SCD2
                 ), "Column adding is not currently supported for HDS SCD2 tables."
         return values
+    
