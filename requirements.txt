@@ -9,7 +9,6 @@ flake8>=3.8.0
 pre-commit>=1.18.3
 croniter>=1.0.15
 facebook-business>=6.0.2
-
 google-cloud-bigquery==2.28.1
 pyarrow>=4.0.1
 facebook-business>=6.0.2
