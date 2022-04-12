@@ -185,6 +185,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             task_group=taskgroup
         )
 
+    # flake8: noqa: C901
     def load_to_landing(self, table_config, **kwargs):
         gcs_hook = GCSHook()
 

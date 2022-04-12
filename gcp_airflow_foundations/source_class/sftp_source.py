@@ -230,6 +230,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
                 task_group=taskgroup
             )
 
+    # flake8: noqa: C901
     def load_sftp_to_gcs(self, table_config, dir_prefix, gcs_bucket_prefix, bucket, **kwargs):
         ds = kwargs["ds"]
         ti = kwargs["ti"]

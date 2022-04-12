@@ -141,10 +141,9 @@ class SqlHelperODS:
             )
 
         if self.new_column_udfs:
-            keys = list(self.new_column_udfs.keys())
-            COLUMNS = COLUMNS + "," + ",".join(
-                f"{col} AS `{self.column_mapping[col]}`" for col in keys
-            )
+            # keys = list(self.new_column_udfs.keys())
+            # COLUMNS = COLUMNS + "," + ",".join(f"{col} AS `{self.column_mapping[col]}`" for col in keys)
+            pass
 
         comma = ","
 
