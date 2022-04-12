@@ -1,4 +1,6 @@
 import logging
+
+
 class SqlHelperODS:
     """
     SQL helper class used to formulate the SQL queries for the merge operations of ODS tables.

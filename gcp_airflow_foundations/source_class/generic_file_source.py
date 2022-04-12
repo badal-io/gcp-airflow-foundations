@@ -26,7 +26,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
     source_type = "FTP"
 
     def set_schema_method_type(self):
-        self.schema_source_type = self.config.source.schema_options.schema_source_type     
+        self.schema_source_type = self.config.source.schema_options.schema_source_type
 
     def get_bq_ingestion_task(self, dag, table_config):
         taskgroup = TaskGroup(group_id="ftp_taskgroup")
@@ -45,7 +45,6 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             tasks.append(self.file_sensor(table_config, taskgroup))
             tasks.append(self.file_ingestion_task(table_config, taskgroup))
 
-       
         tasks.append(self.load_to_landing_task(table_config, taskgroup))
 
         if self.config.source.extra_options["file_source_config"]["delete_gcs_files"]:
@@ -57,14 +56,14 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
         not_none_tasks = list(filter(None.__ne__, tasks))
 
-        for i in range(len(not_none_tasks)-1):
-            not_none_tasks[i] >> not_none_tasks[i+1]
+        for i in range(len(not_none_tasks) - 1):
+            not_none_tasks[i] >> not_none_tasks[i + 1]
 
         return taskgroup
 
     def metadata_file_sensor(self, table_config, taskgroup):
         """
-        Implements a sensor for either the metadata file specified in the table config, which specifies 
+        Implements a sensor for either the metadata file specified in the table config, which specifies
         the parameterized file names to ingest.
         """
         if "metadata_file" in table_config.extra_options.get("file_table_config"):
@@ -125,10 +124,6 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         pass
 
     @abstractmethod
-    def load_to_landing_task(self, table_config):
-        pass
-
-    @abstractmethod
     def delete_gcs_files(table_config, taskgroup):
         pass
 
@@ -141,7 +136,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         )
 
     def get_list_of_files(self, table_config, **kwargs):
-        gcs_hook = GCSHook()
+        # gcs_hook = GCSHook()
         airflow_date_template = self.config.source.extra_options["file_source_config"]["airflow_date_template"]
         if airflow_date_template == "ds":
             ds = kwargs["ds"]
@@ -155,16 +150,16 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         dir_prefix = dir_prefix.replace("{{ ds }}", ds)
 
         gcs_bucket_prefix = self.config.source.extra_options["file_source_config"]["gcs_bucket_prefix"]
-        
+
         if self.config.source.extra_options["file_source_config"]["source_format"] == "PARQUET":
             file_list = [dir_prefix]
             kwargs['ti'].xcom_push(key='file_list', value=file_list)
             return
         else:
-            bucket = self.config.source.extra_options["gcs_bucket"]
+            # bucket = self.config.source.extra_options["gcs_bucket"]
             if "metadata_file" in table_config.extra_options.get("file_table_config"):
-                metadata_file_name = table_config.extra_options.get("file_table_config")["metadata_file"]
-                metadata_file = gcs_hook.download(bucket_name=bucket, object_name=metadata_file_name, filename="metadata.csv")
+                # metadata_file_name = table_config.extra_options.get("file_table_config")["metadata_file"]
+                # metadata_file = gcs_hook.download(bucket_name=bucket, object_name=metadata_file_name, filename="metadata.csv")
                 file_list = []
                 with open('metadata.csv', newline='') as f:
                     for line in f:
@@ -188,7 +183,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             op_kwargs={"table_config": table_config},
             python_callable=self.load_to_landing,
             task_group=taskgroup
-        )    
+        )
 
     def load_to_landing(self, table_config, **kwargs):
         gcs_hook = GCSHook()
@@ -202,12 +197,12 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         source_format = data_source.extra_options["file_source_config"]["source_format"]
         field_delimeter = data_source.extra_options["file_source_config"]["delimeter"]
         gcp_project = data_source.gcp_project
-        landing_dataset = data_source.landing_zone_options.landing_zone_dataset 
+        landing_dataset = data_source.landing_zone_options.landing_zone_dataset
         landing_table_name = table_config.landing_zone_table_name_override
         table_name = table_config.table_name
         destination_table = f"{gcp_project}:{landing_dataset}.{table_config.landing_zone_table_name_override}" + f"_{ds}"
-        
-        if not "skip_gcs_upload" in data_source.extra_options["file_source_config"]:
+
+        if "skip_gcs_upload" not in data_source.extra_options["file_source_config"]:
             files_to_load = ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list')
         else:
             dir_prefix = table_config.extra_options.get("file_table_config")["directory_prefix"]
@@ -216,11 +211,11 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
         gcs_bucket_prefix = data_source.extra_options["file_source_config"]["gcs_bucket_prefix"]
         if gcs_bucket_prefix is None:
-            gcs_bucket_prefix =  ""
+            gcs_bucket_prefix = ""
         if not gcs_bucket_prefix == "":
             gcs_bucket_prefix += "/"
 
-        destination_path_prefix = gcs_bucket_prefix + table_name + "/" + ds 
+        destination_path_prefix = gcs_bucket_prefix + table_name + "/" + ds
         if "gcs_bucket_path_format_mode" in self.config.source.extra_options["file_source_config"]:
             date = datetime.strptime(ds, '%Y-%m-%d').strftime('%Y/%m/%d')
             destination_path_prefix = gcs_bucket_prefix + table_name + "/" + date
@@ -255,13 +250,13 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                 )
                 bash.execute(context=kwargs)
             except Exception:
-                logging.info(f"Load into BQ landing zone failed.")
+                logging.info("Load into BQ landing zone failed.")
         else:
             # gcs->bq operator else
             if self.config.source.extra_options["file_source_config"]["file_prefix_filtering"]:
                 logging.info(files_to_load)
                 for i in range(len(files_to_load)):
-                    matching_gcs_files = gcs_hook.list(bucket_name=bucket, prefix=files_to_load[i]) 
+                    matching_gcs_files = gcs_hook.list(bucket_name=bucket, prefix=files_to_load[i])
                     logging.info(matching_gcs_files)
                     if len(matching_gcs_files) > 1:
                         raise AirflowException(f"There is more than one matching file with the prefix {files_to_load[i]} in the bucket {bucket}")
@@ -281,7 +276,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                     prefix = table_config.extra_options.get("file_table_config")["prefix"]
                 prefix = destination_path_prefix + "/" + prefix
                 logging.info(destination_path_prefix)
-                #logging.info(destination_path_prefix + "/" + partition_prefix) 
+                # logging.info(destination_path_prefix + "/" + partition_prefix)
                 files_to_load = gcs_hook.list(bucket_name=bucket, prefix=prefix)
                 logging.info(files_to_load)
 
@@ -316,10 +311,9 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                     create_disposition='CREATE_IF_NEEDED',
                     skip_leading_rows=1,
                 )
-            gcs_to_bq.execute(context=kwargs) 
+            gcs_to_bq.execute(context=kwargs)
 
             kwargs['ti'].xcom_push(key='loaded_files', value=files_to_load)
-
 
     def get_load_script(self, gcp_project, landing_dataset, landing_table_name, bucket, gcs_bucket_prefix, partition_prefix, table_name, date_column, ds):
         if not partition_prefix == "":
@@ -333,10 +327,10 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
     def validate_extra_options(self):
         # try and parse as FTPSourceConfig
-        file_source_config = from_dict(data_class=FileSourceConfig, data=self.config.source.extra_options["file_source_config"])
+        # file_source_config = from_dict(data_class=FileSourceConfig, data=self.config.source.extra_options["file_source_config"])
 
         tables = self.config.tables
         for table_config in tables:
             # try and parse as FTPTableConfig
-            file_table_config = from_dict(data_class=FileTableConfig, data=table_config.extra_options.get("file_table_config"))
-            
+            # file_table_config = from_dict(data_class=FileTableConfig, data=table_config.extra_options.get("file_table_config"))
+            pass

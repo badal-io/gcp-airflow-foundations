@@ -20,6 +20,7 @@ from gcp_airflow_foundations.operators.gcp.schema_parsing.schema_parsing_operato
 from gcp_airflow_foundations.source_class.schema_source_config import SchemaSourceConfig
 from gcp_airflow_foundations.operators.gcp.create_dataset import CustomBigQueryCreateEmptyDatasetOperator
 
+
 def load_builder(
     data_source: SourceConfig,
     table_config: SourceTableConfig,

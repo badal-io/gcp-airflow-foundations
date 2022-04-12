@@ -133,7 +133,7 @@ class SqlHelperHDS:
             COLUMNS = ",".join(
                 f"`{col}` AS `{self.column_mapping[col]}`" for col in self.columns
             )
-        
+
         if self.new_column_udfs:
             keys = list(self.new_column_udfs.keys())
             COLUMNS = COLUMNS + "," + ",".join(
