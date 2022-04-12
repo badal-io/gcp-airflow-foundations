@@ -35,7 +35,7 @@ class SFTPFilesExistenceSensor(BaseSensorOperator):
 
     template_fields = ('paths',)
 
-    def __init__(self, *, dir_prefix: str, paths: list, key_auth = False, key_name = "", sftp_conn_id: str = 'sftp_default', **kwargs) -> None:
+    def __init__(self, *, dir_prefix: str, paths: list, key_auth=False, key_name="", sftp_conn_id: str = 'sftp_default', **kwargs) -> None:
         super().__init__(**kwargs)
         self.dir_prefix = dir_prefix
         self.paths = paths

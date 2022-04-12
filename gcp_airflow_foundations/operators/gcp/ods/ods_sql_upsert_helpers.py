@@ -1,4 +1,6 @@
 import logging
+
+
 class SqlHelperODS:
     """
     SQL helper class used to formulate the SQL queries for the merge operations of ODS tables.
@@ -139,10 +141,9 @@ class SqlHelperODS:
             )
 
         if self.new_column_udfs:
-            keys = list(self.new_column_udfs.keys())
-            COLUMNS = COLUMNS + "," + ",".join(
-                f"{col} AS `{self.column_mapping[col]}`" for col in keys
-            )
+            # keys = list(self.new_column_udfs.keys())
+            # COLUMNS = COLUMNS + "," + ",".join(f"{col} AS `{self.column_mapping[col]}`" for col in keys)
+            pass
 
         comma = ","
 

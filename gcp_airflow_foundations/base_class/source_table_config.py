@@ -117,12 +117,12 @@ class SourceTableConfig:
                     values["hds_config"].hds_table_type != HdsTableType.SCD2
                 ), "Column casting is not currently supported for HDS SCD2 tables."
         return values
-    
+
     @root_validator(pre=True)
     def valid_new_column_udfs(cls, values):
         if values["new_column_udfs"] is not None:
             assert all(
-                    [from_dict(data_class=ColumnUDFConfig, data=values["new_column_udfs"][col]) for col in values["new_column_udfs"].keys()]
+                [from_dict(data_class=ColumnUDFConfig, data=values["new_column_udfs"][col]) for col in values["new_column_udfs"].keys()]
             ), "New column UDFs must only contain 'function' and 'output_type' keys with corresponding values."
 
             if values["hds_config"] is not None:
@@ -130,4 +130,3 @@ class SourceTableConfig:
                     values["hds_config"].hds_table_type != HdsTableType.SCD2
                 ), "New column UDFs is not currently supported for HDS SCD2 tables."
         return values
-    
