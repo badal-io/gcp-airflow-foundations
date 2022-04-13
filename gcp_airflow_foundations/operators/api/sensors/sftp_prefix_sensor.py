@@ -33,7 +33,7 @@ class SFTPFilesExistencePrefixSensor(BaseSensorOperator):
 
     template_fields = ('path', 'prefixes',)
 
-    def __init__(self, *, path: str, prefixes: list, key_auth=False, key_name="", sftp_conn_id: str='sftp_default', **kwargs) -> None:
+    def __init__(self, *, path: str, prefixes: list, key_auth=False, key_name="", sftp_conn_id: str = 'sftp_default', **kwargs) -> None:
         super().__init__(**kwargs)
         self.path = path
         self.prefixes = prefixes
@@ -48,7 +48,7 @@ class SFTPFilesExistencePrefixSensor(BaseSensorOperator):
     def poke(self, context: dict) -> bool:
         self.hook = SFTPHook(self.sftp_conn_id)
 
-        self.prefixes =  [f.split("/")[-1] for f in self.prefixes]
+        self.prefixes = [f.split("/")[-1] for f in self.prefixes]
 
         dir = self.hook.list_directory(self.path)
         logging.info(self.prefixes)
