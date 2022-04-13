@@ -5,6 +5,7 @@ from airflow.exceptions import AirflowException
 import requests
 import json
 
+
 class DataformHook(BaseHook):
     '''
     Airflow Hook to connect to Dataform's API and run Dataform jobs.

@@ -5,6 +5,7 @@ from airflow.exceptions import AirflowException
 from typing import Any
 import logging
 
+
 class DataformSensor(BaseSensorOperator):
     @apply_defaults
     def __init__(self, task_ids: str, dataform_conn_id='dataform_conn_id', **kwargs: Any):
