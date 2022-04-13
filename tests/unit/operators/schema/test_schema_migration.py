@@ -92,7 +92,7 @@ class TestMigrateSchema(unittest.TestCase):
         operator.execute(context=self.template_context)
 
         mock_bq_get_schema.assert_called_once_with(
-            dataset_id=TEST_DATASET, table_id=TEST_TABLE_ID
+            project_id=TEST_GCP_PROJECT_ID, dataset_id=TEST_DATASET, table_id=TEST_TABLE_ID
         )
 
         mock_bq_update_table_schema.assert_called_once_with(

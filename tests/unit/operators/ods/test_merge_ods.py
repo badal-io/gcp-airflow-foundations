@@ -92,7 +92,7 @@ class TestMergeBigQueryODS(unittest.TestCase):
         ds = self.template_context["ds"]
 
         sql = f"""
-            SELECT `column` AS `column`,
+            SELECT column AS `column`,
                 CURRENT_TIMESTAMP() AS af_metadata_inserted_at,
                 CURRENT_TIMESTAMP() AS af_metadata_updated_at,
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS af_metadata_row_hash,

@@ -56,6 +56,7 @@ def test_gcs_tasks_with_dlp(gcs_dlp_dag):
             "create_ods_merge_taskgroup.schema_migration",
             "create_ods_merge_taskgroup.upsert_users",
             "delete_staging_table",
+            "create_dlp_dataset",
             "dlp_policy_tags.check_if_should_run_dlp",
             "dlp_policy_tags.delete_old_dlp_results_ods",
             "dlp_policy_tags.scan_table_ods",
@@ -79,7 +80,7 @@ def test_gcs_tasks_with_dlp_and_hds(gcs_dlp_ods_dag):
     """Check ODS + HDS DLP tasks"""
     compare_deps(
         gcs_dlp_ods_dag.get_task("dlp_policy_tags.check_if_should_run_dlp"),
-        upstream_deps=["delete_staging_table"],
+        upstream_deps=["create_dlp_dataset"],
         downstream_dps=[
             "done",
             "dlp_policy_tags.delete_old_dlp_results_ods",

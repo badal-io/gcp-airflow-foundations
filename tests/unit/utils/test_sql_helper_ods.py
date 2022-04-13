@@ -31,7 +31,7 @@ class TestSqlHelperODS(unittest.TestCase):
         assert (
             self.sql_helper.create_full_sql()
             == """
-            SELECT `key` AS `key`,`column_a` AS `column_b`,
+            SELECT key AS `key`,column_a AS `column_b`,
                 CURRENT_TIMESTAMP() AS af_metadata_inserted_at,
                 CURRENT_TIMESTAMP() AS af_metadata_updated_at,
                 TO_BASE64(MD5(TO_JSON_STRING(S))) AS af_metadata_row_hash,
@@ -41,7 +41,6 @@ class TestSqlHelperODS(unittest.TestCase):
         )
 
     def test_upsert_sql(self):
-
         assert (
             self.sql_helper.create_upsert_sql_with_hash()
             == """
