@@ -19,7 +19,7 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
     """
     Builds DAGs to load files from GCS to a BigQuery Table.
 
-    For GCS->BQ ingestion, either a metadata file is required or the field templated_file_name must be provided. 
+    For GCS->BQ ingestion, either a metadata file is required or the field templated_file_name must be provided.
     If a metadata file is provided, itt can be a fixed file, or can be a new file supplied daily.
     Airflow context variables are supported for the file naming, e.g.
         TABLE_METADATA_FILE_{{ ds }}.csv
@@ -51,7 +51,7 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         No ingestion is needed - data is already in GCS, so return a dummy operator.
         """
         return None
-        
+
     def file_sensor(self, table_config, taskgroup):
         """
         Returns an Airflow sensor that waits for the list of files specified by the metadata file provided.
@@ -83,7 +83,7 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
 
         for file in files_to_load:
             gcs_hook.delete(bucket_name=bucket, object_name=file)
-    
+
     def delete_gcs_files(self, table_config, taskgroup):
         return PythonOperator(
             task_id="delete_gcs_files",
@@ -93,6 +93,6 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         )
 
     def validate_extra_options(self):
-        # GCS Source only requires the checks for the base file_source_config and file_table_configs: 
+        # GCS Source only requires the checks for the base file_source_config and file_table_configs:
         # other sources like SFTP require extra checks
         super().validate_extra_options()
