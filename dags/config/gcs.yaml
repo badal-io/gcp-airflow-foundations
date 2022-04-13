@@ -25,6 +25,8 @@ tables:
   - table_name: users
     ingestion_type: FULL
     surrogate_keys: []
+    column_adding:
+      test: {x: "asd", y: "asd"}
     extra_options:
       file_table_config:
         directory_prefix: ""
