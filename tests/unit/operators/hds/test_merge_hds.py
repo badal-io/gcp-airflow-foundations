@@ -84,6 +84,7 @@ class TestMergeBigQuerySnapshotHDS(unittest.TestCase):
             surrogate_keys=["column"],
             column_mapping={"column": "column"},
             column_casting=None,
+            new_column_udfs=None,
             ingestion_type=IngestionType.FULL,
             hds_table_config=hds_table_config,
         )

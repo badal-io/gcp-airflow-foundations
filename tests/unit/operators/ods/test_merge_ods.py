@@ -76,6 +76,7 @@ class TestMergeBigQueryODS(unittest.TestCase):
             surrogate_keys=["column"],
             column_mapping={"column": "column"},
             column_casting=None,
+            new_column_udfs=None,
             ingestion_type=IngestionType.FULL,
             ods_table_config=OdsTableConfig(
                 ods_metadata=OdsTableMetadataConfig(),
