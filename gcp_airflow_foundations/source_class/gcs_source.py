@@ -9,15 +9,10 @@ from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 
-from gcp_airflow_foundations.operators.api.sensors.gcs_sensor import (
-    GCSObjectListExistenceSensor,
-)
-from gcp_airflow_foundations.operators.api.sensors.gcs_prefix_sensor import (
-    GCSObjectPrefixListExistenceSensor,
-)
-from gcp_airflow_foundations.source_class.generic_file_source import (
-    GenericFileIngestionDagBuilder,
-)
+from gcp_airflow_foundations.operators.api.sensors.gcs_sensor import GCSObjectListExistenceSensor
+from gcp_airflow_foundations.operators.api.sensors.gcs_prefix_sensor import GCSObjectPrefixListExistenceSensor
+from gcp_airflow_foundations.source_class.generic_file_source import GenericFileIngestionDagBuilder
+from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 
 
 class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
@@ -36,17 +31,17 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         FILE_NAME_N
     with all files to ingest
     """
-
     source_type = "GCS"
 
     def flag_file_sensor(self, table_config, taskgroup):
-        if self.file_table_config.flag_file_path:
+        if "flag_file_path" in table_config.extra_options.get("file_table_config"):
+            flag_file_path = table_config.extra_options.get("file_table_config")["flag_file_path"]
             bucket = self.config.source.extra_options["gcs_bucket"]
             return GCSObjectExistenceSensor(
                 task_id="wait_for_flag_file",
                 bucket=bucket,
-                object=self.file_table_config.flag_file_path,
-                task_group=taskgroup,
+                object=flag_file_path,
+                task_group=taskgroup
             )
         else:
             return None
@@ -64,28 +59,24 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         bucket = self.config.source.extra_options["gcs_bucket"]
         files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
 
-        if self.config.source.extra_options["file_source_config"][
-            "file_prefix_filtering"
-        ]:
+        if self.config.source.extra_options["file_source_config"]["file_prefix_filtering"]:
             return GCSObjectPrefixListExistenceSensor(
                 task_id="wait_for_files_to_ingest",
                 bucket=bucket,
                 prefixes=files_to_wait_for,
-                task_group=taskgroup,
+                task_group=taskgroup
             )
         else:
             return GCSObjectListExistenceSensor(
                 task_id="wait_for_files_to_ingest",
                 bucket=bucket,
                 objects=files_to_wait_for,
-                task_group=taskgroup,
+                task_group=taskgroup
             )
 
     def delete_files(self, table_config, **kwargs):
         ti = kwargs["ti"]
-        files_to_load = ti.xcom_pull(
-            key="loaded_files", task_ids="ftp_taskgroup.load_gcs_to_landing_zone"
-        )
+        files_to_load = ti.xcom_pull(key='loaded_files', task_ids='ftp_taskgroup.load_gcs_to_landing_zone')
         data_source = self.config.source
         bucket = data_source.extra_options["gcs_bucket"]
         gcs_hook = GCSHook()
@@ -98,9 +89,10 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             task_id="delete_gcs_files",
             op_kwargs={"table_config": table_config},
             python_callable=self.delete_files,
-            task_group=taskgroup,
+            task_group=taskgroup
         )
 
     def validate_extra_options(self):
         # GCS Source only requires the checks for the base file_source_config and file_table_configs:
+        # other sources like SFTP require extra checks
         super().validate_extra_options()

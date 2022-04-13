@@ -21,6 +21,7 @@ class TestSqlHelperHDS(unittest.TestCase):
             "surrogate_keys": ["key"],
             "column_mapping": {"key": "key", "column_a": "column_b"},
             "column_casting": None,
+            "new_column_udfs": None,
             "hds_metadata": HdsTableMetadataConfig(),
             "columns": ["key", "column_a"],
         }
