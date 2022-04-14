@@ -8,7 +8,7 @@ import logging
 
 
 class DataformOperator(BaseOperator):
-    '''
+    """
     This operator will use the custom DataformHook to POST to Dataform's ApiService_RunCreate to initiate a new dataform run.
     If no tags are provided, Dataform will run all jobs.
     After a run is created, if the validate_job_submitted parameter is set to True, it will poke Dataform for the run status for a certain amount of time. Use a separate sensor for longer jobs and set validate_job_submitted to False.
@@ -40,20 +40,21 @@ class DataformOperator(BaseOperator):
     - Helpful Medium tutorial: https://medium.com/google-cloud/cloud-composer-apache-airflow-dataform-bigquery-de6e3eaabeb3
 
     ** Note: Schedules must be on the master branch. In Dataform, you'll have to create a branch first and then merge changes into master.
-    '''
+    """
 
     @apply_defaults
     def __init__(
-            self,
-            *,
-            dataform_conn_id: str = 'dataform_default',
-            project_id: str,
-            environment: str,
-            schedule: str,
-            tags: Optional[str] = [],
-            submit_mode: str = 'submit_job_only',
-            retry_period_seconds: Optional[int] = 10,
-            **kwargs: Any) -> None:
+        self,
+        *,
+        dataform_conn_id: str = "dataform_default",
+        project_id: str,
+        environment: str,
+        schedule: str,
+        tags: Optional[str] = [],
+        submit_mode: str = "submit_job_only",
+        retry_period_seconds: Optional[int] = 10,
+        **kwargs: Any,
+    ) -> None:
 
         super().__init__(**kwargs)
         self.dataform_conn_id = dataform_conn_id
@@ -70,28 +71,28 @@ class DataformOperator(BaseOperator):
             project_id=self.project_id,
             environment=self.environment,
             schedule=self.schedule,
-            tags=self.tags
+            tags=self.tags,
         )
 
-        if self.submit_mode == 'submit_job_only':
+        if self.submit_mode == "submit_job_only":
             return run_url
 
-        while self.submit_mode == 'validate_job_submitted':
+        while self.submit_mode == "validate_job_submitted":
             response = dataform_hook.check_job_status(run_url)
-            logging.info(f'dataform job status: {response} run rul: {run_url}')
+            logging.info(f"dataform job status: {response} run rul: {run_url}")
 
-            if response in ('SUCCESSFUL', 'RUNNING'):
+            if response in ("SUCCESSFUL", "RUNNING"):
                 return run_url
             else:
                 time.sleep(self.retry_period_seconds)
 
-        while self.submit_mode == 'wait_for_job_to_finish':
+        while self.submit_mode == "wait_for_job_to_finish":
             response = dataform_hook.check_job_status(run_url)
-            logging.info(f'dataform job status: {response} run rul: {run_url}')
+            logging.info(f"dataform job status: {response} run rul: {run_url}")
 
-            if response == 'SUCCESSFUL':
+            if response == "SUCCESSFUL":
                 return run_url
-            elif response != 'RUNNING':
+            elif response != "RUNNING":
                 raise AirflowException(f"Dataform ApiService Error: {response}")
             else:
                 time.sleep(self.retry_period_seconds)
