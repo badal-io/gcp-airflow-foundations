@@ -181,6 +181,7 @@ def dlp_to_datacatalog_builder(
         project_id=dlp_results_table_ref.project,
         dataset_id=dlp_results_table_ref.dataset_id,
         table_id=dlp_results_table_ref.table_id,
+        location=table_dlp_config.location,
         do_xcom_push=True,
         min_match_count=table_dlp_config.get_min_match_count(),
         task_group=taskgroup,

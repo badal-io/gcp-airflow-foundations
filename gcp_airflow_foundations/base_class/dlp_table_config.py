@@ -15,6 +15,7 @@ class DlpTableConfig:
     rows_limit_percent_override: Optional[int] = None
     min_match_count_override: Optional[int] = None
     recurrence_override: Optional[str] = None
+    location: str = "US"
 
     def set_source_config(self, source_config: DlpSourceConfig):
         self.source_config = source_config

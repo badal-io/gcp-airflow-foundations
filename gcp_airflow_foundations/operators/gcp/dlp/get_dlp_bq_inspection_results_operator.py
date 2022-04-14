@@ -27,6 +27,7 @@ class DlpBQInspectionResultsOperator(BaseOperator):
         dataset_id,
         table_id,
         project_id,
+        location,
         min_match_count=0,
         do_xcom_push=True,
         gcp_conn_id="google_cloud_default",
@@ -44,6 +45,7 @@ class DlpBQInspectionResultsOperator(BaseOperator):
             gcp_conn_id=gcp_conn_id,
             use_legacy_sql=False,
             impersonation_chain=impersonation_chain,
+            location=location,
         )
         conn = self.hook.get_conn()
         self.cursor = conn.cursor()
