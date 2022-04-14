@@ -7,7 +7,7 @@ from airflow.contrib.operators.bigquery_operator import (
 )
 
 from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
@@ -77,7 +77,9 @@ class ParseSchema(BaseOperator):
             column_names = list(self.new_column_udfs.keys())
             for column_name in column_names:
                 field = self.new_column_udfs[column_name]
-                source_schema_fields.append({"name": column_name, "type": field["output_type"]})
+                source_schema_fields.append(
+                    {"name": column_name, "type": field["output_type"]}
+                )
 
         if self.ods_table_config:
             schema_xcom[

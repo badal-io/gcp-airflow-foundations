@@ -1,7 +1,7 @@
 import json
 import logging
 
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 
 from urllib.parse import urlparse
