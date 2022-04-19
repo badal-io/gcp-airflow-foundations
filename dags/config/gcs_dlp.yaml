@@ -14,6 +14,9 @@ source:
       file_prefix_filtering: False
       delete_gcs_files: False
       sensor_timeout: 6000
+      airflow_date_template: "ds"
+      date_format: "%Y-%m-%d"
+      gcs_bucket_prefix: ""
   gcp_project: airflow-framework
   location: us
   dataset_data_name: af_test_ods
@@ -37,5 +40,3 @@ tables:
       file_table_config:
         directory_prefix: ""
         allow_quoted_newlines: True
-
-

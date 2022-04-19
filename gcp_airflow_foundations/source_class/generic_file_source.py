@@ -172,7 +172,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             # support replacing files with current dates
             file_list[:] = [file.replace("{{ ds }}", ds) if "{{ ds }}" in file else file for file in file_list]
             # add dir prefix to files
-            file_list[:] = [gcs_bucket_prefix + "/" + file for file in file_list]
+            file_list[:] = [gcs_bucket_prefix + file for file in file_list]
             logging.info(file_list)
 
         kwargs['ti'].xcom_push(key='file_list', value=file_list)
@@ -222,8 +222,8 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             destination_path_prefix = gcs_bucket_prefix + table_name + "/" + date
             logging.info(destination_path_prefix)
 
-        files_to_load = [destination_path_prefix + "/" + f for f in files_to_load]
-        logging.info(files_to_load)
+            files_to_load = [destination_path_prefix + "/" + f for f in files_to_load]
+            logging.info(files_to_load)
 
         if "parquet_upload_option" in table_config.extra_options.get("file_table_config"):
             parquet_upload_option = table_config.extra_options.get("file_table_config")["parquet_upload_option"]
