@@ -3,6 +3,7 @@ from abc import abstractmethod
 from datetime import datetime
 import json
 from dacite import from_dict
+from os.path import join
 
 from airflow.models.dag import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -172,7 +173,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             # support replacing files with current dates
             file_list[:] = [file.replace("{{ ds }}", ds) if "{{ ds }}" in file else file for file in file_list]
             # add dir prefix to files
-            file_list[:] = [gcs_bucket_prefix + file for file in file_list]
+            file_list[:] = [join(gcs_bucket_prefix, file) for file in file_list]
             logging.info(file_list)
 
         kwargs['ti'].xcom_push(key='file_list', value=file_list)
