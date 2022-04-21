@@ -14,6 +14,7 @@ from airflow.operators.bash import BashOperator
 from airflow.exceptions import AirflowException
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 from airflow.operators.dummy import DummyOperator
+from gcp_airflow_foundations.base_class import file_source_config
 
 from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.base_class.file_source_config import FileSourceConfig
@@ -31,6 +32,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
     def get_bq_ingestion_task(self, dag, table_config):
         taskgroup = TaskGroup(group_id="ftp_taskgroup")
+        file_source_config = from_dict(data_class=FileSourceConfig, data=self.config.source.extra_options["file_source_config"])
 
         tasks = []
 
@@ -48,7 +50,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
         tasks.append(self.load_to_landing_task(table_config, taskgroup))
 
-        if self.config.source.extra_options["file_source_config"]["delete_gcs_files"]:
+        if file_source_config.delete_gcs_files:
             tasks.append(self.delete_gcs_files(table_config, taskgroup))
 
         for task in tasks:
@@ -67,10 +69,11 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         Implements a sensor for either the metadata file specified in the table config, which specifies
         the parameterized file names to ingest.
         """
+        file_source_config = from_dict(data_class=FileSourceConfig, data=self.config.source.extra_options["file_source_config"])
         if "metadata_file" in table_config.extra_options.get("file_table_config"):
             metadata_file_name = table_config.extra_options.get("file_table_config")["metadata_file"]
             bucket = self.config.source.extra_options["gcs_bucket"]
-            timeout = self.config.source.extra_options["file_source_config"]["sensor_timeout"]
+            timeout = file_source_config.sensor_timeout
 
             return GCSObjectExistenceSensor(
                 task_id="wait_for_metadata_file",
@@ -94,9 +97,10 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         """
         Implements an Airflow sensor to wait for an (optional) schema file in GCS
         """
+        file_source_config = from_dict(data_class=FileSourceConfig, data=self.config.source.extra_options["file_source_config"])
         bucket = self.config.source.extra_options["gcs_bucket"]
         schema_file_name = None
-        timeout = self.config.source.extra_options["file_source_config"]["sensor_timeout"]
+        timeout = file_source_config.sensor_timeout
         if "schema_file" in table_config.extra_options.get("file_table_config"):
             schema_file_name = table_config.extra_options.get("file_table_config")["schema_file"]
             return GCSObjectExistenceSensor(
@@ -138,21 +142,22 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
     def get_list_of_files(self, table_config, **kwargs):
         # gcs_hook = GCSHook()
-        airflow_date_template = self.config.source.extra_options["file_source_config"]["airflow_date_template"]
+        file_source_config = from_dict(data_class=FileSourceConfig, data=self.config.source.extra_options["file_source_config"])
+        airflow_date_template = file_source_config.airflow_date_template
         if airflow_date_template == "ds":
             ds = kwargs["ds"]
         else:
             ds = kwargs["prev_ds"]
-        ds = datetime.strptime(ds, "%Y-%m-%d").strftime(self.config.source.extra_options["file_source_config"]["date_format"])
+        ds = datetime.strptime(ds, "%Y-%m-%d").strftime(file_source_config.date_format)
         logging.info(ds)
         # XCom push the list of files
         # overwrite if in table_config
         dir_prefix = table_config.extra_options.get("file_table_config")["directory_prefix"]
         dir_prefix = dir_prefix.replace("{{ ds }}", ds)
 
-        gcs_bucket_prefix = self.config.source.extra_options["file_source_config"]["gcs_bucket_prefix"]
+        gcs_bucket_prefix = file_source_config.gcs_bucket_prefix
 
-        if self.config.source.extra_options["file_source_config"]["source_format"] == "PARQUET":
+        if file_source_config.source_format == "PARQUET":
             file_list = [dir_prefix]
             kwargs['ti'].xcom_push(key='file_list', value=file_list)
             return
@@ -166,7 +171,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                     for line in f:
                         file_list.append(line.strip())
             else:
-                templated_file_name = self.config.source.extra_options["file_source_config"]["file_name_template"]
+                templated_file_name = file_source_config.file_name_template
                 templated_file_name = templated_file_name.replace("{{ TABLE_NAME }}", table_config.table_name)
                 file_list = [templated_file_name]
 
@@ -189,6 +194,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
     # flake8: noqa: C901
     def load_to_landing(self, table_config, **kwargs):
         gcs_hook = GCSHook()
+        file_source_config = from_dict(data_class=FileSourceConfig, data=self.config.source.extra_options["file_source_config"])
 
         # Parameters
         ds = kwargs['ds']
@@ -196,8 +202,8 @@ class GenericFileIngestionDagBuilder(DagBuilder):
 
         data_source = self.config.source
         bucket = data_source.extra_options["gcs_bucket"]
-        source_format = data_source.extra_options["file_source_config"]["source_format"]
-        field_delimeter = data_source.extra_options["file_source_config"]["delimeter"]
+        source_format = file_source_config.source_format
+        field_delimeter = file_source_config.delimeter
         gcp_project = data_source.gcp_project
         landing_dataset = data_source.landing_zone_options.landing_zone_dataset
         landing_table_name = table_config.landing_zone_table_name_override
@@ -211,7 +217,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
             dir_prefix = dir_prefix.replace("{{ ds }}", ds)
             files_to_load = [dir_prefix]
 
-        gcs_bucket_prefix = data_source.extra_options["file_source_config"]["gcs_bucket_prefix"]
+        gcs_bucket_prefix = file_source_config.gcs_bucket_prefix
         if gcs_bucket_prefix is None:
             gcs_bucket_prefix = ""
         if not gcs_bucket_prefix == "":
@@ -231,10 +237,10 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         else:
             parquet_upload_option = "BASH"
 
-        source_format = self.config.source.extra_options["file_source_config"]["source_format"]
+        source_format = file_source_config.source_format
         if source_format == "PARQUET" and parquet_upload_option == "BASH":
             date_column = table_config.extra_options.get("sftp_table_config")["date_column"]
-            gcs_bucket_prefix = data_source.extra_options["file_source_config"]["gcs_bucket_prefix"]
+            gcs_bucket_prefix = file_source_config.gcs_bucket_prefix
             # bq load command if parquet
             partition_prefix = ti.xcom_pull(key='partition_prefix', task_ids='ftp_taskgroup.load_sftp_to_gcs')
             if not partition_prefix:
@@ -255,7 +261,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                 logging.info("Load into BQ landing zone failed.")
         else:
             # gcs->bq operator else
-            if self.config.source.extra_options["file_source_config"]["file_prefix_filtering"]:
+            if file_source_config.file_prefix_filtering:
                 logging.info(files_to_load)
                 for i in range(len(files_to_load)):
                     matching_gcs_files = gcs_hook.list(bucket_name=bucket, prefix=files_to_load[i])
