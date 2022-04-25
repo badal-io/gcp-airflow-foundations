@@ -81,7 +81,7 @@ class DagBuilder(ABC):
         extra_dags = self.get_extra_dags()
         if extra_dags is not None and not extra_dags == []:
             dags = dags + self.get_extra_dags()
-            
+
         return dags
 
     @abstractmethod
@@ -203,7 +203,6 @@ class DagBuilder(ABC):
             return templated_config.table_names
 
         full_table_list = self.get_source_tables_to_ingest()
-        logging.info(full_table_list)
 
         options = templated_config.template_ingestion_options
         if options["ingest_all_tables"]:

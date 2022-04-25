@@ -191,7 +191,6 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         gcp_project = data_source.gcp_project
         schema_table = data_source.extra_options["dataflow_job_config"]["bq_schema_table"]
         schema_dataset = data_source.extra_options["dataflow_job_config"]["bq_schema_dataset"]
-
         destination_schema_table = f"{gcp_project}.{schema_dataset}.{schema_table}"
 
         bq_hook = BigQueryHook()
