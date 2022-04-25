@@ -154,7 +154,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                 schema_fields=schema_fields
             )
             create_table_op.execute(context=kwargs)
-        
+
     @abstractmethod
     def create_job_params(self, config_params, destination_table, **kwargs):
         """

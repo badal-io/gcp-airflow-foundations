@@ -159,7 +159,7 @@ class DagBuilder(ABC):
             render_template_as_native_obj=True,
             **kwargs,
         ) as dag:
-   
+
             self.create_dag_tasks(dag, data_source, table_config)
             return dag
 

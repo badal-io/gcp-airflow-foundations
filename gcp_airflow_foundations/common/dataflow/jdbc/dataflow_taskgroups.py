@@ -56,9 +56,9 @@ def dataflow_taskgroup_builder(
         create_table = PythonOperator(
             task_id="create_table_if_needed",
             op_kwargs={"destination_table": destination_table,
-            "schema_table": destination_schema_table,
-            "source_table": table_name,
-            "table_type_casts": table_type_casts},
+                       "schema_table": destination_schema_table,
+                       "source_table": table_name,
+                       "table_type_casts": table_type_casts},
             python_callable=create_table,
             task_group=taskgroup
         )
