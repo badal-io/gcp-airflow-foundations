@@ -60,7 +60,7 @@ class DagBuilder(ABC):
         for table_config in self.config.tables:
             dag = self.create_dag(table_config)
             dags.append(dag)
-        
+
         # loop through templates
         if self.config.templates:
             for template_config in self.config.templates:
@@ -73,7 +73,7 @@ class DagBuilder(ABC):
                         template_config.landing_zone_table_name_override = \
                             template_config.landing_zone_table_name_override_template.replace("{table}", table)
                         dag = self.create_dag(template_config)
-                        dags.append(dag)  
+                        dags.append(dag)
                 else:
                     dag = self.create_dag_source_level(template_config, table_list)
                     dags.append(dag)
@@ -144,8 +144,8 @@ class DagBuilder(ABC):
     def create_dag(self, table_config):
         data_source = self.config.source
         table_default_task_args = self.default_task_args_for_table(
-                self.config, table_config
-            )
+            self.config, table_config
+        )
         logging.info(f"table_default_task_args {table_default_task_args}")
 
         kwargs = data_source.dag_args if data_source.dag_args else {}
@@ -159,7 +159,7 @@ class DagBuilder(ABC):
             render_template_as_native_obj=True,
             **kwargs,
         ) as dag:
-                
+   
             self.create_dag_tasks(dag, data_source, table_config)
             return dag
 
@@ -189,7 +189,7 @@ class DagBuilder(ABC):
                 with TaskGroup(group_id=template_config.table_name) as table_task_group:
                     self.create_dag_tasks(dag, data_source, template_config)
                 table_task_group
-            
+
             return dag
 
     def create_dag_tasks(self, dag, data_source, table_config):
@@ -204,16 +204,14 @@ class DagBuilder(ABC):
 
         full_table_list = self.get_source_tables_to_ingest()
         logging.info(full_table_list)
-        
+
         options = templated_config.template_ingestion_options
         if options["ingest_all_tables"]:
             return full_table_list
-        
+
         regex_pattern = options["regex_table_pattern"]
         r = re.compile(regex_pattern)
         return list(filter(r.match, full_table_list))
-        
+
     def get_source_tables_to_ingest(self):
         return []
-     
-

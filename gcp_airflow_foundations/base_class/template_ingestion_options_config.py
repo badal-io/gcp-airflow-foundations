@@ -7,6 +7,7 @@ import regex as re
 
 from gcp_airflow_foundations.enums.schema_source_type import SchemaSourceType
 
+
 @dataclass
 class TemplateIngestionOptionsConfig:
     """

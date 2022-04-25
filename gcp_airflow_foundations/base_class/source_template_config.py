@@ -140,7 +140,7 @@ class SourceTemplateConfig:
             assert (
                 not options["ingest_all_tables"]
             ), "If table_names are explicitly provided for a template, ingest_all_tables should not be provided in template_ingestion_options"
-        else: 
+        else:
             assert (
                 options["ingest_all_tables"] or re.compile(options["regex_pattern"])
             ), "If table_names are not explicitly specified, eitehr ingest_all_tables should be set to True, or regex_pattern should be a valid regex pattern"
@@ -150,5 +150,3 @@ class SourceTemplateConfig:
         ), "dag_creation_mode must be either set to TABLE or SOURCE"
 
         return values
-
-
