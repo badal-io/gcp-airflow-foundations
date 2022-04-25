@@ -2,8 +2,9 @@ from pydantic import validator, root_validator
 from pydantic.dataclasses import dataclass
 from datetime import timedelta
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
+from gcp_airflow_foundations.base_class.source_template_config import SourceTemplateConfig
 from gcp_airflow_foundations.base_class.source_config import SourceConfig
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
@@ -26,6 +27,7 @@ class DataSourceTablesConfig:
 
     source: SourceConfig
     tables: List[SourceTableConfig]
+    templates: Optional[List[SourceTemplateConfig]] = None
 
     @root_validator(pre=True)
     def valid_partitioning(cls, values):

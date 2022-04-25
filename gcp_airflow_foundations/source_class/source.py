@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod, abstractproperty
 
 from airflow.models.dag import DAG
+from airflow.utils.task_group import TaskGroup
 
 from gcp_airflow_foundations.base_class.data_source_table_config import (
     DataSourceTablesConfig,
 )
 from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
+from gcp_airflow_foundations.base_class.source_template_config import SourceTemplateConfig
 from gcp_airflow_foundations.base_class.source_config import SourceConfig
 from gcp_airflow_foundations.enums.schema_source_type import SchemaSourceType
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
@@ -16,6 +18,7 @@ from gcp_airflow_foundations.source_class.schema_source_config import (
 )
 
 import logging
+import re
 
 
 class DagBuilder(ABC):
@@ -55,35 +58,30 @@ class DagBuilder(ABC):
 
         dags = []
         for table_config in self.config.tables:
-            table_default_task_args = self.default_task_args_for_table(
-                self.config, table_config
-            )
-            logging.info(f"table_default_task_args {table_default_task_args}")
+            dag = self.create_dag(table_config)
+            dags.append(dag)
+        
+        # loop through templates
+        if self.config.templates:
+            for template_config in self.config.templates:
+                table_list = self.get_templated_table_list(template_config)
 
-            kwargs = data_source.dag_args if data_source.dag_args else {}
-
-            with DAG(
-                dag_id=f"{data_source.name}.{table_config.table_name}",
-                description=f"{data_source.name} to BigQuery load for {table_config.table_name}",
-                schedule_interval=data_source.ingest_schedule,
-                default_args=table_default_task_args,
-                catchup=data_source.catchup,
-                render_template_as_native_obj=True,
-                **kwargs,
-            ) as dag:
-
-                load_to_bq_landing = self.get_bq_ingestion_task(dag, table_config)
-
-                self.get_datastore_ingestion_task(
-                    dag, load_to_bq_landing, data_source, table_config
-                )
-
-                dags.append(dag)
-
+                if template_config.template_ingestion_options.dag_creation_mode == "TABLE":
+                    for table in table_list:
+                        # for backwards compatibility - better solution required
+                        template_config.table_name = table
+                        template_config.landing_zone_table_name_override = \
+                            template_config.landing_zone_table_name_override_template.replace("{table}", table)
+                        dag = self.create_dag(template_config)
+                        dags.append(dag)  
+                else:
+                    dag = self.create_dag_source_level(template_config, table_list)
+                    dags.append(dag)
+        logging.info(dags)
         extra_dags = self.get_extra_dags()
         if extra_dags is not None and not extra_dags == []:
             dags = dags + self.get_extra_dags()
-
+        logging.info(dags)
         return dags
 
     @abstractmethod
@@ -142,3 +140,80 @@ class DagBuilder(ABC):
             **self.default_task_args,
             "start_date": config.table_start_date(table_config),
         }
+
+    def create_dag(self, table_config):
+        data_source = self.config.source
+        table_default_task_args = self.default_task_args_for_table(
+                self.config, table_config
+            )
+        logging.info(f"table_default_task_args {table_default_task_args}")
+
+        kwargs = data_source.dag_args if data_source.dag_args else {}
+
+        with DAG(
+            dag_id=f"{data_source.name}.{table_config.table_name}",
+            description=f"{data_source.name} to BigQuery load for {table_config.table_name}",
+            schedule_interval=data_source.ingest_schedule,
+            default_args=table_default_task_args,
+            catchup=data_source.catchup,
+            render_template_as_native_obj=True,
+            **kwargs,
+        ) as dag:
+                
+            self.create_dag_tasks(dag, data_source, table_config)
+            return dag
+
+    def create_dag_source_level(self, template_config, table_names):
+        data_source = self.config.source
+        table_default_task_args = self.default_task_args_for_table(
+            self.config, template_config
+        )
+        logging.info(f"table_default_task_args {table_default_task_args}")
+
+        kwargs = data_source.dag_args if data_source.dag_args else {}
+
+        with DAG(
+            dag_id=f"{data_source.name}.{template_config.template_ingestion_options.ingestion_name}",
+            description=f"{data_source.name} to BigQuery load for {template_config.template_ingestion_options.ingestion_name}",
+            schedule_interval=data_source.ingest_schedule,
+            default_args=table_default_task_args,
+            catchup=data_source.catchup,
+            render_template_as_native_obj=True,
+            **kwargs,
+        ) as dag:
+
+            for table in table_names:
+                template_config.table_name = table
+                template_config.landing_zone_table_name_override = \
+                    template_config.landing_zone_table_name_override_template.replace("{table}", table)
+                with TaskGroup(group_id=template_config.table_name) as table_task_group:
+                    self.create_dag_tasks(dag, data_source, template_config)
+                table_task_group
+            
+            return dag
+
+    def create_dag_tasks(self, dag, data_source, table_config):
+        load_to_bq_landing = self.get_bq_ingestion_task(dag, table_config)
+        self.get_datastore_ingestion_task(
+            dag, load_to_bq_landing, data_source, table_config
+        )
+
+    def get_templated_table_list(self, templated_config: SourceTemplateConfig):
+        if templated_config.table_names:
+            return templated_config.table_names
+
+        full_table_list = self.get_source_tables_to_ingest()
+        logging.info(full_table_list)
+        
+        options = templated_config.template_ingestion_options
+        if options["ingest_all_tables"]:
+            return full_table_list
+        
+        regex_pattern = options["regex_table_pattern"]
+        r = re.compile(regex_pattern)
+        return list(filter(r.match, full_table_list))
+        
+    def get_source_tables_to_ingest(self):
+        return []
+     
+
