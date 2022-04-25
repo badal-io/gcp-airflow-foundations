@@ -77,11 +77,11 @@ class DagBuilder(ABC):
                 else:
                     dag = self.create_dag_source_level(template_config, table_list)
                     dags.append(dag)
-        logging.info(dags)
+
         extra_dags = self.get_extra_dags()
         if extra_dags is not None and not extra_dags == []:
             dags = dags + self.get_extra_dags()
-        logging.info(dags)
+            
         return dags
 
     @abstractmethod
