@@ -230,10 +230,3 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
     def validate_extra_options(self):
         # try and parse as DataflowJobConfig
         job_cfg = from_dict(data_class=DataflowJobConfig, data=self.config.source.extra_options["dataflow_job_config"])
-        
-        # For tables - assert only FULL ingestion available for now   
-        tables = self.config.tables
-       # for table in tables:
-       #     assert table.ingestion_type == "FULL"
-
-            
