@@ -208,7 +208,7 @@ class DagBuilder(ABC):
         if options["ingest_all_tables"]:
             return full_table_list
 
-        regex_pattern = options["regex_table_pattern"]
+        regex_pattern = options["regex_pattern"]
         r = re.compile(regex_pattern)
         return list(filter(r.match, full_table_list))
 
