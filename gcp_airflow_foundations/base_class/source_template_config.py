@@ -11,11 +11,14 @@ import datetime
 import re
 from typing import List, Optional
 
+from regex import E
+
 from gcp_airflow_foundations.base_class.ods_metadata_config import (
     OdsTableMetadataConfig,
 )
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
+from gcp_airflow_foundations.enums.template_ingestion import TemplateIngestion
 
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
@@ -38,7 +41,7 @@ class SourceTemplateConfig:
         landing_zone_table_name_override_template: Optional staging zone table name template.
         column_casting : Mapping used to cast columns into a specific data type. Note column name uses that of the landing zone table.
         ods_config : ODS table configuration. See :class:`gcp_airflow_foundations.base_class.ods_table_config.OdsTableConfig`.
-        hds_config : HDS table configuration. See :class:`gcp_airflow_foundations.base_class.hds_table_config.HdsTableConfig`.
+        hds_config : HDS table confidwguration. See :class:`gcp_airflow_foundations.base_class.hds_table_config.HdsTableConfig`.
         template_ingestion_options: Configuration for template-level ingestion.
         facebook_table_config: Extra options for ingesting data from the Facebook API.
         extra_options: Field for storing additional configuration options.
@@ -48,20 +51,18 @@ class SourceTemplateConfig:
         catchup : Passed to a dag [see doc](https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#catchup).
             Defaults to True. May want to change it to False if Dag version is changed, and we don't want to rerun past dags.
     """
-
+    start_date: Optional[str]
     ingestion_type: IngestionType  # FULL or INCREMENTAL
-    dest_table_override: Optional[str]
-    surrogate_keys: List[str]
+    surrogate_keys: Optional[dict]
     column_mapping: Optional[dict]
     cluster_fields: Optional[List[str]]
-    landing_zone_table_name_override_template: Optional[str]
     column_casting: Optional[dict]
     new_column_udfs: Optional[dict]
     hds_config: Optional[HdsTableConfig]
     facebook_table_config: Optional[FacebookTableConfig]
-    start_date: Optional[str]
     extra_options: dict = field(default_factory=dict)
-    table_names: list = field(default_factory=list)
+    dest_table_override: Optional[str] = "{table}"
+    landing_zone_table_name_override_template: Optional[str] = "{table}"
     start_date_tz: Optional[str] = "EST"
     ods_config: Optional[OdsTableConfig] = OdsTableConfig(
         ods_metadata=OdsTableMetadataConfig(),
@@ -69,10 +70,11 @@ class SourceTemplateConfig:
         partition_column_name=None,
     )
     template_ingestion_options: TemplateIngestionOptionsConfig = TemplateIngestionOptionsConfig(
-        ingest_all_tables=False,
+        ingest_mode="INGEST_BY_TABLE_NAMES",
         ingestion_name="",
         dag_creation_mode="TABLE",
-        regex_pattern=""
+        regex_pattern="",
+        table_names=[]
     )
     version: int = 1
     catchup: bool = True
@@ -84,6 +86,9 @@ class SourceTemplateConfig:
 
         if self.landing_zone_table_name_override_template is None:
             self.landing_zone_table_name_override_template = "{table}"
+
+        if self.dest_table_override is None:
+            self.dest_table_override = "{table}"    
 
     @validator("start_date")
     def valid_start_date(cls, v):
@@ -136,17 +141,28 @@ class SourceTemplateConfig:
     @root_validator(pre=True)
     def valid_template_ingestion_options(cls, values):
         options = values["template_ingestion_options"]
-        if values["table_names"]:
+
+        assert (
+            TemplateIngestion(options["ingest_mode"])
+        ), "ingest_mode must be a valid TemplateIngestion Enum"
+
+        template_ingestion = TemplateIngestion(options["ingest_mode"])
+        if template_ingestion.value == "INGEST_BY_TABLE_NAME":
             assert (
-                not options["ingest_all_tables"]
-            ), "If table_names are explicitly provided for a template, ingest_all_tables should not be provided in template_ingestion_options"
+                not options["regex_pattern"]
+            ), "If table_names are explicitly provided for a template, regex_pattern should not be provided in template_ingestion_options"
+        elif template_ingestion.value == "INGEST_ALL":
+            assert (
+                not options["regex_pattern"] and not options["table_names"]
+            ), "If a template is ingesting all tables, regex_pattern and table_names should not be provided in template_ingestion_options"
         else:
             assert (
-                options["ingest_all_tables"] or re.compile(options["regex_pattern"])
-            ), "If table_names are not explicitly specified, eitehr ingest_all_tables should be set to True, or regex_pattern should be a valid regex pattern"
+                 re.compile(options["regex_pattern"])
+            ), "If ingest_mode is set to 'INGEST_BY_REGX', the regex_pattern should be a valid regex pattern"
 
         assert (
             options["dag_creation_mode"] in ["TABLE", "SOURCE"]
         ), "dag_creation_mode must be either set to TABLE or SOURCE"
 
         return values
+    

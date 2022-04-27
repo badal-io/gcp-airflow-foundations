@@ -64,15 +64,53 @@ class DagBuilder(ABC):
         # loop through templates
         if self.config.templates:
             for template_config in self.config.templates:
-                table_list = self.get_templated_table_list(template_config)
+                table_list = self.get_templated_table_list(template_config.template_ingestion_options)
 
                 if template_config.template_ingestion_options.dag_creation_mode == "TABLE":
                     for table in table_list:
-                        # for backwards compatibility - better solution required
-                        template_config.table_name = table
-                        template_config.landing_zone_table_name_override = \
+
+                        landing_zone_table_name_override = \
                             template_config.landing_zone_table_name_override_template.replace("{table}", table)
-                        dag = self.create_dag(template_config)
+                        dest_table_override = \
+                            template_config.dest_table_override.replace("{table}", table)
+
+                        if template_config.surrogate_keys:
+                            surrogate_keys = template_config.surrogate_keys["table"]
+                        else:
+                            surrogate_keys = []
+
+                        params = {
+                            "table_name": table,
+                            "ingestion_type": template_config.ingestion_type,
+                            "landing_zone_table_name_override": landing_zone_table_name_override,
+                            "dest_table_override": dest_table_override,
+                            "surrogate_keys": surrogate_keys,
+                            "start_date_tz": template_config.start_date_tz,
+                            "version": template_config.version,
+                            "catchup": template_config.catchup,
+                            "facebook_table_config": None
+                        }
+
+                        optional_fields = [
+                            "dest_table_override",
+                            "surrogate_keys",
+                            "column_mapping",
+                            "cluster_fields",
+                            "column_casting",
+                            "new_column_udfs",
+                            "hds_config",
+                            "start_date"
+                        ]
+
+                        for of in optional_fields:
+                            if hasattr(template_config, of):
+                                params[of] = getattr(template_config, of)
+
+                        logging.info(params)
+                        table_config = SourceTableConfig(**params)
+                        
+
+                        dag = self.create_dag(table_config)
                         dags.append(dag)
                 else:
                     dag = self.create_dag_source_level(template_config, table_list)
@@ -141,7 +179,7 @@ class DagBuilder(ABC):
             "start_date": config.table_start_date(table_config),
         }
 
-    def create_dag(self, table_config):
+    def create_dag(self, table_config: SourceTableConfig):
         data_source = self.config.source
         table_default_task_args = self.default_task_args_for_table(
             self.config, table_config
@@ -163,7 +201,7 @@ class DagBuilder(ABC):
             self.create_dag_tasks(dag, data_source, table_config)
             return dag
 
-    def create_dag_source_level(self, template_config, table_names):
+    def create_dag_source_level(self, template_config: SourceTemplateConfig, table_names):
         data_source = self.config.source
         table_default_task_args = self.default_task_args_for_table(
             self.config, template_config
@@ -198,18 +236,17 @@ class DagBuilder(ABC):
             dag, load_to_bq_landing, data_source, table_config
         )
 
-    def get_templated_table_list(self, templated_config: SourceTemplateConfig):
-        if templated_config.table_names:
-            return templated_config.table_names
+    def get_templated_table_list(self, templated_ingestion_options):
+        if templated_ingestion_options.table_names:
+            return templated_ingestion_options.table_names
 
         full_table_list = self.get_source_tables_to_ingest()
         logging.info(full_table_list)
 
-        options = templated_config.template_ingestion_options
-        if options["ingest_all_tables"]:
+        if templated_ingestion_options["ingest_all_tables"]:
             return full_table_list
 
-        regex_pattern = options["regex_table_pattern"]
+        regex_pattern = templated_ingestion_options["regex_table_pattern"]
         r = re.compile(regex_pattern)
         return list(filter(r.match, full_table_list))
 

@@ -16,6 +16,7 @@ from gcp_airflow_foundations.base_class.ods_metadata_config import (
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 
+from gcp_airflow_foundations.base_class.source_base_config import SourceBaseConfig
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTableConfig
@@ -23,7 +24,7 @@ from gcp_airflow_foundations.base_class.column_udf_config import ColumnUDFConfig
 
 
 @dataclass
-class SourceTableConfig:
+class SourceTableConfig(SourceBaseConfig):
     """
     Table configuration data class.
 
