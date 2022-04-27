@@ -106,20 +106,18 @@ class DagBuilder(ABC):
                             if hasattr(template_config, of):
                                 params[of] = getattr(template_config, of)
 
-                        logging.info(params)
                         table_config = SourceTableConfig(**params)
-                        
 
                         dag = self.create_dag(table_config)
                         dags.append(dag)
                 else:
                     dag = self.create_dag_source_level(template_config, table_list)
                     dags.append(dag)
-        logging.info(dags)
+
         extra_dags = self.get_extra_dags()
         if extra_dags is not None and not extra_dags == []:
             dags = dags + self.get_extra_dags()
-        logging.info(dags)
+
         return dags
 
     @abstractmethod
@@ -241,12 +239,11 @@ class DagBuilder(ABC):
             return templated_ingestion_options.table_names
 
         full_table_list = self.get_source_tables_to_ingest()
-        logging.info(full_table_list)
 
         if templated_ingestion_options["ingest_all_tables"]:
             return full_table_list
 
-        regex_pattern = templated_ingestion_options["regex_table_pattern"]
+        regex_pattern = templated_ingestion_options["regex_pattern"]
         r = re.compile(regex_pattern)
         return list(filter(r.match, full_table_list))
 
