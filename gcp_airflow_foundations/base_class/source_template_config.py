@@ -86,7 +86,7 @@ class SourceTemplateConfig(SourceBaseConfig):
             self.landing_zone_table_name_override_template = "{table}"
 
         if self.dest_table_override_template is None:
-            self.dest_table_override_template = "{table}" 
+            self.dest_table_override_template = "{table}"
 
     @root_validator(pre=True)
     def valid_template_ingestion_options(cls, values):

@@ -23,7 +23,7 @@ class SourceBaseConfig:
     """
     Base table/template configuration data class.
     """
-    
+
     @root_validator(pre=True)
     def valid_hds_dataset(cls, values):
         if (values["cluster_fields"] is not None) and (
