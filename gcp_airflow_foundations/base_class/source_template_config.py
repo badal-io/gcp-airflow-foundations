@@ -86,15 +86,14 @@ class SourceTemplateConfig(SourceBaseConfig):
             self.landing_zone_table_name_override_template = "{table}"
 
         if self.dest_table_override_template is None:
-            self.dest_table_override_template = "{table}"    
-    
+            self.dest_table_override_template = "{table}" 
+
     @root_validator(pre=True)
     def valid_template_ingestion_options(cls, values):
         if "template_ingestion_options" in values:
             options = values["template_ingestion_options"]
-            
             template_ingestion = options["ingest_mode"]
-            #logging.info((template_ingestion, template_ingestion.value))
+
             if template_ingestion.value == "INGEST_BY_TABLE_NAME":
                 assert (
                     not options["regex_pattern"]
@@ -103,15 +102,14 @@ class SourceTemplateConfig(SourceBaseConfig):
                 assert (
                     not options["regex_pattern"] and not options["table_names"]
                 ), "If a template is ingesting all tables, regex_pattern and table_names should not be provided in template_ingestion_options"
-            
+
             elif template_ingestion.value == "INGEST_BY_REGEX":
                 assert (
                     re.compile(options["regex_pattern"])
                 ), "If ingest_mode is set to 'INGEST_BY_REGEX', the regex_pattern should be a valid regex pattern"
-            
+
             assert (
                 options["dag_creation_mode"] in ["TABLE", "SOURCE"]
             ), "dag_creation_mode must be either set to TABLE or SOURCE"
-            
+
             return values
-    

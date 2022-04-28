@@ -1,21 +1,12 @@
 from airflow.exceptions import AirflowException
 
-from dacite import Config
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from dacite import from_dict
 
-
-from pydantic import validator, root_validator
-
-import datetime
-import re
-from typing import List, Optional
+from pydantic import root_validator
 
 from regex import E
 
-from gcp_airflow_foundations.base_class.ods_metadata_config import (
-    OdsTableMetadataConfig,
-)
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.enums.template_ingestion import TemplateIngestion
@@ -43,7 +34,7 @@ class SourceBaseConfig:
                 for field in values["cluster_fields"]
             ]
         return values
-    
+
     @root_validator(pre=True)
     def valid_column_casting(cls, values):
         if values["column_casting"] is not None:
@@ -72,4 +63,3 @@ class SourceBaseConfig:
                     values["hds_config"].hds_table_type != HdsTableType.SCD2
                 ), "New column UDFs is not currently supported for HDS SCD2 tables."
         return values
-    

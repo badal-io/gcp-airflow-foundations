@@ -1,8 +1,9 @@
 from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
 from gcp_airflow_foundations.base_class.source_template_config import SourceTemplateConfig
 
+
 def convert_template_to_table(template_config: SourceTemplateConfig, table_name: str):
-    
+
     landing_zone_table_name_override = \
         template_config.landing_zone_table_name_override_template.replace("{table}", table_name)
     dest_table_override = \

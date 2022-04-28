@@ -9,6 +9,7 @@ import regex as re
 
 from gcp_airflow_foundations.enums.template_ingestion import TemplateIngestion
 
+
 @dataclass
 class TemplateIngestionOptionsConfig:
     """

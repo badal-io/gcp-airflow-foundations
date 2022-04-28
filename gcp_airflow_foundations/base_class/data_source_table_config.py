@@ -32,7 +32,7 @@ class DataSourceTablesConfig:
 
     def __post_init__(self):
         if self.templates is None:
-           self.templates = []
+            self.templates = []
         if self.tables is None:
             self.tables = []
 
@@ -52,7 +52,7 @@ class DataSourceTablesConfig:
                 ), f"Invalid partitioning time selection for table `{table.table_name}` - partitioning time `{partitioning_time}` must match ingestion schedule `{ingest_schedule}`"
 
         return values
-    
+
     @root_validator(pre=True)
     def valid_config(cls, values):
         assert (
