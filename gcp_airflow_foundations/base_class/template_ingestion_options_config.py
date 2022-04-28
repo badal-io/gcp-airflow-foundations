@@ -18,7 +18,7 @@ class TemplateIngestionOptionsConfig:
         dag_creation_mode: if "SOURCE", then one DAG per source is created. if "TABLE", one DAG per table.
         regex_table_matching: regex pattern to match tables to, if ingest_all_tables is false
     """
-    ingestion_name: str = ""
+    ingestion_name: str
     ingest_mode: TemplateIngestion = TemplateIngestion("INGEST_BY_TABLE_NAMES"),
     dag_creation_mode: str = "TABLE"
     table_names: list = field(default_factory=list)

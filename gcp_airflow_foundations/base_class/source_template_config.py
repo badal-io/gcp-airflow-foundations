@@ -61,7 +61,7 @@ class SourceTemplateConfig(SourceBaseConfig):
     new_column_udfs: Optional[dict]
     hds_config: Optional[HdsTableConfig]
     extra_options: dict = field(default_factory=dict)
-    dest_table_override: Optional[str] = "{table}"
+    dest_table_override_template: Optional[str] = "{table}"
     landing_zone_table_name_override_template: Optional[str] = "{table}"
     start_date_tz: Optional[str] = "EST"
     ods_config: Optional[OdsTableConfig] = OdsTableConfig(
@@ -87,8 +87,8 @@ class SourceTemplateConfig(SourceBaseConfig):
         if self.landing_zone_table_name_override_template is None:
             self.landing_zone_table_name_override_template = "{table}"
 
-        if self.dest_table_override is None:
-            self.dest_table_override = "{table}"    
+        if self.dest_table_override_template is None:
+            self.dest_table_override_template = "{table}"    
     
     @root_validator(pre=True)
     def valid_template_ingestion_options(cls, values):

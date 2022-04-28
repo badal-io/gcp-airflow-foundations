@@ -11,6 +11,7 @@ from gcp_airflow_foundations.base_class.source_template_config import SourceTemp
 from gcp_airflow_foundations.base_class.source_config import SourceConfig
 from gcp_airflow_foundations.enums.schema_source_type import SchemaSourceType
 from gcp_airflow_foundations.common.gcp.load_builder import load_builder
+from gcp_airflow_foundations.common.utils.convert_config import convert_template_to_table
 from gcp_airflow_foundations.source_class.schema_source_config import (
     AutoSchemaSourceConfig,
     GCSSchemaSourceConfig,
@@ -67,45 +68,7 @@ class DagBuilder(ABC):
 
             if template_config.template_ingestion_options.dag_creation_mode == "TABLE":
                 for table in table_list:
-
-                    landing_zone_table_name_override = \
-                        template_config.landing_zone_table_name_override_template.replace("{table}", table)
-                    dest_table_override = \
-                        template_config.dest_table_override.replace("{table}", table)
-
-                    if template_config.surrogate_keys:
-                        surrogate_keys = template_config.surrogate_keys["table"]
-                    else:
-                        surrogate_keys = []
-
-                    params = {
-                        "table_name": table,
-                        "ingestion_type": template_config.ingestion_type,
-                        "landing_zone_table_name_override": landing_zone_table_name_override,
-                        "dest_table_override": dest_table_override,
-                        "surrogate_keys": surrogate_keys,
-                        "start_date_tz": template_config.start_date_tz,
-                        "version": template_config.version,
-                        "catchup": template_config.catchup,
-                    }
-
-                    optional_fields = [
-                        "dest_table_override",
-                        "surrogate_keys",
-                        "column_mapping",
-                        "cluster_fields",
-                        "column_casting",
-                        "new_column_udfs",
-                        "hds_config",
-                        "start_date"
-                    ]
-
-                    for of in optional_fields:
-                        if hasattr(template_config, of):
-                            params[of] = getattr(template_config, of)
-
-                    table_config = SourceTableConfig(**params)
-
+                    table_config = convert_template_to_table(template_config, table)
                     dag = self.create_dag(table_config)
                     dags.append(dag)
             else:
