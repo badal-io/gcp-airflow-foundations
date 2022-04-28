@@ -32,15 +32,7 @@ class SourceBaseConfig:
     """
     Base table/template configuration data class.
     """
-
-    @validator("start_date")
-    def valid_start_date(cls, v):
-        if v is not None:
-            assert datetime.datetime.strptime(
-                v, "%Y-%m-%d"
-            ), "The date format for Start Date should be YYYY-MM-DD"
-        return v
-
+    
     @root_validator(pre=True)
     def valid_hds_dataset(cls, values):
         if (values["cluster_fields"] is not None) and (
@@ -51,7 +43,7 @@ class SourceBaseConfig:
                 for field in values["cluster_fields"]
             ]
         return values
-
+    
     @root_validator(pre=True)
     def valid_column_casting(cls, values):
         if values["column_casting"] is not None:
@@ -80,3 +72,4 @@ class SourceBaseConfig:
                     values["hds_config"].hds_table_type != HdsTableType.SCD2
                 ), "New column UDFs is not currently supported for HDS SCD2 tables."
         return values
+    

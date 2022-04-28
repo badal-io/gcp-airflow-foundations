@@ -62,57 +62,55 @@ class DagBuilder(ABC):
             dags.append(dag)
 
         # loop through templates
-        if self.config.templates:
-            for template_config in self.config.templates:
-                table_list = self.get_templated_table_list(template_config.template_ingestion_options)
+        for template_config in self.config.templates:
+            table_list = self.get_templated_table_list(template_config.template_ingestion_options)
 
-                if template_config.template_ingestion_options.dag_creation_mode == "TABLE":
-                    for table in table_list:
+            if template_config.template_ingestion_options.dag_creation_mode == "TABLE":
+                for table in table_list:
 
-                        landing_zone_table_name_override = \
-                            template_config.landing_zone_table_name_override_template.replace("{table}", table)
-                        dest_table_override = \
-                            template_config.dest_table_override.replace("{table}", table)
+                    landing_zone_table_name_override = \
+                        template_config.landing_zone_table_name_override_template.replace("{table}", table)
+                    dest_table_override = \
+                        template_config.dest_table_override.replace("{table}", table)
 
-                        if template_config.surrogate_keys:
-                            surrogate_keys = template_config.surrogate_keys["table"]
-                        else:
-                            surrogate_keys = []
+                    if template_config.surrogate_keys:
+                        surrogate_keys = template_config.surrogate_keys["table"]
+                    else:
+                        surrogate_keys = []
 
-                        params = {
-                            "table_name": table,
-                            "ingestion_type": template_config.ingestion_type,
-                            "landing_zone_table_name_override": landing_zone_table_name_override,
-                            "dest_table_override": dest_table_override,
-                            "surrogate_keys": surrogate_keys,
-                            "start_date_tz": template_config.start_date_tz,
-                            "version": template_config.version,
-                            "catchup": template_config.catchup,
-                            "facebook_table_config": None
-                        }
+                    params = {
+                        "table_name": table,
+                        "ingestion_type": template_config.ingestion_type,
+                        "landing_zone_table_name_override": landing_zone_table_name_override,
+                        "dest_table_override": dest_table_override,
+                        "surrogate_keys": surrogate_keys,
+                        "start_date_tz": template_config.start_date_tz,
+                        "version": template_config.version,
+                        "catchup": template_config.catchup,
+                    }
 
-                        optional_fields = [
-                            "dest_table_override",
-                            "surrogate_keys",
-                            "column_mapping",
-                            "cluster_fields",
-                            "column_casting",
-                            "new_column_udfs",
-                            "hds_config",
-                            "start_date"
-                        ]
+                    optional_fields = [
+                        "dest_table_override",
+                        "surrogate_keys",
+                        "column_mapping",
+                        "cluster_fields",
+                        "column_casting",
+                        "new_column_udfs",
+                        "hds_config",
+                        "start_date"
+                    ]
 
-                        for of in optional_fields:
-                            if hasattr(template_config, of):
-                                params[of] = getattr(template_config, of)
+                    for of in optional_fields:
+                        if hasattr(template_config, of):
+                            params[of] = getattr(template_config, of)
 
-                        table_config = SourceTableConfig(**params)
+                    table_config = SourceTableConfig(**params)
 
-                        dag = self.create_dag(table_config)
-                        dags.append(dag)
-                else:
-                    dag = self.create_dag_source_level(template_config, table_list)
+                    dag = self.create_dag(table_config)
                     dags.append(dag)
+            else:
+                dag = self.create_dag_source_level(template_config, table_list)
+                dags.append(dag)
 
         extra_dags = self.get_extra_dags()
         if extra_dags is not None and not extra_dags == []:
@@ -235,15 +233,15 @@ class DagBuilder(ABC):
         )
 
     def get_templated_table_list(self, templated_ingestion_options):
-        if templated_ingestion_options.table_names:
+        if templated_ingestion_options.ingest_mode.value == "INGEST_BY_TABLE_NAMES":
             return templated_ingestion_options.table_names
 
         full_table_list = self.get_source_tables_to_ingest()
 
-        if templated_ingestion_options["ingest_all_tables"]:
+        if templated_ingestion_options.ingest_mode.value == "INGEST_ALL":
             return full_table_list
 
-        regex_pattern = templated_ingestion_options["regex_pattern"]
+        regex_pattern = templated_ingestion_options.regex_pattern
         r = re.compile(regex_pattern)
         return list(filter(r.match, full_table_list))
 

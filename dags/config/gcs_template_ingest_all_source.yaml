@@ -38,18 +38,14 @@ tables:
         directory_prefix: ""
         allow_quoted_newlines: True
 templates:
-  - table_name: users
+  - table_name: "XXX"
     ingestion_type: FULL
-    surrogate_keys: []
+    surrogate_keys: {}
     extra_options:
       file_table_config:
         directory_prefix: ""
         allow_quoted_newlines: True
     template_ingestion_options:
       ingestion_name: "TEST"
-      table_names: ["table1", "table2"]
       ingest_mode: "INGEST_ALL"
       dag_creation_mode: "SOURCE"
-
-
-
