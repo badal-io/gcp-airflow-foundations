@@ -7,14 +7,7 @@ from pydantic import root_validator
 
 from regex import E
 
-from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
-from gcp_airflow_foundations.enums.template_ingestion import TemplateIngestion
-
-from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
-from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
-from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTableConfig
-from gcp_airflow_foundations.base_class.template_ingestion_options_config import TemplateIngestionOptionsConfig
 from gcp_airflow_foundations.base_class.column_udf_config import ColumnUDFConfig
 
 

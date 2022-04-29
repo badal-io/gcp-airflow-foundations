@@ -8,7 +8,7 @@ from tests.unit.conftest import validate_linear_task_order, compare_deps
 
 def test_load_config(sample_dags):
     assert isinstance(sample_dags, dict)
-    assert len(sample_dags) == 7
+    assert len(sample_dags) == 8
 
 
 def test_start_date(gcs_dag):
@@ -19,8 +19,8 @@ def test_start_date(gcs_dag):
     )
 
 
-def test_gcs_templated_tasks(gcs_dag):
-    """Check tasks"""
+def test_gcs_tasks(gcs_dag):
+    """Check tasks"""   
 
     validate_linear_task_order(
         gcs_dag,
@@ -38,8 +38,42 @@ def test_gcs_templated_tasks(gcs_dag):
         ],
     )
 
+def test_gcs_templated_tasks_multiple_tables(gcs_templated_source_level_two_table_dag):
+    """Check tasks"""   
 
-def test_gcs_tasks(gcs_templated_source_level_dag):
+    validate_linear_task_order(
+        gcs_templated_source_level_two_table_dag,
+        [
+            "test_table1.ftp_taskgroup.get_file_list",
+            "test_table1.ftp_taskgroup.wait_for_files_to_ingest",
+            "test_table1.ftp_taskgroup.load_gcs_to_landing_zone",
+            "test_table1.schema_parsing",
+            "test_table1.create_ods_merge_taskgroup.create_ods_dataset",
+            "test_table1.create_ods_merge_taskgroup.create_ods_table",
+            "test_table1.create_ods_merge_taskgroup.schema_migration",
+            "test_table1.create_ods_merge_taskgroup.upsert_test_table1",
+            "test_table1.delete_staging_table",
+            "test_table1.done",
+        ],
+    )
+
+    validate_linear_task_order(
+        gcs_templated_source_level_two_table_dag,
+        [
+            "test_table2.ftp_taskgroup.get_file_list",
+            "test_table2.ftp_taskgroup.wait_for_files_to_ingest",
+            "test_table2.ftp_taskgroup.load_gcs_to_landing_zone",
+            "test_table2.schema_parsing",
+            "test_table2.create_ods_merge_taskgroup.create_ods_dataset",
+            "test_table2.create_ods_merge_taskgroup.create_ods_table",
+            "test_table2.create_ods_merge_taskgroup.schema_migration",
+            "test_table2.create_ods_merge_taskgroup.upsert_test_table2",
+            "test_table2.delete_staging_table",
+            "test_table2.done",
+        ],
+    )
+
+def test_gcs_templated_tasks(gcs_templated_source_level_dag):
     """Check tasks"""
 
     validate_linear_task_order(
@@ -68,7 +102,6 @@ def test_gcs_tasks_with_dlp(gcs_dlp_dag):
             "ftp_taskgroup.get_file_list",
             "ftp_taskgroup.wait_for_files_to_ingest",
             "ftp_taskgroup.load_gcs_to_landing_zone",
-            # 'ftp_taskgroup.delete_gcs_files',
             "schema_parsing",
             "create_ods_merge_taskgroup.create_ods_dataset",
             "create_ods_merge_taskgroup.create_ods_table",
@@ -134,6 +167,10 @@ def gcs_dag(sample_dags):
 @pytest.fixture(scope="session")
 def gcs_templated_source_level_dag(sample_dags):
     return sample_dags["dags:source:GCSTemplatedSource.GCSTemplatedSource.TEST"]
+
+@pytest.fixture(scope="session")
+def gcs_templated_source_level_two_table_dag(sample_dags):
+    return sample_dags["dags:source:GCSTemplatedSource.GCSTemplatedSource.TWOTABLETEST"]
 
 
 @pytest.fixture(scope="session")
