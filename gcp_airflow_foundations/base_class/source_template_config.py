@@ -28,7 +28,7 @@ from gcp_airflow_foundations.base_class.template_ingestion_options_config import
 @dataclass
 class SourceTemplateConfig(SourceBaseConfig):
     """
-    Template configuration data class. Template configuration applies to all tables specified within it, either by 
+    Template configuration data class. Template configuration applies to all tables specified within it, either by
     explicitly providing a list of table_names, or by fetching a full list of source tables and optionally filtering
     by regex expression. Templates can create either one DAG per table or one DAG per template.
 

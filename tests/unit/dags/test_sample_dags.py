@@ -20,7 +20,7 @@ def test_start_date(gcs_dag):
 
 
 def test_gcs_tasks(gcs_dag):
-    """Check tasks"""   
+    """Check tasks"""
 
     validate_linear_task_order(
         gcs_dag,
@@ -38,8 +38,9 @@ def test_gcs_tasks(gcs_dag):
         ],
     )
 
+
 def test_gcs_templated_tasks_multiple_tables(gcs_templated_source_level_two_table_dag):
-    """Check tasks"""   
+    """Check tasks"""
 
     validate_linear_task_order(
         gcs_templated_source_level_two_table_dag,
@@ -72,6 +73,7 @@ def test_gcs_templated_tasks_multiple_tables(gcs_templated_source_level_two_tabl
             "test_table2.done",
         ],
     )
+
 
 def test_gcs_templated_tasks(gcs_templated_source_level_dag):
     """Check tasks"""
@@ -167,6 +169,7 @@ def gcs_dag(sample_dags):
 @pytest.fixture(scope="session")
 def gcs_templated_source_level_dag(sample_dags):
     return sample_dags["dags:source:GCSTemplatedSource.GCSTemplatedSource.TEST"]
+
 
 @pytest.fixture(scope="session")
 def gcs_templated_source_level_two_table_dag(sample_dags):
