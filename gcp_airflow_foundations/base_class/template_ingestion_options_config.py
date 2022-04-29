@@ -7,7 +7,7 @@ from dataclasses import field
 from typing import List, Optional
 import regex as re
 
-from gcp_airflow_foundations.enums.template_ingestion import TemplateIngestion
+from gcp_airflow_foundations.enums.template_ingestion import TemplateIngestionMode, TemplateDagCreationMode
 
 
 @dataclass
@@ -20,7 +20,7 @@ class TemplateIngestionOptionsConfig:
         regex_table_matching: regex pattern to match tables to, if ingest_all_tables is false
     """
     ingestion_name: str
-    ingest_mode: TemplateIngestion = TemplateIngestion("INGEST_BY_TABLE_NAMES"),
-    dag_creation_mode: str = "TABLE"
+    ingest_mode: TemplateIngestionMode = TemplateIngestionMode("INGEST_BY_TABLE_NAMES"),
+    dag_creation_mode: TemplateDagCreationMode = TemplateDagCreationMode("TABLE"),
     table_names: list = field(default_factory=list)
     regex_pattern: Optional[str] = None

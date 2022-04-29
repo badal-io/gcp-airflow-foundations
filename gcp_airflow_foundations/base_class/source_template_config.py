@@ -17,15 +17,12 @@ from gcp_airflow_foundations.base_class.ods_metadata_config import (
     OdsTableMetadataConfig,
 )
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
-from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
-from gcp_airflow_foundations.enums.template_ingestion import TemplateIngestion
+from gcp_airflow_foundations.enums.template_ingestion import TemplateIngestionMode
 
 from gcp_airflow_foundations.base_class.source_base_config import SourceBaseConfig
 from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
-from gcp_airflow_foundations.base_class.facebook_table_config import FacebookTableConfig
 from gcp_airflow_foundations.base_class.template_ingestion_options_config import TemplateIngestionOptionsConfig
-from gcp_airflow_foundations.base_class.column_udf_config import ColumnUDFConfig
 
 
 @dataclass
@@ -90,22 +87,18 @@ class SourceTemplateConfig(SourceBaseConfig):
             options = values["template_ingestion_options"]
             template_ingestion = options["ingest_mode"]
 
-            if template_ingestion.value == "INGEST_BY_TABLE_NAME":
+            if template_ingestion.value == TemplateIngestionMode.INGEST_BY_TABLE_NAMES:
                 assert (
                     not options["regex_pattern"]
                 ), "If table_names are explicitly provided for a template, regex_pattern should not be provided in template_ingestion_options"
-            elif template_ingestion.value == "INGEST_ALL":
+            elif template_ingestion.value == TemplateIngestionMode.INGEST_ALL:
                 assert (
                     not options["regex_pattern"] and not options["table_names"]
                 ), "If a template is ingesting all tables, regex_pattern and table_names should not be provided in template_ingestion_options"
 
-            elif template_ingestion.value == "INGEST_BY_REGEX":
+            elif template_ingestion.value == TemplateIngestionMode.INGEST_BY_REGEX:
                 assert (
                     re.compile(options["regex_pattern"])
                 ), "If ingest_mode is set to 'INGEST_BY_REGEX', the regex_pattern should be a valid regex pattern"
-
-            assert (
-                options["dag_creation_mode"] in ["TABLE", "SOURCE"]
-            ), "dag_creation_mode must be either set to TABLE or SOURCE"
 
             return values
