@@ -58,6 +58,7 @@ class SourceTemplateConfig(SourceBaseConfig):
     column_casting: Optional[dict]
     new_column_udfs: Optional[dict]
     hds_config: Optional[HdsTableConfig]
+    template_ingestion_options: TemplateIngestionOptionsConfig
     extra_options: dict = field(default_factory=dict)
     dest_table_override_template: Optional[str] = "{table}"
     landing_zone_table_name_override_template: Optional[str] = "{table}"
@@ -66,13 +67,6 @@ class SourceTemplateConfig(SourceBaseConfig):
         ods_metadata=OdsTableMetadataConfig(),
         ods_table_time_partitioning=None,
         partition_column_name=None,
-    )
-    template_ingestion_options: TemplateIngestionOptionsConfig = TemplateIngestionOptionsConfig(
-        ingest_mode=TemplateIngestion("INGEST_BY_TABLE_NAMES"),
-        ingestion_name="",
-        dag_creation_mode="TABLE",
-        regex_pattern="",
-        table_names=[]
     )
     version: int = 1
     catchup: bool = True
