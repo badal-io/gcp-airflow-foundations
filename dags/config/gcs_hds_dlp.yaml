@@ -41,5 +41,3 @@ tables:
       file_table_config:
         directory_prefix: ""
         allow_quoted_newlines: True
-
-

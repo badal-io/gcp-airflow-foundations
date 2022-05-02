@@ -26,7 +26,7 @@ class FileSourceConfig:
 
     date_format: str = "%Y-%m-%d"
     airflow_date_template: str = "ds"
-    delete_gcs_files: bool = True
-    gcs_bucket_prefix: str = False
+    delete_gcs_files: bool = False
+    gcs_bucket_prefix: str = ""
     delimeter: str = ","
     sensor_timeout: int = 10800

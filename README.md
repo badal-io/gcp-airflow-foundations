@@ -30,21 +30,31 @@ pip install 'gcp-airflow-foundations'
 See the [gcp-airflow-foundations documentation](https://gcp-airflow-foundations.readthedocs.io/en/latest/) for more details.
 
 ## Running locally
+
+### Sample DAGs
+Sample DAGs that ingest publicly available GCS files can be found in the dags folder, and are started as soon Airflow is ran locally. In order to have them successfully run please ensure the following:
+- Enable: BigQuery, Cloud Storage, Cloud DLP, Data Catalog API's
+- Create a BigQuery Dataset for the HDS and ODS
+- Create a DLP Inspect template in DLP
+- Create a policy tag in Data Catalog
+- Update the gcp_project, location, dataset values, dlp config and policytag configs with your newly created values
+
 ### Using Service Account
 - Create a service account in GCP, and save it as ```helpers/key/keys.json``` (don't worry, it is in .gitignore, and will not be push to the git repo)
 - Run Airflow locally (Airflow UI will be accessible at http://localhost:8080): ```docker-compose up```
+- Default authentication values for the Airflow UI are provided in lines 96, 97 of ```docker-composer.yaml```
 ### Using user IAM
-- uncomment like 11 in ```docker-composer.yaml```
+- uncomment line 11 in ```docker-composer.yaml```
 - send env var PROJECT_ID to your test project
 - Authorize gcloud to access the Cloud Platform with Google user credentials: ```helpers/scripts/gcp-auth.sh```
 - Run Airflow locally (Airflow UI will be accessible at http://localhost:8080): ```docker-compose up```
+- Default authentication values for the Airflow UI are provided in lines 96, 97 of ```docker-composer.yaml```
 ### Running tests
 - Run unit tests ```./tests/airflow  "pytest tests/unit```
 - Run unit tests with coverage report ```./tests/airflow  "pytest --cov=gcp_airflow_foundations tests/unit```
 - Run integration tests ```./tests/airflow  "pytest tests/integration```
 - Rebuild docker image if requirements changed: ```docker-compose build```
-### Sample DAGs
-Sample DAGs that ingest publicly available GCS files can be found in the dags folder, and are started as soon Airflow is ran locally
+
 # Contributing
 ## Install pre-commit hook
 Install pre-commit hooks for linting, format checking, etc.
