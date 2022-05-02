@@ -15,6 +15,8 @@ def dataflow_taskgroup_builder(
     create_job_params,
     run_dataflow_job,
     create_table,
+    ingest_metadata,
+    table_type_casts
 ) -> TaskGroup:
 
     """
@@ -28,50 +30,49 @@ def dataflow_taskgroup_builder(
 
     create_job_parameters = PythonOperator(
         task_id="create_job_parameters",
-        op_kwargs={
-            "config_params": dataflow_job_params,
-            "table_name": table_name,
-            "destination_table": destination_table,
-            "destination_schema_table": destination_schema_table,
-            "query_schema": query_schema,
-            "owner": dataflow_job_params["database_owner"],
-        },
+        op_kwargs={"config_params": dataflow_job_params,
+                   "table_name": table_name,
+                   "destination_table": destination_table,
+                   "destination_schema_table": destination_schema_table,
+                   "query_schema": query_schema,
+                   "owner": dataflow_job_params["database_owner"]},
         python_callable=create_job_params,
         task_group=taskgroup,
     )
 
     trigger_dataflow_job = PythonOperator(
         task_id="run_dataflow_job_to_bq",
-        op_kwargs={
-            "template_path": dataflow_job_params["template_path"],
-            "system_name": system_name,
-            "table_name": table_name,
-            "query_schema": query_schema,
-        },
+        op_kwargs={"template_path": dataflow_job_params["template_path"],
+                   "system_name": system_name,
+                   "table_name": table_name,
+                   "query_schema": query_schema},
         python_callable=run_dataflow_job,
         task_group=taskgroup,
-        pool=dataflow_job_params["connection_pool"],
+        pool=dataflow_job_params["connection_pool"]
     )
 
     if not query_schema:
-        schema_task_sensor = ExternalTaskSensor(
-            task_id="check_bq_schema_updated",
-            external_dag_id=f"{system_name}_upload_schema",
-            task_group=taskgroup,
-        )
 
         create_table = PythonOperator(
             task_id="create_table_if_needed",
-            op_kwargs={
-                "destination_table": destination_table,
-                "schema_table": destination_schema_table,
-                "source_table": table_name,
-            },
+            op_kwargs={"destination_table": destination_table,
+                       "schema_table": destination_schema_table,
+                       "source_table": table_name,
+                       "table_type_casts": table_type_casts},
             python_callable=create_table,
-            task_group=taskgroup,
+            task_group=taskgroup
         )
 
-        schema_task_sensor >> create_job_parameters >> create_table >> trigger_dataflow_job
+        if ingest_metadata:
+            schema_task_sensor = ExternalTaskSensor(
+                task_id="check_bq_schema_updated",
+                external_dag_id=f"{system_name}_upload_schema",
+                task_group=taskgroup,
+            )
+            schema_task_sensor >> create_job_parameters >> create_table >> trigger_dataflow_job
+        else:
+            create_job_parameters >> create_table >> trigger_dataflow_job
+
     else:
         create_job_parameters >> trigger_dataflow_job
 

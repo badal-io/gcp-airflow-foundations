@@ -1,9 +1,11 @@
 from pydantic import validator, root_validator
 from pydantic.dataclasses import dataclass
+from dataclasses import field
 from datetime import timedelta
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
+from gcp_airflow_foundations.base_class.source_template_config import SourceTemplateConfig
 from gcp_airflow_foundations.base_class.source_config import SourceConfig
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 from gcp_airflow_foundations.enums.time_partitioning import TimePartitioning
@@ -25,7 +27,14 @@ class DataSourceTablesConfig:
     """
 
     source: SourceConfig
-    tables: List[SourceTableConfig]
+    tables: Optional[List[SourceTableConfig]]
+    templates: Optional[List[SourceTemplateConfig]]
+
+    def __post_init__(self):
+        if self.templates is None:
+            self.templates = []
+        if self.tables is None:
+            self.tables = []
 
     @root_validator(pre=True)
     def valid_partitioning(cls, values):
@@ -41,6 +50,14 @@ class DataSourceTablesConfig:
                 assert (
                     partitioning_options[partitioning_time] == ingest_schedule
                 ), f"Invalid partitioning time selection for table `{table.table_name}` - partitioning time `{partitioning_time}` must match ingestion schedule `{ingest_schedule}`"
+
+        return values
+
+    @root_validator(pre=True)
+    def valid_config(cls, values):
+        assert (
+            values["tables"] or values["templates"]
+        ), "At least one of tables or templates should be present in the config file (non-empty)"
 
         return values
 
