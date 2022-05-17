@@ -57,7 +57,6 @@ def load_builder(
 
     dag_table_id = table_config.table_name
     ods_table_id = f"{landing_zone_table_name_override}{ods_suffix}"
-    hds_table_id = ""
     if hds_table_config:
         hds_table_id = f"{landing_zone_table_name_override}{hds_suffix}"
 
