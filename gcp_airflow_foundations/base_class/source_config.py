@@ -84,14 +84,6 @@ class SourceConfig:
     email_on_failure: bool = True
     connection: str = "google_cloud_default"
 
-    def __post_init__(self):
-        if self.num_retries is None:
-            self.num_retries = 3
-        if self.email_on_retry is None:
-            self.email_on_retry = False
-        if self.email_on_failure is None:
-            self.email_on_failure = True
-
     @validator("name")
     def valid_name(cls, v):
         assert v, "Source name must not be empty"
