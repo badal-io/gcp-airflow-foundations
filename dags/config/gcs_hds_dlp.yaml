@@ -36,7 +36,6 @@ tables:
     hds_config:
       hds_table_type: SNAPSHOT
       hds_table_time_partitioning: DAY
-
     extra_options:
       file_table_config:
         directory_prefix: ""

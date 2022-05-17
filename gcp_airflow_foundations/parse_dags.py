@@ -26,7 +26,6 @@ class DagParser:
     def __init__(self):
         logging.info("Initialize DagParser")
         self.conf_location = Variable.get("CONFIG_FILE_LOCATION", "dags/config")
-        self.max_task_retries = Variable.get("max_task_retries", 3)
 
     def parse_dags(self):
         logging.info(f"Loading config from dir: {self.conf_location}")
@@ -38,17 +37,20 @@ class DagParser:
             logging.info(
                 f"StartDate for {config.source.name}: {config.source_start_date()}"
             )
+            x = config.source
+            logging.info("LOL")
+            logging.info(x.__dict__)
 
             default_task_args = {
                 "owner": config.source.owner,
-                "retries": self.max_task_retries,
+                "retries": config.source.num_retries,
                 "retry_exponential_backoff": True,
                 "retry_delay": datetime.timedelta(seconds=300),
                 "project_id": config.source.gcp_project,
                 "email": config.source.notification_emails,
-                "email_on_failure": True,
-                "email_on_retry": False,
                 "depends_on_past": False,
+                "email_on_retry": config.source.email_on_retry,
+                "email_on_failure": config.source.email_on_failure
             }
 
             """

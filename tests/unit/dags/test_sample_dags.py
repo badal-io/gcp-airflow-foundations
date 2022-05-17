@@ -8,7 +8,7 @@ from tests.unit.conftest import validate_linear_task_order, compare_deps
 
 def test_load_config(sample_dags):
     assert isinstance(sample_dags, dict)
-    assert len(sample_dags) == 8
+    assert len(sample_dags) == 7
 
 
 def test_start_date(gcs_dag):
@@ -25,16 +25,16 @@ def test_gcs_tasks(gcs_dag):
     validate_linear_task_order(
         gcs_dag,
         [
-            "ftp_taskgroup.get_file_list",
-            "ftp_taskgroup.wait_for_files_to_ingest",
-            "ftp_taskgroup.load_gcs_to_landing_zone",
-            "schema_parsing",
-            "create_ods_merge_taskgroup.create_ods_dataset",
-            "create_ods_merge_taskgroup.create_ods_table",
-            "create_ods_merge_taskgroup.schema_migration",
-            "create_ods_merge_taskgroup.upsert_users",
-            "delete_staging_table",
-            "done",
+            "users.ftp_taskgroup.get_file_list",
+            "users.ftp_taskgroup.wait_for_files_to_ingest",
+            "users.ftp_taskgroup.load_gcs_to_landing_zone",
+            "users.schema_parsing",
+            "users.create_ods_merge_taskgroup.create_ods_dataset",
+            "users.create_ods_merge_taskgroup.create_ods_table",
+            "users.create_ods_merge_taskgroup.schema_migration",
+            "users.create_ods_merge_taskgroup.upsert_users",
+            "users.delete_staging_table",
+            "users.done",
         ],
     )
 
@@ -101,30 +101,30 @@ def test_gcs_tasks_with_dlp(gcs_dlp_dag):
     validate_linear_task_order(
         gcs_dlp_dag,
         ordered_task_ids=[
-            "ftp_taskgroup.get_file_list",
-            "ftp_taskgroup.wait_for_files_to_ingest",
-            "ftp_taskgroup.load_gcs_to_landing_zone",
-            "schema_parsing",
-            "create_ods_merge_taskgroup.create_ods_dataset",
-            "create_ods_merge_taskgroup.create_ods_table",
-            "create_ods_merge_taskgroup.schema_migration",
-            "create_ods_merge_taskgroup.upsert_users",
-            "delete_staging_table",
-            "create_dlp_dataset",
-            "dlp_policy_tags.check_if_should_run_dlp",
-            "dlp_policy_tags.delete_old_dlp_results_ods",
-            "dlp_policy_tags.scan_table_ods",
-            "dlp_policy_tags.read_dlp_results_ods",
-            "dlp_policy_tags.update_bq_policy_tags_ods",
+            "users.ftp_taskgroup.get_file_list",
+            "users.ftp_taskgroup.wait_for_files_to_ingest",
+            "users.ftp_taskgroup.load_gcs_to_landing_zone",
+            "users.schema_parsing",
+            "users.create_ods_merge_taskgroup.create_ods_dataset",
+            "users.create_ods_merge_taskgroup.create_ods_table",
+            "users.create_ods_merge_taskgroup.schema_migration",
+            "users.create_ods_merge_taskgroup.upsert_users",
+            "users.delete_staging_table",
+            "users.create_dlp_dataset",
+            "users.dlp_policy_tags.check_if_should_run_dlp",
+            "users.dlp_policy_tags.delete_old_dlp_results_ods",
+            "users.dlp_policy_tags.scan_table_ods",
+            "users.dlp_policy_tags.read_dlp_results_ods",
+            "users.dlp_policy_tags.update_bq_policy_tags_ods",
         ],
-        ignore_tasks_ids=["done"],
+        ignore_tasks_ids=["users.done"],
     )
 
     compare_deps(
-        gcs_dlp_dag.get_task("done"),
+        gcs_dlp_dag.get_task("users.done"),
         upstream_deps=[
-            "dlp_policy_tags.check_if_should_run_dlp",
-            "dlp_policy_tags.update_bq_policy_tags_ods",
+            "users.dlp_policy_tags.check_if_should_run_dlp",
+            "users.dlp_policy_tags.update_bq_policy_tags_ods",
         ],
         downstream_dps=[],
     )
@@ -133,21 +133,21 @@ def test_gcs_tasks_with_dlp(gcs_dlp_dag):
 def test_gcs_tasks_with_dlp_and_hds(gcs_dlp_ods_dag):
     """Check ODS + HDS DLP tasks"""
     compare_deps(
-        gcs_dlp_ods_dag.get_task("dlp_policy_tags.check_if_should_run_dlp"),
-        upstream_deps=["create_dlp_dataset"],
+        gcs_dlp_ods_dag.get_task("users.dlp_policy_tags.check_if_should_run_dlp"),
+        upstream_deps=["users.create_dlp_dataset"],
         downstream_dps=[
-            "done",
-            "dlp_policy_tags.delete_old_dlp_results_ods",
-            "dlp_policy_tags.delete_old_dlp_results_hds",
+            "users.done",
+            "users.dlp_policy_tags.delete_old_dlp_results_ods",
+            "users.dlp_policy_tags.delete_old_dlp_results_hds",
         ],
     )
 
     compare_deps(
-        gcs_dlp_ods_dag.get_task("done"),
+        gcs_dlp_ods_dag.get_task("users.done"),
         upstream_deps=[
-            "dlp_policy_tags.check_if_should_run_dlp",
-            "dlp_policy_tags.update_bq_policy_tags_ods",
-            "dlp_policy_tags.update_bq_policy_tags_hds",
+            "users.dlp_policy_tags.check_if_should_run_dlp",
+            "users.dlp_policy_tags.update_bq_policy_tags_ods",
+            "users.dlp_policy_tags.update_bq_policy_tags_hds",
         ],
         downstream_dps=[],
     )

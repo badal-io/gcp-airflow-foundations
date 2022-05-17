@@ -58,7 +58,7 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         """
         bucket = self.config.source.extra_options["gcs_bucket"]
         table_name = table_config.table_name
-        files_to_wait_for = f"{{ ti.xcom_pull(key='file_list', task_ids='{table_name}.ftp_taskgroup.get_file_list') }}"
+        files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='" + table_name + ".ftp_taskgroup.get_file_list') }}"
 
         if self.config.source.extra_options["file_source_config"]["file_prefix_filtering"]:
             return GCSObjectPrefixListExistenceSensor(

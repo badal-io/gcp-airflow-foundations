@@ -136,9 +136,6 @@ class DagBuilder(ABC):
         return {
             **self.default_task_args,
             "start_date": config.table_start_date(table_config),
-            "email_on_retry": config.source["email_on_retry"],
-            "email_on_failure": config.source["email_on_failure"],
-            "retries": config.source["num_retries"]
         }
 
     def create_dag(self, table_config: SourceTableConfig):

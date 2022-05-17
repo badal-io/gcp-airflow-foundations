@@ -60,7 +60,7 @@ class TestBCustomBigQueryCreateEmptyDatasetOperator(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id="dummy", dag=self.dag)
+        task = DummyOperator(task_id=f"dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
@@ -96,7 +96,7 @@ class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id="dummy", dag=self.dag)
+        task = DummyOperator(task_id=f"{TEST_TABLE_ID}.schema_parsing", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
@@ -116,7 +116,7 @@ class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
             dataset_id=TEST_DATASET,
             project_id=TEST_GCP_PROJECT_ID,
             table_id=TEST_TABLE_ID,
-            schema_task_id="dummy",
+            dag_table_id=TEST_TABLE_ID,
         )
 
         operator.pre_execute(context=self.template_context)
