@@ -60,7 +60,7 @@ class TestBCustomBigQueryCreateEmptyDatasetOperator(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id=f"dummy", dag=self.dag)
+        task = DummyOperator(task_id="dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()

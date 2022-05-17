@@ -29,7 +29,7 @@ class ParseSchema(BaseOperator):
         *,
         schema_config,
         ods_table_id: str,
-        hds_table_id: str="",
+        hds_table_id: str = "",
         column_mapping=None,
         column_casting=None,
         new_column_udfs=None,

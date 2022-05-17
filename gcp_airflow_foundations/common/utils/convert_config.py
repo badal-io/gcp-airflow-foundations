@@ -2,6 +2,7 @@ from gcp_airflow_foundations.base_class.source_table_config import SourceTableCo
 from gcp_airflow_foundations.base_class.source_template_config import SourceTemplateConfig
 import logging
 
+
 def convert_template_to_table(template_config: SourceTemplateConfig, table_name: str):
 
     landing_zone_table_name_override = \
@@ -35,7 +36,7 @@ def convert_template_to_table(template_config: SourceTemplateConfig, table_name:
         "ods_config",
         "hds_config",
         "start_date",
-        "extra_options"w
+        "extra_options"
     ]
 
     for of in optional_fields:
