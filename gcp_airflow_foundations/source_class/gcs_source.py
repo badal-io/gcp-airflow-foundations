@@ -57,7 +57,8 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
         Returns an Airflow sensor that waits for the list of files specified by the metadata file provided.
         """
         bucket = self.config.source.extra_options["gcs_bucket"]
-        files_to_wait_for = "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
+        table_name = table_config.table_name
+        files_to_wait_for = f"{{ ti.xcom_pull(key='file_list', task_ids='{table_name}.ftp_taskgroup.get_file_list') }}"
 
         if self.config.source.extra_options["file_source_config"]["file_prefix_filtering"]:
             return GCSObjectPrefixListExistenceSensor(
@@ -76,7 +77,8 @@ class GCSFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
 
     def delete_files(self, table_config, **kwargs):
         ti = kwargs["ti"]
-        files_to_load = ti.xcom_pull(key='loaded_files', task_ids='ftp_taskgroup.load_gcs_to_landing_zone')
+        table_name = table_config.table_name
+        files_to_load = ti.xcom_pull(key='loaded_files', task_ids=f'{table_name}.ftp_taskgroup.load_gcs_to_landing_zone')
         data_source = self.config.source
         bucket = data_source.extra_options["gcs_bucket"]
         gcs_hook = GCSHook()

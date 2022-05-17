@@ -105,7 +105,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
 
     def run_dataflow_job(self, template_path, system_name, table_name, query_schema, **kwargs):
         ti = kwargs['ti']
-        xcom_task_pickup = "dataflow_taskgroup.create_job_parameters"
+        xcom_task_pickup = f"{table_name}.dataflow_taskgroup.create_job_parameters"
 
         dataflow_default_options = ti.xcom_pull(key='dataflow_default_options', task_ids=xcom_task_pickup)
         parameters = ti.xcom_pull(key='parameters', task_ids=xcom_task_pickup)

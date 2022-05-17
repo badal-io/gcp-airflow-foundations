@@ -28,6 +28,8 @@ class ParseSchema(BaseOperator):
         self,
         *,
         schema_config,
+        ods_table_id: str,
+        hds_table_id: str="",
         column_mapping=None,
         column_casting=None,
         new_column_udfs=None,
@@ -43,7 +45,8 @@ class ParseSchema(BaseOperator):
         self.new_column_udfs = new_column_udfs
         self.data_source = data_source
         self.table_config = table_config
-
+        self.ods_table_id = ods_table_id,
+        self.hds_table_id = hds_table_id,
         self.ods_table_config = table_config.ods_config
         self.hds_table_config = table_config.hds_config
 
@@ -80,8 +83,12 @@ class ParseSchema(BaseOperator):
                 source_schema_fields.append({"name": column_name, "type": field["output_type"]})
 
         if self.ods_table_config:
+            logging.info("HELLO")
+            logging.info(self.table_config)
+            logging.info(self.ods_table_config)
+            logging.info(f"{self.data_source.dataset_data_name}.{self.ods_table_id[0]}")
             schema_xcom[
-                f"{self.data_source.dataset_data_name}.{self.ods_table_config.table_id}"
+                f"{self.data_source.dataset_data_name}.{self.ods_table_id[0]}"
             ] = parse_ods_schema(
                 schema_fields=source_schema_fields,
                 ods_metadata=self.ods_table_config.ods_metadata,
@@ -89,7 +96,7 @@ class ParseSchema(BaseOperator):
 
         if self.hds_table_config:
             schema_xcom[
-                f"{self.data_source.dataset_hds_override}.{self.hds_table_config.table_id}"
+                f"{self.data_source.dataset_hds_override}.{self.hds_table_id[0]}"
             ] = parse_hds_schema(
                 schema_fields=source_schema_fields,
                 hds_metadata=self.hds_table_config.hds_metadata,

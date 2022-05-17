@@ -79,7 +79,9 @@ class SourceConfig:
     version: int = 1
     sla_mins: int = 900
     dlp_config: DlpSourceConfig = None
-    regex_matching: bool = False
+    num_retries: int = 3
+    email_on_retry: bool = False
+    email_on_failure: bool = True
     connection: str = "google_cloud_default"
 
     @validator("name")

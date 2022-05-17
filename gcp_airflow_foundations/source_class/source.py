@@ -136,6 +136,9 @@ class DagBuilder(ABC):
         return {
             **self.default_task_args,
             "start_date": config.table_start_date(table_config),
+            "email_on_retry": config.source["email_on_retry"],
+            "email_on_failure": config.source["email_on_failure"]    ,
+            "retries": config.source["num_retries"]
         }
 
     def create_dag(self, table_config: SourceTableConfig):
@@ -143,13 +146,14 @@ class DagBuilder(ABC):
         table_default_task_args = self.default_task_args_for_table(
             self.config, table_config
         )
+
         logging.info(f"table_default_task_args {table_default_task_args}")
 
         kwargs = data_source.dag_args if data_source.dag_args else {}
 
         with DAG(
             dag_id=f"{data_source.name}.{table_config.table_name}",
-            description=f"{data_source.name} to BigQuery load for {table_config.table_name}",
+            description=f"{data_source.name} to BigQu   ery load for {table_config.table_name}",
             schedule_interval=data_source.ingest_schedule,
             default_args=table_default_task_args,
             catchup=data_source.catchup,
@@ -157,7 +161,9 @@ class DagBuilder(ABC):
             **kwargs,
         ) as dag:
 
-            self.create_dag_tasks(dag, data_source, table_config)
+            with TaskGroup(group_id=table_config.table_name) as table_task_group:
+                self.create_dag_tasks(dag, data_source, table_config)
+            table_task_group
             return dag
 
     def create_dag_source_level(self, template_config: SourceTemplateConfig, table_names):
@@ -180,11 +186,12 @@ class DagBuilder(ABC):
         ) as dag:
 
             for table in table_names:
-                template_config.table_name = table
-                template_config.landing_zone_table_name_override = \
-                    template_config.landing_zone_table_name_override_template.replace("{table}", table)
-                with TaskGroup(group_id=template_config.table_name) as table_task_group:
-                    self.create_dag_tasks(dag, data_source, template_config)
+                table_config = convert_template_to_table(template_config, table)
+                logging.info("TESTTEST")
+                logging.info(table_config.landing_zone_table_name_override)
+                logging.info(table_config.__dict__)
+                with TaskGroup(group_id=table) as table_task_group:
+                    self.create_dag_tasks(dag, data_source, table_config)
                 table_task_group
 
             return dag
