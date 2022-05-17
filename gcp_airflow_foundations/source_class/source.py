@@ -150,7 +150,7 @@ class DagBuilder(ABC):
 
         with DAG(
             dag_id=f"{data_source.name}.{table_config.table_name}",
-            description=f"{data_source.name} to BigQu   ery load for {table_config.table_name}",
+            description=f"{data_source.name} to BigQuery load for {table_config.table_name}",
             schedule_interval=data_source.ingest_schedule,
             default_args=table_default_task_args,
             catchup=data_source.catchup,
