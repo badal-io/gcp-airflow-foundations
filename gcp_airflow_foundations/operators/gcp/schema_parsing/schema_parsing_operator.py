@@ -83,10 +83,6 @@ class ParseSchema(BaseOperator):
                 source_schema_fields.append({"name": column_name, "type": field["output_type"]})
 
         if self.ods_table_config:
-            logging.info("HELLO")
-            logging.info(self.table_config)
-            logging.info(self.ods_table_config)
-            logging.info(f"{self.data_source.dataset_data_name}.{self.ods_table_id[0]}")
             schema_xcom[
                 f"{self.data_source.dataset_data_name}.{self.ods_table_id[0]}"
             ] = parse_ods_schema(
