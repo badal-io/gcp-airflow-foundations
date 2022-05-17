@@ -64,7 +64,6 @@ def load_builder(
         task_id="schema_parsing",
         schema_config=schema_config,
         ods_table_id=ods_table_id,
-        hds_table_id=hds_table_id,
         column_mapping=column_mapping,
         column_casting=column_casting,
         new_column_udfs=new_column_udfs,
