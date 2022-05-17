@@ -35,12 +35,11 @@ def convert_template_to_table(template_config: SourceTemplateConfig, table_name:
         "ods_config",
         "hds_config",
         "start_date",
-        "extra_options"
+        "extra_options"w
     ]
 
     for of in optional_fields:
         if hasattr(template_config, of):
-            logging.info("OMG")
             params[of] = getattr(template_config, of)
 
     return SourceTableConfig(**params)

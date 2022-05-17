@@ -37,9 +37,6 @@ class DagParser:
             logging.info(
                 f"StartDate for {config.source.name}: {config.source_start_date()}"
             )
-            x = config.source
-            logging.info("LOL")
-            logging.info(x.__dict__)
 
             default_task_args = {
                 "owner": config.source.owner,
