@@ -262,7 +262,6 @@ class GenericFileIngestionDagBuilder(DagBuilder):
         else:
             # gcs->bq operator else
             if file_source_config.file_prefix_filtering:
-                logging.info(files_to_load)
                 for i in range(len(files_to_load)):
                     matching_gcs_files = gcs_hook.list(bucket_name=bucket, prefix=files_to_load[i])
                     logging.info(matching_gcs_files)
@@ -270,9 +269,7 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                         raise AirflowException(f"There is more than one matching file with the prefix {files_to_load[i]} in the bucket {bucket}")
                     files_to_load[i] = matching_gcs_files[0]
             else:
-                logging.info(files_to_load)
-                files_to_load = [gcs_bucket_prefix + table_name + "/" + ds + "/" + f for f in files_to_load]
-                logging.info(files_to_load)
+                files_to_load = [f"{gcs_bucket_prefix}{table_name}/{ds}/" + f for f in files_to_load]
 
             schema_file_name = None
             if "schema_file" in table_config.extra_options.get("file_table_config"):
@@ -287,10 +284,8 @@ class GenericFileIngestionDagBuilder(DagBuilder):
                 if "prefix" in table_config.extra_options.get("file_table_config"):
                     prefix = table_config.extra_options.get("file_table_config")["prefix"]
                 prefix = destination_path_prefix + "/" + prefix
-                logging.info(destination_path_prefix)
                 # logging.info(destination_path_prefix + "/" + partition_prefix)
                 files_to_load = gcs_hook.list(bucket_name=bucket, prefix=prefix)
-                logging.info(files_to_load)
 
             # Get files to load from metadata file
             if schema_file_name:
