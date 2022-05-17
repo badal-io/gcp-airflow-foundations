@@ -187,9 +187,6 @@ class DagBuilder(ABC):
 
             for table in table_names:
                 table_config = convert_template_to_table(template_config, table)
-                logging.info("TESTTEST")
-                logging.info(table_config.landing_zone_table_name_override)
-                logging.info(table_config.__dict__)
                 with TaskGroup(group_id=table) as table_task_group:
                     self.create_dag_tasks(dag, data_source, table_config)
                 table_task_group
