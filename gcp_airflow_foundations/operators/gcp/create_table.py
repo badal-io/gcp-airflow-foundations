@@ -20,7 +20,6 @@ class CustomBigQueryCreateEmptyTableOperator(BigQueryCreateEmptyTableOperator):
         dataset_id: str,
         table_id: str,
         dag_table_id: str,
-        schema_task_id: Optional[str] = "schema_parsing",
         cluster_fields: Optional[List[str]] = None,
         time_partitioning: Optional[dict] = None,
         gcp_conn_id: str = "google_cloud_default",
