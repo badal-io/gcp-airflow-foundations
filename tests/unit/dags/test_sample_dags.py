@@ -8,7 +8,7 @@ from tests.unit.conftest import validate_linear_task_order, compare_deps
 
 def test_load_config(sample_dags):
     assert isinstance(sample_dags, dict)
-    assert len(sample_dags) == 8
+    assert len(sample_dags) == 7
 
 
 def test_start_date(gcs_dag):
