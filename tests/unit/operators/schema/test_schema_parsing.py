@@ -78,6 +78,8 @@ class TestParseSchema(unittest.TestCase):
         operator = ParseSchema(
             task_id=TASK_ID,
             schema_config=BQLandingZoneSchemaSourceConfig,
+            ods_table_id=f"{table_config.table_name}_ODS",
+            hds_table_id=f"{table_config.table_name}_HDS",
             column_mapping=None,
             data_source=source_config,
             table_config=table_config,

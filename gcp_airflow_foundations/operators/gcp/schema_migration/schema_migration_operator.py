@@ -42,6 +42,7 @@ class MigrateSchema(BaseOperator):
         *,
         dataset_id,
         table_id,
+        dag_table_id,
         project_id,
         new_schema_fields=None,
         gcp_conn_id="google_cloud_default",
@@ -54,6 +55,7 @@ class MigrateSchema(BaseOperator):
         self.project_id = project_id
         self.dataset_id = dataset_id
         self.table_id = table_id
+        self.dag_table_id = dag_table_id
         self.new_schema_fields = new_schema_fields
         self.gcp_conn_id = gcp_conn_id
         self.delegate_to = delegate_to
@@ -68,7 +70,7 @@ class MigrateSchema(BaseOperator):
     def execute(self, context):
         if not self.new_schema_fields:
             self.new_schema_fields = self.xcom_pull(
-                context=context, task_ids="schema_parsing"
+                context=context, task_ids=f"{self.dag_table_id}.schema_parsing"
             )[f"{self.dataset_id}.{self.table_id}"]
 
         (

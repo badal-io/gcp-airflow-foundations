@@ -48,6 +48,9 @@ class SourceConfig:
         hds_suffix : Suffix for HDS tables. Defaults to empty string.
         version : The Dag version. Can be incremented if logic changes
         sla_mins : Service Level Agreement (SLA) timeout minutes. This is is an expectation for the maximum time a Task should take.
+        num_retries: Number of retries for the DAG before failing - https://airflow.apache.org/docs/apache-airflow/stable/tutorial.html
+        email_on_retry: Whether the DAG should email on retries
+        email_on_failure: Whether the DAG should email on failure
         connection  : Aiflow Google Cloud Platform connection
 
     """
@@ -79,7 +82,9 @@ class SourceConfig:
     version: int = 1
     sla_mins: int = 900
     dlp_config: DlpSourceConfig = None
-    regex_matching: bool = False
+    num_retries: int = 3
+    email_on_retry: bool = False
+    email_on_failure: bool = True
     connection: str = "google_cloud_default"
 
     @validator("name")

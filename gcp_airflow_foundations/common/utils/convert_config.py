@@ -1,5 +1,6 @@
 from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
 from gcp_airflow_foundations.base_class.source_template_config import SourceTemplateConfig
+import logging
 
 
 def convert_template_to_table(template_config: SourceTemplateConfig, table_name: str):
@@ -32,8 +33,10 @@ def convert_template_to_table(template_config: SourceTemplateConfig, table_name:
         "cluster_fields",
         "column_casting",
         "new_column_udfs",
+        "ods_config",
         "hds_config",
-        "start_date"
+        "start_date",
+        "extra_options"
     ]
 
     for of in optional_fields:

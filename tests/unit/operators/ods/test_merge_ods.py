@@ -70,6 +70,7 @@ class TestMergeBigQueryODS(unittest.TestCase):
             project_id=TEST_GCP_PROJECT_ID,
             stg_table_name=TEST_STG_TABLE_ID,
             data_table_name=TEST_TABLE_ID,
+            dag_table_id=TEST_TABLE_ID,
             stg_dataset_name=TEST_DATASET,
             data_dataset_name=TEST_DATASET,
             columns=["column"],

@@ -103,6 +103,7 @@ class TestUpsertSnapshotHDS(unittest.TestCase):
             data_dataset_name=DATASET,
             stg_table_name=f"{TABLE_NAME}_2017-07-31",
             data_table_name=self.table_id,
+            dag_table_id=self.table_id,
             surrogate_keys=SURROGATE_KEYS,
             columns=SOURCE_TABLE_COLUMNS,
             column_mapping={column: column for column in SOURCE_TABLE_COLUMNS},

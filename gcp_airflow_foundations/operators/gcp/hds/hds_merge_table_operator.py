@@ -63,6 +63,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         project_id: str,
         stg_table_name: str,
         data_table_name: str,
+        dag_table_id: str,
         stg_dataset_name: str,
         data_dataset_name: str,
         surrogate_keys: [str],
@@ -91,6 +92,7 @@ class MergeBigQueryHDS(BigQueryOperator):
         self.project_id = project_id
         self.stg_table_name = stg_table_name
         self.data_table_name = data_table_name
+        self.dag_table_id = dag_table_id
         self.stg_dataset_name = stg_dataset_name
         self.data_dataset_name = data_dataset_name
         self.surrogate_keys = surrogate_keys
@@ -106,7 +108,7 @@ class MergeBigQueryHDS(BigQueryOperator):
     def pre_execute(self, context) -> None:
         if not self.columns:
             staging_columns = self.xcom_pull(
-                context=context, task_ids="schema_parsing"
+                context=context, task_ids=f"{self.dag_table_id}.schema_parsing"
             )["source_table_columns"]
         else:
             staging_columns = self.columns

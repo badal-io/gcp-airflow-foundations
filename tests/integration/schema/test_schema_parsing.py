@@ -131,13 +131,15 @@ class TestParseSchema(unittest.TestCase):
         source_config = self.config.source
         table_config = next((i for i in self.config.tables), None)
 
-        table_config.ods_config.table_id = f"{table_config.table_name}_ODS"
-        table_config.hds_config.table_id = f"{table_config.table_name}_HDS"
+        ods_table_id = f"{table_config.table_name}_ODS"
+        hds_table_id = f"{table_config.table_name}_HDS"
 
         operator = ParseSchema(
-            task_id=TASK_ID,
+            task_id="schema_parsing",
             schema_config=BQLandingZoneSchemaSourceConfig,
             column_mapping=None,
+            ods_table_id=ods_table_id,
+            hds_table_id=hds_table_id,
             data_source=source_config,
             table_config=table_config,
         )

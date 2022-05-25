@@ -2,6 +2,7 @@ from airflow.models import BaseOperator
 from airflow.models.dag import DAG
 from airflow.operators.dummy import DummyOperator
 from airflow.utils.trigger_rule import TriggerRule
+import logging
 
 from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
 from gcp_airflow_foundations.base_class.source_config import SourceConfig
@@ -54,11 +55,15 @@ def load_builder(
     ods_suffix = data_source.ods_suffix
     hds_suffix = data_source.hds_suffix
 
-    ods_table_config.table_id = f"{landing_zone_table_name_override}{ods_suffix}"
+    dag_table_id = table_config.table_name
+    ods_table_id = f"{landing_zone_table_name_override}{ods_suffix}"
+    if hds_table_config:
+        hds_table_id = f"{landing_zone_table_name_override}{hds_suffix}"
 
     parse_schema = ParseSchema(
         task_id="schema_parsing",
         schema_config=schema_config,
+        ods_table_id=ods_table_id,
         column_mapping=column_mapping,
         column_casting=column_casting,
         new_column_udfs=new_column_udfs,
@@ -69,7 +74,8 @@ def load_builder(
 
     ods_task_group = ods_builder(
         project_id=project_id,
-        table_id=ods_table_config.table_id,
+        table_id=ods_table_id,
+        dag_table_id=dag_table_id,
         dataset_id=dataset_id,
         landing_zone_dataset=landing_zone_dataset,
         landing_zone_table_name_override=landing_zone_table_name_override,
@@ -91,10 +97,11 @@ def load_builder(
 
         hds_task_group = hds_builder(
             project_id=project_id,
-            table_id=hds_table_config.table_id,
+            table_id=hds_table_id,
+            dag_table_id=dag_table_id,
             dataset_id=dataset_hds_id,
             landing_zone_dataset=dataset_id,
-            landing_zone_table_name_override=ods_table_config.table_id,
+            landing_zone_table_name_override=ods_table_id,
             surrogate_keys=surrogate_keys,
             column_mapping=column_mapping,
             column_casting=column_casting,
@@ -137,7 +144,7 @@ def load_builder(
             {
                 "datastore": "ods",
                 "project_id": project_id,
-                "table_id": ods_table_config.table_id,
+                "table_id": ods_table_id,
                 "dataset_id": dataset_id,
             }
         ]
@@ -146,7 +153,7 @@ def load_builder(
                 {
                     "datastore": "hds",
                     "project_id": project_id,
-                    "table_id": hds_table_config.table_id,
+                    "table_id": hds_table_id,
                     "dataset_id": dataset_hds_id,
                 }
             )

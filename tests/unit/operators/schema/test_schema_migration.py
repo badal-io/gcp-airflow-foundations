@@ -49,7 +49,7 @@ class TestMigrateSchema(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id="schema_parsing", dag=self.dag)
+        task = DummyOperator(task_id=f"{TEST_TABLE_ID}.schema_parsing", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
@@ -85,6 +85,7 @@ class TestMigrateSchema(unittest.TestCase):
             task_id=TASK_ID,
             dataset_id=TEST_DATASET,
             table_id=TEST_TABLE_ID,
+            dag_table_id=TEST_TABLE_ID,
             project_id=TEST_GCP_PROJECT_ID,
             new_schema_fields=None,
         )

@@ -27,6 +27,7 @@ from gcp_airflow_foundations.operators.gcp.create_dataset import CustomBigQueryC
 def hds_builder(
     project_id,
     table_id,
+    dag_table_id,
     dataset_id,
     landing_zone_dataset,
     landing_zone_table_name_override,
@@ -80,6 +81,7 @@ def hds_builder(
         project_id=project_id,
         dataset_id=dataset_id,
         table_id=table_id,
+        dag_table_id=dag_table_id,
         cluster_fields=cluster_fields,
         time_partitioning=time_partitioning,
         task_group=taskgroup,
@@ -91,6 +93,7 @@ def hds_builder(
         task_id="schema_migration",
         project_id=project_id,
         table_id=table_id,
+        dag_table_id=dag_table_id,
         dataset_id=dataset_id,
         task_group=taskgroup,
         dag=dag
@@ -104,6 +107,7 @@ def hds_builder(
         data_dataset_name=dataset_id,
         stg_table_name=landing_zone_table_name_override,
         data_table_name=table_id,
+        dag_table_id=dag_table_id,
         surrogate_keys=surrogate_keys,
         column_mapping=column_mapping,
         column_casting=column_casting,

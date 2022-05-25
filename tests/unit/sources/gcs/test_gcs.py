@@ -68,7 +68,7 @@ class TestGcs(unittest.TestCase):
                 file_sensor = gcs_dag_builder.file_sensor(table_config, task_group)
                 assert file_sensor is not None
                 assert file_sensor.bucket == "public-gcp-airflow-foundation-samples"
-                assert file_sensor.objects == "{{ ti.xcom_pull(key='file_list', task_ids='ftp_taskgroup.get_file_list') }}"
+                assert file_sensor.objects == "{{ ti.xcom_pull(key='file_list', task_ids='users.ftp_taskgroup.get_file_list') }}"
 
     def test_gcs_list_files_good(self):
         gcs_dag_builder = gcs_source.GCSFileIngestionDagBuilder(

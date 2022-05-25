@@ -143,6 +143,7 @@ class DagBuilder(ABC):
         table_default_task_args = self.default_task_args_for_table(
             self.config, table_config
         )
+
         logging.info(f"table_default_task_args {table_default_task_args}")
 
         kwargs = data_source.dag_args if data_source.dag_args else {}
@@ -157,7 +158,9 @@ class DagBuilder(ABC):
             **kwargs,
         ) as dag:
 
-            self.create_dag_tasks(dag, data_source, table_config)
+            with TaskGroup(group_id=table_config.table_name) as table_task_group:
+                self.create_dag_tasks(dag, data_source, table_config)
+            table_task_group
             return dag
 
     def create_dag_source_level(self, template_config: SourceTemplateConfig, table_names):
@@ -180,11 +183,9 @@ class DagBuilder(ABC):
         ) as dag:
 
             for table in table_names:
-                template_config.table_name = table
-                template_config.landing_zone_table_name_override = \
-                    template_config.landing_zone_table_name_override_template.replace("{table}", table)
-                with TaskGroup(group_id=template_config.table_name) as table_task_group:
-                    self.create_dag_tasks(dag, data_source, template_config)
+                table_config = convert_template_to_table(template_config, table)
+                with TaskGroup(group_id=table) as table_task_group:
+                    self.create_dag_tasks(dag, data_source, table_config)
                 table_task_group
 
             return dag

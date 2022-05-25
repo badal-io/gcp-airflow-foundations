@@ -121,6 +121,7 @@ class TestMigrateSchemaColumnAddition(unittest.TestCase):
             task_id="schema_migration",
             project_id=self.source_config.gcp_project,
             table_id=self.table_id,
+            dag_table_id=self.table_id,
             dataset_id=self.source_config.dataset_data_name,
             new_schema_fields=NEW_SCHEMA_FIELDS_ADDED_COLUMN,
         )
@@ -166,6 +167,7 @@ class TestMigrateSchemaDataTypeChangeValid(unittest.TestCase):
             task_id="schema_migration",
             project_id=self.source_config.gcp_project,
             table_id=self.table_id,
+            dag_table_id=self.table_id,
             dataset_id=self.source_config.dataset_data_name,
             new_schema_fields=NEW_SCHEMA_FIELDS_DATA_TYPE,
         )
@@ -211,6 +213,7 @@ class TestMigrateSchemaDataTypeChangeInvalid(unittest.TestCase):
             task_id="schema_migration",
             project_id=self.source_config.gcp_project,
             table_id=self.table_id,
+            dag_table_id=self.table_id,
             dataset_id=self.source_config.dataset_data_name,
             new_schema_fields=NEW_SCHEMA_FIELDS_DATA_TYPE_INVALID,
         )
