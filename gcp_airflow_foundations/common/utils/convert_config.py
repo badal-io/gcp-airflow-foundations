@@ -3,7 +3,7 @@ from gcp_airflow_foundations.base_class.source_template_config import SourceTemp
 import logging
 
 
-def convert_template_to_table(template_config: SourceTemplateConfig, table_name: str):
+def convert_template_to_table(template_config: SourceTemplateConfig, table_name: str, i: int):
 
     landing_zone_table_name_override = \
         template_config.landing_zone_table_name_override_template.replace("{table}", table_name)
@@ -36,11 +36,19 @@ def convert_template_to_table(template_config: SourceTemplateConfig, table_name:
         "ods_config",
         "hds_config",
         "start_date",
-        "extra_options"
     ]
 
     for of in optional_fields:
         if hasattr(template_config, of):
             params[of] = getattr(template_config, of)
 
+    template_extra_options = getattr(template_config, "extra_options")
+    table_extra_options = {}
+    for key, val in template_extra_options.items():
+        if key in template_config.iterable_options:
+            table_extra_options[key] = val[i]
+        else:
+            table_extra_options[key] = val
+    params["extra_options"] = table_extra_options 
+    
     return SourceTableConfig(**params)

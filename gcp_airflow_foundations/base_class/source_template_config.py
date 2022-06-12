@@ -41,6 +41,7 @@ class SourceTemplateConfig(SourceBaseConfig):
         column_casting : Mapping used to cast columns into a specific data type. Note column name uses that of the landing zone table.
         ods_config : ODS table configuration. See :class:`gcp_airflow_foundations.base_class.ods_table_config.OdsTableConfig`.
         hds_config : HDS table confidwguration. See :class:`gcp_airflow_foundations.base_class.hds_table_config.HdsTableConfig`.
+        iterable_options: list of config options within the source extra_options to iterate through for DAG creation.
         template_ingestion_options: Configuration for template-level ingestion.
         extra_options: Field for storing additional configuration options.
         start_date : Start date override for DAG
@@ -57,6 +58,7 @@ class SourceTemplateConfig(SourceBaseConfig):
     column_casting: Optional[dict]
     new_column_udfs: Optional[dict]
     hds_config: Optional[HdsTableConfig]
+    iterable_options: Optional[List]
     template_ingestion_options: TemplateIngestionOptionsConfig
     extra_options: dict = field(default_factory=dict)
     dest_table_override_template: Optional[str] = "{table}"

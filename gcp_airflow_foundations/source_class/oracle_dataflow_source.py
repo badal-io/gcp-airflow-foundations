@@ -38,6 +38,8 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
         destination_schema_table,
         query_schema,
         owner,
+        ingestion_type,
+        num_backtrack_days,
         **kwargs,
     ):
         #   1.  Generate SQL Query
@@ -59,9 +61,14 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
             logging.info(casted_columns)
 
             #    c. get query
-            query = oracle_helpers.get_query_for_oracle_load_full(
-                table_name, casted_columns, owner
-            )
+            if ingestion_type == "FULL":
+                query = oracle_helpers.get_query_for_oracle_load_full(
+                    table_name, casted_columns, owner
+                )
+            else:
+                query = oracle_helpers.get_query_for_oracle_load_incremental(
+                    table_name, casted_columns, config_params["date_column"], owner, kwargs["ds"], num_backtrack_days
+                )
             logging.info(query)
 
         else:

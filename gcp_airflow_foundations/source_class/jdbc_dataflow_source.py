@@ -42,6 +42,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         destination_table = f"{gcp_project}:{landing_dataset}.{table_name}"
         destination_schema_table = f"{gcp_project}.{landing_dataset}.{schema_table}"
 
+        ingestion_type = table_config.ingestion_type
+
         table_type_casts = data_source.extra_options["dataflow_job_config"]["table_type_casts"]
 
         taskgroup = dataflow_taskgroup_builder(
@@ -55,7 +57,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             run_dataflow_job=self.run_dataflow_job,
             create_table=self.create_table,
             ingest_metadata=ingest_metadata,
-            table_type_casts=table_type_casts
+            table_type_casts=table_type_casts,
+            ingestion_type=ingestion_type
         )
 
         return taskgroup

@@ -16,7 +16,9 @@ def dataflow_taskgroup_builder(
     run_dataflow_job,
     create_table,
     ingest_metadata,
-    table_type_casts
+    table_type_casts,
+    ingestion_type,
+    num_backtrack_days
 ) -> TaskGroup:
 
     """
@@ -35,7 +37,9 @@ def dataflow_taskgroup_builder(
                    "destination_table": destination_table,
                    "destination_schema_table": destination_schema_table,
                    "query_schema": query_schema,
-                   "owner": dataflow_job_params["database_owner"]},
+                   "owner": dataflow_job_params["database_owner"],
+                   "ingestion_type": ingestion_type,
+                   "num_backtrack_days": num_backtrack_days},
         python_callable=create_job_params,
         task_group=taskgroup,
     )
