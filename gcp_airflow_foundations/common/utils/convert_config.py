@@ -43,12 +43,16 @@ def convert_template_to_table(template_config: SourceTemplateConfig, table_name:
             params[of] = getattr(template_config, of)
 
     template_extra_options = getattr(template_config, "extra_options")
-    table_extra_options = {}
-    for key, val in template_extra_options.items():
-        if key in template_config.iterable_options:
-            table_extra_options[key] = val[i]
-        else:
-            table_extra_options[key] = val
-    params["extra_options"] = table_extra_options 
+    table_extra_options  = {}
+    for config_option_name, _ in template_extra_options.items():
+        config_options = template_extra_options[config_option_name]
+        table_config_options = {}
+        for key, val in config_options.items():
+            if key in template_config.iterable_options:
+                table_config_options[key] = val[i]
+            else:
+                table_config_options[key] = val
+        table_extra_options[config_option_name] = table_config_options
+    params["extra_options"] = table_extra_options
     
     return SourceTableConfig(**params)

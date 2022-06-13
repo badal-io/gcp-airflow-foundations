@@ -8,6 +8,7 @@ from airflow.sensors.external_task import ExternalTaskSensor
 def dataflow_taskgroup_builder(
     query_schema,
     dataflow_job_params,
+    dataflow_table_params,
     destination_table,
     destination_schema_table,
     table_name,
@@ -17,8 +18,7 @@ def dataflow_taskgroup_builder(
     create_table,
     ingest_metadata,
     table_type_casts,
-    ingestion_type,
-    num_backtrack_days
+    ingestion_type
 ) -> TaskGroup:
 
     """
@@ -39,7 +39,7 @@ def dataflow_taskgroup_builder(
                    "query_schema": query_schema,
                    "owner": dataflow_job_params["database_owner"],
                    "ingestion_type": ingestion_type,
-                   "num_backtrack_days": num_backtrack_days},
+                   "table_params": dataflow_table_params},
         python_callable=create_job_params,
         task_group=taskgroup,
     )

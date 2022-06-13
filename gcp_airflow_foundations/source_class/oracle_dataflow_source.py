@@ -39,7 +39,7 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
         query_schema,
         owner,
         ingestion_type,
-        num_backtrack_days,
+        table_params,
         **kwargs,
     ):
         #   1.  Generate SQL Query
@@ -67,7 +67,7 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
                 )
             else:
                 query = oracle_helpers.get_query_for_oracle_load_incremental(
-                    table_name, casted_columns, config_params["date_column"], owner, kwargs["ds"], num_backtrack_days
+                    table_name, casted_columns, table_params["date_column"], owner, kwargs["ds"], table_params["num_backtrack_days"]
                 )
             logging.info(query)
 
