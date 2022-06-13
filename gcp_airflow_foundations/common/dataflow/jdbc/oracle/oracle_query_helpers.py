@@ -12,6 +12,7 @@ def get_query_for_oracle_load_full(table_name, columns, owner):
 
     return f"select {select_cols} from {owner}.{table_name}"
 
+
 def get_query_for_oracle_load_incremental(table_name, columns, date_column, owner, ds, num_backtrack_days=1):
     """
     JDBC query for full ingestion of one table
