@@ -1,25 +1,11 @@
-from typing import Optional
-
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.contrib.operators.bigquery_operator import (
-    BigQueryOperator,
-    BigQueryCreateEmptyTableOperator,
-)
 
 from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
-
-from airflow.exceptions import AirflowException
 
 import logging
 
-from gcp_airflow_foundations.common.gcp.source_schema.gcs import read_schema_from_gcs
 from gcp_airflow_foundations.common.gcp.ods.schema_utils import parse_ods_schema
 from gcp_airflow_foundations.common.gcp.hds.schema_utils import parse_hds_schema
-
-
-from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
-from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 
 
 class ParseSchema(BaseOperator):
@@ -45,8 +31,8 @@ class ParseSchema(BaseOperator):
         self.new_column_udfs = new_column_udfs
         self.data_source = data_source
         self.table_config = table_config
-        self.ods_table_id = ods_table_id,
-        self.hds_table_id = hds_table_id,
+        self.ods_table_id = (ods_table_id,)
+        self.hds_table_id = (hds_table_id,)
         self.ods_table_config = table_config.ods_config
         self.hds_table_config = table_config.hds_config
 
@@ -80,7 +66,9 @@ class ParseSchema(BaseOperator):
             column_names = list(self.new_column_udfs.keys())
             for column_name in column_names:
                 field = self.new_column_udfs[column_name]
-                source_schema_fields.append({"name": column_name, "type": field["output_type"]})
+                source_schema_fields.append(
+                    {"name": column_name, "type": field["output_type"]}
+                )
 
         if self.ods_table_config:
             schema_xcom[

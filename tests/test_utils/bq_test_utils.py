@@ -1,5 +1,3 @@
-from google.cloud import bigquery
-from google.cloud.bigquery import SchemaField
 import pandas
 from time import sleep
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook

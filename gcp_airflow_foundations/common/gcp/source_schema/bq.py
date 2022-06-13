@@ -1,6 +1,3 @@
-import json
-import logging
-
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 
@@ -18,6 +15,8 @@ def read_schema_from_bq(
 
     bq_hook = BigQueryHook(bigquery_conn_id=bigquery_conn_id, delegate_to=None)
 
-    schema = bq_hook.get_schema(dataset_id=dataset_id, table_id=table_id, project_id=project_id)
+    schema = bq_hook.get_schema(
+        dataset_id=dataset_id, table_id=table_id, project_id=project_id
+    )
 
     return schema["fields"]
