@@ -1,5 +1,5 @@
 source:
-  name: GCSTemplatedSource
+  name: GCSTemplatedSourceFull
   source_type: GCS
   ingest_schedule: "@daily"
   start_date: "2022-01-03"
