@@ -99,7 +99,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                     create_job_params=self.create_job_params,
                     run_dataflow_job=self.run_dataflow_job,
                     create_table=self.create_table,
-                    ingest_metadata=ingest_metadata,  
+                    ingest_metadata=ingest_metadata,
                     table_type_casts={},
                     ingestion_type="FULL",
                     num_backtrack_days=1
