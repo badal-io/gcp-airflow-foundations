@@ -1,14 +1,12 @@
 from typing import Optional
 from datetime import datetime
 
-from airflow.models import BaseOperator, BaseOperatorLink
 from airflow.contrib.operators.bigquery_operator import (
     BigQueryOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
 from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
@@ -171,9 +169,7 @@ class MergeBigQueryHDS(BigQueryOperator):
 
             self.write_disposition = "WRITE_TRUNCATE"
             self.create_disposition = "CREATE_IF_NEEDED"
-            self.destination_dataset_table = (
-                f"{self.project_id}.{self.data_dataset_name}.{self.data_table_name}${partition_id}"
-            )
+            self.destination_dataset_table = f"{self.project_id}.{self.data_dataset_name}.{self.data_table_name}${partition_id}"
 
         elif self.hds_table_config.hds_table_type == HdsTableType.SCD2:
             sql = sql_helper.create_scd2_sql_with_hash(

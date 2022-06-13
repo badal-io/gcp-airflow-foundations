@@ -1,9 +1,8 @@
 import pandas as pd
-import json
 import pyarrow.parquet as pq
 import pyarrow
 
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.utils.decorators import apply_defaults
 
 from google.cloud import bigquery

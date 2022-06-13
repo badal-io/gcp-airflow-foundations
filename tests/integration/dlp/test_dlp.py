@@ -7,7 +7,6 @@ from airflow.utils.state import State
 from airflow.utils.types import DagRunType
 from bq_test_utils import insert_to_bq_from_dict
 from datetime import datetime
-from google.cloud import bigquery
 from pytest_testconfig import config
 from test_utils import cleanup_xcom, clear_db_dags
 

@@ -13,7 +13,7 @@ from gcp_airflow_foundations.operators.facebook.hooks.ads import (
 from gcp_airflow_foundations.enums.facebook import AccountLookupScope, ApiObject
 
 from airflow.models import BaseOperator, Variable
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from google.cloud import bigquery
 
