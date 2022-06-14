@@ -1,5 +1,5 @@
 source:
-  name: GCSTemplatedIngestAllSource
+  name: GCSTemplatedSourceIncremental
   source_type: GCS
   ingest_schedule: "@daily"
   start_date: "2022-01-03"
@@ -31,13 +31,15 @@ tables:
         directory_prefix: ""
         allow_quoted_newlines: True
 templates:
-  - ingestion_type: FULL
+  - ingestion_type: INCREMENTAL
     surrogate_keys: {}
     extra_options:
       file_table_config:
-        directory_prefix: ""
+        directory_prefix: [""]
         allow_quoted_newlines: True
+    iterable_options: ["directory_prefix"]
     template_ingestion_options:
       ingestion_name: "TEST"
-      ingest_mode: "INGEST_ALL"
+      table_names: ["test_table_incremental"]
+      ingest_mode: "INGEST_BY_TABLE_NAMES"
       dag_creation_mode: "SOURCE"

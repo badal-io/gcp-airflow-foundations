@@ -37,8 +37,9 @@ templates:
       file_table_config:
         directory_prefix: ""
         allow_quoted_newlines: True
+    iterable_options: []
     template_ingestion_options:
       ingestion_name: "TEST"
-      table_names: ["test_table"]
+      table_names: ["test_table_full"]
       ingest_mode: "INGEST_BY_TABLE_NAMES"
       dag_creation_mode: "SOURCE"

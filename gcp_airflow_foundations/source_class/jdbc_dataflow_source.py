@@ -102,7 +102,6 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                     ingest_metadata=ingest_metadata,
                     table_type_casts={},
                     ingestion_type="FULL",
-                    num_backtrack_days=1
                 )
                 taskgroup.dag = schema_dag
 
