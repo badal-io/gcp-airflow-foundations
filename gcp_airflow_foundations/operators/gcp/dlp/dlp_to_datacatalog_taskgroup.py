@@ -34,6 +34,7 @@ def schedule_dlp_to_datacatalog_taskgroup(
     project_id: str,
     table_id: str,
     dataset_id: str,
+    location: str,
     table_dlp_config: DlpTableConfig,
     next_task: BaseOperator,
     dag,
@@ -52,6 +53,7 @@ def schedule_dlp_to_datacatalog_taskgroup(
         project_id=project_id,
         table_id=table_id,
         dataset_id=dataset_id,
+        location=location,
         table_dlp_config=table_dlp_config,
         next_task=next_task,
         dag=dag,
@@ -72,7 +74,11 @@ def schedule_dlp_to_datacatalog_taskgroup(
 
 
 def schedule_dlp_to_datacatalog_taskgroup_multiple_tables(
-    table_configs: list, table_dlp_config: DlpTableConfig, next_task: BaseOperator, dag
+    table_configs: list,
+    table_dlp_config: DlpTableConfig,
+    location: str,
+    next_task: BaseOperator,
+    dag,
 ):
     """
     Check if DLP should run, and run it on multiple tables
@@ -88,6 +94,7 @@ def schedule_dlp_to_datacatalog_taskgroup_multiple_tables(
     for table_config in table_configs:
         dlp_task = dlp_to_datacatalog_builder(
             taskgroup=taskgroup,
+            location=location,
             datastore=table_config["datastore"],
             project_id=table_config["project_id"],
             table_id=table_config["table_id"],
@@ -125,6 +132,7 @@ def dlp_to_datacatalog_builder(
     project_id: str,
     table_id: str,
     dataset_id: str,
+    location: str,
     table_dlp_config: DlpTableConfig,
     next_task: BaseOperator,
     dag,
@@ -181,6 +189,7 @@ def dlp_to_datacatalog_builder(
         project_id=dlp_results_table_ref.project,
         dataset_id=dlp_results_table_ref.dataset_id,
         table_id=dlp_results_table_ref.table_id,
+        location=location,
         do_xcom_push=True,
         min_match_count=table_dlp_config.get_min_match_count(),
         task_group=taskgroup,

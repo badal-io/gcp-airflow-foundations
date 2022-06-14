@@ -147,6 +147,7 @@ class TestDlp(unittest.TestCase):
             table_id=target_table_id,
             dataset_id=dataset_id,
             table_dlp_config=dlp_table_config,
+            location=config["gcp"]["location"],
             next_task=done,
             dag=dag,
         )
