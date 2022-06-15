@@ -94,6 +94,7 @@ def test_gcs_templated_tasks_full(gcs_templated_source_level_dag_full):
         ],
     )
 
+
 def test_gcs_templated_tasks_incremental(gcs_templated_source_level_dag_incremental):
     """Check tasks"""
 
@@ -113,8 +114,9 @@ def test_gcs_templated_tasks_incremental(gcs_templated_source_level_dag_incremen
         ],
     )
 
+
 def test_gcs_tasks_with_dlp(gcs_dlp_dag):
-    """Check  ODS DLP tasls"""  
+    """Check  ODS DLP tasls"""
 
     validate_linear_task_order(
         gcs_dlp_dag,
@@ -187,6 +189,7 @@ def gcs_dag(sample_dags):
 @pytest.fixture(scope="session")
 def gcs_templated_source_level_dag_full(sample_dags):
     return sample_dags["dags:source:GCSTemplatedSourceFull.GCSTemplatedSourceFull.TEST"]
+
 
 @pytest.fixture(scope="session")
 def gcs_templated_source_level_dag_incremental(sample_dags):
