@@ -14,7 +14,7 @@ class TestConvertConfig(unittest.TestCase):
         mock_template_config.iterable_options = []
         self.convert_config = convert_template_extra_options
 
-    def test_full_sql(self):
+    def test_convert_config(self):
         assert (
             self.convert_config(self.mock_template_config, 0)
             == {"test_param_1": "TEST_VAL_1", "test_param_2": "TEST"}
