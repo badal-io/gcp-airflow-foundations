@@ -8,7 +8,7 @@ from tests.unit.conftest import validate_linear_task_order, compare_deps
 
 def test_load_config(sample_dags):
     assert isinstance(sample_dags, dict)
-    assert len(sample_dags) == 9
+    assert len(sample_dags) == 7
 
 
 def test_start_date(gcs_dag):
@@ -194,11 +194,6 @@ def gcs_templated_source_level_dag_full(sample_dags):
 @pytest.fixture(scope="session")
 def gcs_templated_source_level_dag_incremental(sample_dags):
     return sample_dags["dags:source:GCSTemplatedSourceIncremental.GCSTemplatedSourceIncremental.TEST"]
-
-
-@pytest.fixture(scope="session")
-def gcs_templated_source_level_two_table_dag(sample_dags):
-    return sample_dags["dags:source:GCSTemplatedSource.GCSTemplatedSource.TWOTABLETEST"]
 
 
 @pytest.fixture(scope="session")
