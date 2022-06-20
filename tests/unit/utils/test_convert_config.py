@@ -10,7 +10,17 @@ from gcp_airflow_foundations.base_class.source_template_config import SourceTemp
 
 class TestConvertConfig(unittest.TestCase):
     def setUp(self):
-        mock_template_config = SourceTemplateConfig()
+        mock_template_config = SourceTemplateConfig(
+            start_date="",
+            ingestion_type="FULL",
+            surrogate_keys={},
+            column_mapping={},
+            cluster_fields=[],
+            column_casting={},
+            new_column_udfs={},
+            hds_config=None,
+            template_ingestion_options=None
+        )
         mock_template_config.extra_options = {"test_config_1": {"test_param_1": ["TEST_VAL_1", "TEST_VAL_2"], "test_param_2": "TEST"}}
         mock_template_config.iterable_options = ["test_param_1"]
         self.convert_config = convert_template_extra_options
