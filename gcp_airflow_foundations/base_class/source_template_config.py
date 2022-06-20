@@ -60,7 +60,7 @@ class SourceTemplateConfig(SourceBaseConfig):
     hds_config: Optional[HdsTableConfig]
     template_ingestion_options: TemplateIngestionOptionsConfig
     extra_options: dict = field(default_factory=dict)
-    iterable_options: Optional[List] = []
+    iterable_options: list = field(default_factory=list)
     dest_table_override_template: Optional[str] = "{table}"
     landing_zone_table_name_override_template: Optional[str] = "{table}"
     start_date_tz: Optional[str] = "EST"
