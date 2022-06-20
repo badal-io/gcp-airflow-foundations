@@ -23,6 +23,7 @@ class TestConvertConfig(unittest.TestCase):
         )
         mock_template_config.extra_options = {"test_config_1": {"test_param_1": ["TEST_VAL_1", "TEST_VAL_2"], "test_param_2": "TEST"}}
         mock_template_config.iterable_options = ["test_param_1"]
+        self.mock_template_config = mock_template_config
         self.convert_config = convert_template_extra_options
 
     def test_convert_config(self):
