@@ -41,6 +41,7 @@ class SourceTemplateConfig(SourceBaseConfig):
         column_casting : Mapping used to cast columns into a specific data type. Note column name uses that of the landing zone table.
         ods_config : ODS table configuration. See :class:`gcp_airflow_foundations.base_class.ods_table_config.OdsTableConfig`.
         hds_config : HDS table confidwguration. See :class:`gcp_airflow_foundations.base_class.hds_table_config.HdsTableConfig`.
+        iterable_options: list of config options within the source extra_options to iterate through for DAG creation.
         template_ingestion_options: Configuration for template-level ingestion.
         extra_options: Field for storing additional configuration options.
         start_date : Start date override for DAG
@@ -59,6 +60,7 @@ class SourceTemplateConfig(SourceBaseConfig):
     hds_config: Optional[HdsTableConfig]
     template_ingestion_options: TemplateIngestionOptionsConfig
     extra_options: dict = field(default_factory=dict)
+    iterable_options: list = field(default_factory=list)
     dest_table_override_template: Optional[str] = "{table}"
     landing_zone_table_name_override_template: Optional[str] = "{table}"
     start_date_tz: Optional[str] = "EST"
@@ -81,6 +83,9 @@ class SourceTemplateConfig(SourceBaseConfig):
         if self.dest_table_override_template is None:
             self.dest_table_override_template = "{table}"
 
+        if self.iterable_options is None:
+            self.iterable_options = []
+
     @root_validator(pre=True)
     def valid_template_ingestion_options(cls, values):
         if "template_ingestion_options" in values:
@@ -100,5 +105,17 @@ class SourceTemplateConfig(SourceBaseConfig):
                 assert (
                     re.compile(options["regex_pattern"])
                 ), "If ingest_mode is set to 'INGEST_BY_REGEX', the regex_pattern should be a valid regex pattern"
+
+            return values
+
+    @root_validator(pre=True)
+    def valid_iterable_options(cls, values):
+        if "iterable_options" in values:
+            iterable_options = values["iterable_options"]
+            if iterable_options == []:
+                table_names = values["template_ingestion_options"]["table_names"]
+                assert (
+                    not table_names == []
+                ), "table_names should be explicitly provided for a template if using iterable_options"
 
             return values

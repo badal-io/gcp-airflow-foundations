@@ -8,7 +8,7 @@ from tests.unit.conftest import validate_linear_task_order, compare_deps
 
 def test_load_config(sample_dags):
     assert isinstance(sample_dags, dict)
-    assert len(sample_dags) == 8
+    assert len(sample_dags) == 7
 
 
 def test_start_date(gcs_dag):
@@ -39,58 +39,42 @@ def test_gcs_tasks(gcs_dag):
     )
 
 
-def test_gcs_templated_tasks_multiple_tables(gcs_templated_source_level_two_table_dag):
+def test_gcs_templated_tasks_full(gcs_templated_source_level_dag_full):
     """Check tasks"""
 
     validate_linear_task_order(
-        gcs_templated_source_level_two_table_dag,
+        gcs_templated_source_level_dag_full,
         [
-            "test_table1.ftp_taskgroup.get_file_list",
-            "test_table1.ftp_taskgroup.wait_for_files_to_ingest",
-            "test_table1.ftp_taskgroup.load_gcs_to_landing_zone",
-            "test_table1.schema_parsing",
-            "test_table1.create_ods_merge_taskgroup.create_ods_dataset",
-            "test_table1.create_ods_merge_taskgroup.create_ods_table",
-            "test_table1.create_ods_merge_taskgroup.schema_migration",
-            "test_table1.create_ods_merge_taskgroup.upsert_test_table1",
-            "test_table1.delete_staging_table",
-            "test_table1.done",
-        ],
-    )
-
-    validate_linear_task_order(
-        gcs_templated_source_level_two_table_dag,
-        [
-            "test_table2.ftp_taskgroup.get_file_list",
-            "test_table2.ftp_taskgroup.wait_for_files_to_ingest",
-            "test_table2.ftp_taskgroup.load_gcs_to_landing_zone",
-            "test_table2.schema_parsing",
-            "test_table2.create_ods_merge_taskgroup.create_ods_dataset",
-            "test_table2.create_ods_merge_taskgroup.create_ods_table",
-            "test_table2.create_ods_merge_taskgroup.schema_migration",
-            "test_table2.create_ods_merge_taskgroup.upsert_test_table2",
-            "test_table2.delete_staging_table",
-            "test_table2.done",
+            "test_table_full.ftp_taskgroup.get_file_list",
+            "test_table_full.ftp_taskgroup.wait_for_files_to_ingest",
+            "test_table_full.ftp_taskgroup.load_gcs_to_landing_zone",
+            "test_table_full.schema_parsing",
+            "test_table_full.create_ods_merge_taskgroup.create_ods_dataset",
+            "test_table_full.create_ods_merge_taskgroup.create_ods_table",
+            "test_table_full.create_ods_merge_taskgroup.schema_migration",
+            "test_table_full.create_ods_merge_taskgroup.upsert_test_table_full",
+            "test_table_full.delete_staging_table",
+            "test_table_full.done",
         ],
     )
 
 
-def test_gcs_templated_tasks(gcs_templated_source_level_dag):
+def test_gcs_templated_tasks_incremental(gcs_templated_source_level_dag_incremental):
     """Check tasks"""
 
     validate_linear_task_order(
-        gcs_templated_source_level_dag,
+        gcs_templated_source_level_dag_incremental,
         [
-            "test_table.ftp_taskgroup.get_file_list",
-            "test_table.ftp_taskgroup.wait_for_files_to_ingest",
-            "test_table.ftp_taskgroup.load_gcs_to_landing_zone",
-            "test_table.schema_parsing",
-            "test_table.create_ods_merge_taskgroup.create_ods_dataset",
-            "test_table.create_ods_merge_taskgroup.create_ods_table",
-            "test_table.create_ods_merge_taskgroup.schema_migration",
-            "test_table.create_ods_merge_taskgroup.upsert_test_table",
-            "test_table.delete_staging_table",
-            "test_table.done",
+            "test_table_incremental.ftp_taskgroup.get_file_list",
+            "test_table_incremental.ftp_taskgroup.wait_for_files_to_ingest",
+            "test_table_incremental.ftp_taskgroup.load_gcs_to_landing_zone",
+            "test_table_incremental.schema_parsing",
+            "test_table_incremental.create_ods_merge_taskgroup.create_ods_dataset",
+            "test_table_incremental.create_ods_merge_taskgroup.create_ods_table",
+            "test_table_incremental.create_ods_merge_taskgroup.schema_migration",
+            "test_table_incremental.create_ods_merge_taskgroup.upsert_test_table_incremental",
+            "test_table_incremental.delete_staging_table",
+            "test_table_incremental.done",
         ],
     )
 
@@ -167,13 +151,13 @@ def gcs_dag(sample_dags):
 
 
 @pytest.fixture(scope="session")
-def gcs_templated_source_level_dag(sample_dags):
-    return sample_dags["dags:source:GCSTemplatedSource.GCSTemplatedSource.TEST"]
+def gcs_templated_source_level_dag_full(sample_dags):
+    return sample_dags["dags:source:GCSTemplatedSourceFull.GCSTemplatedSourceFull.TEST"]
 
 
 @pytest.fixture(scope="session")
-def gcs_templated_source_level_two_table_dag(sample_dags):
-    return sample_dags["dags:source:GCSTemplatedSource.GCSTemplatedSource.TWOTABLETEST"]
+def gcs_templated_source_level_dag_incremental(sample_dags):
+    return sample_dags["dags:source:GCSTemplatedSourceIncremental.GCSTemplatedSourceIncremental.TEST"]
 
 
 @pytest.fixture(scope="session")

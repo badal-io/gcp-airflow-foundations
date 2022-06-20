@@ -182,9 +182,9 @@ class DagBuilder(ABC):
             **kwargs,
         ) as dag:
 
-            for table in table_names:
-                table_config = convert_template_to_table(template_config, table)
-                with TaskGroup(group_id=table) as table_task_group:
+            for i in range(len(table_names)):
+                table_config = convert_template_to_table(template_config, table_names[i], i)
+                with TaskGroup(group_id=table_names[i]) as table_task_group:
                     self.create_dag_tasks(dag, data_source, table_config)
                 table_task_group
 

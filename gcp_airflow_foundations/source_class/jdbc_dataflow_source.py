@@ -36,17 +36,21 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
 
         # Table level parameters
         dataflow_job_params = data_source.extra_options["dataflow_job_config"]
+        dataflow_table_params = table_config.extra_options["dataflow_table_config"]
         schema_table = dataflow_job_params["bq_schema_table"]
         ingest_metadata = dataflow_job_params["ingest_metadata"]
         table_name = table_config.landing_zone_table_name_override
         destination_table = f"{gcp_project}:{landing_dataset}.{table_name}"
         destination_schema_table = f"{gcp_project}.{landing_dataset}.{schema_table}"
 
+        ingestion_type = table_config.ingestion_type
+
         table_type_casts = data_source.extra_options["dataflow_job_config"]["table_type_casts"]
 
         taskgroup = dataflow_taskgroup_builder(
             query_schema=False,
             dataflow_job_params=dataflow_job_params,
+            dataflow_table_params=dataflow_table_params,
             destination_table=destination_table,
             destination_schema_table=destination_schema_table,
             table_name=table_name,
@@ -55,7 +59,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             run_dataflow_job=self.run_dataflow_job,
             create_table=self.create_table,
             ingest_metadata=ingest_metadata,
-            table_type_casts=table_type_casts
+            table_type_casts=table_type_casts,
+            ingestion_type=ingestion_type
         )
 
         return taskgroup
@@ -95,7 +100,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
                     run_dataflow_job=self.run_dataflow_job,
                     create_table=self.create_table,
                     ingest_metadata=ingest_metadata,
-                    table_type_casts={}
+                    table_type_casts={},
+                    ingestion_type="FULL",
                 )
                 taskgroup.dag = schema_dag
 

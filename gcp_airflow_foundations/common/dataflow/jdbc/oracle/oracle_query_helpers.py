@@ -13,10 +13,27 @@ def get_query_for_oracle_load_full(table_name, columns, owner):
     return f"select {select_cols} from {owner}.{table_name}"
 
 
+def get_query_for_oracle_load_incremental(table_name, columns, date_column, owner, ds, num_backtrack_days=1):
+    """
+    JDBC query for full ingestion of one table
+    """
+
+    logging.info(f"BUILDING INCREMENTAL QUERY for {table_name}")
+
+    select_cols = ",".join(str(x) for x in columns)
+
+    if num_backtrack_days == 1:
+        where_clause = f"where {date_column} = to_date('{ds}', 'YYYY-MM-DD')"
+    else:
+        where_clause = f"where {date_column} = to_date('{ds}', 'YYYY-MM-DD')- {num_backtrack_days - 1}"
+
+    return f'select {select_cols} from {owner}.{table_name} {where_clause}'
+
+
 def convert_schema_to_json(lists, labels):
     """
     Input:
-        lists: non-empty list of n lists each of length x
+        lists: non-empty list of n lists each of length x   2
         labels: list of strings of length n
     Output:
         list of x dictionaries with n entries, each row corresponding
