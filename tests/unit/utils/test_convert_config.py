@@ -29,9 +29,9 @@ class TestConvertConfig(unittest.TestCase):
     def test_convert_config(self):
         assert (
             self.convert_config(self.mock_template_config, 0)
-            == {"test_param_1": "TEST_VAL_1", "test_param_2": "TEST"}
+            == {'test_config_1': {'test_param_1': 'TEST_VAL_1', 'test_param_2': 'TEST'}}
         )
         assert (
             self.convert_config(self.mock_template_config, 1)
-            == {"test_param_1": "TEST_VAL_2", "test_param_2": "TEST"}
+            == {'test_config_1': {'test_param_1': 'TEST_VAL_2', 'test_param_2': 'TEST'}}
         )
