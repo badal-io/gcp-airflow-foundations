@@ -82,7 +82,7 @@ class SourceTemplateConfig(SourceBaseConfig):
 
         if self.dest_table_override_template is None:
             self.dest_table_override_template = "{table}"
-        
+
         if self.iterable_options is None:
             self.iterable_options = []
 

@@ -7,6 +7,7 @@ from gcp_airflow_foundations.common.utils.convert_config import (
 )
 from gcp_airflow_foundations.base_class.source_template_config import SourceTemplateConfig
 
+
 class TestConvertConfig(unittest.TestCase):
     def setUp(self):
         mock_template_config = SourceTemplateConfig()
