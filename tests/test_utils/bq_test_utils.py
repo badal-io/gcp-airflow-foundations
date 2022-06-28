@@ -1,8 +1,6 @@
-from google.cloud import bigquery
-from google.cloud.bigquery import SchemaField
 import pandas
 from time import sleep
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 
 def insert_to_bq_from_csv(csv, project_id, dataset_id, table_id):

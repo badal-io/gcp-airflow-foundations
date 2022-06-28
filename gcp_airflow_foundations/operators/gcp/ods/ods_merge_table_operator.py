@@ -1,14 +1,11 @@
 from typing import Optional
-from datetime import datetime
 
-from airflow.models import BaseOperator, BaseOperatorLink
 from airflow.contrib.operators.bigquery_operator import (
     BigQueryOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
 from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 from airflow.exceptions import AirflowException
 

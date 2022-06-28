@@ -18,6 +18,8 @@ class DlpBQInspectionResultsOperator(BaseOperator):
     :type dataset_id: str
     :param min_match_count: Minimum number of findings per column/likelihood level pair
     :type min_match_count: int
+    :param location: Location of the source dataset
+    :type dataset_id: str
     """
 
     @apply_defaults
@@ -27,6 +29,7 @@ class DlpBQInspectionResultsOperator(BaseOperator):
         dataset_id,
         table_id,
         project_id,
+        location,
         min_match_count=0,
         do_xcom_push=True,
         gcp_conn_id="google_cloud_default",
@@ -44,6 +47,7 @@ class DlpBQInspectionResultsOperator(BaseOperator):
             gcp_conn_id=gcp_conn_id,
             use_legacy_sql=False,
             impersonation_chain=impersonation_chain,
+            location=location,
         )
         conn = self.hook.get_conn()
         self.cursor = conn.cursor()

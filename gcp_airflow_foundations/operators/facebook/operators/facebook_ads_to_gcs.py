@@ -1,17 +1,11 @@
-import csv
-import tempfile
-import warnings
-import time
 from typing import Any, Dict, List, Optional, Sequence, Union
 from random import shuffle
 import pandas as pd
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 
 import pyarrow.parquet as pq
 import pyarrow
 
-from airflow.exceptions import AirflowException
 
 from gcp_airflow_foundations.operators.facebook.hooks.ads import (
     CustomFacebookAdsReportingHook,
@@ -19,7 +13,7 @@ from gcp_airflow_foundations.operators.facebook.hooks.ads import (
 from gcp_airflow_foundations.enums.facebook import AccountLookupScope, ApiObject
 
 from airflow.models import BaseOperator, Variable
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from google.cloud import bigquery
 

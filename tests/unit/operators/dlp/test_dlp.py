@@ -138,6 +138,7 @@ class TestDlpSubTask(unittest.TestCase):
             table_id=TEST_TABLE_ID,
             dataset_id=TEST_DATASET,
             table_dlp_config=dlp_table_config,
+            location="us",
             dag=self.dag,
         )
 
