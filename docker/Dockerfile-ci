@@ -1,5 +1,5 @@
 # TODO: use multi-stage builds. This file is exactly the same as Dockerfile except the last line
-ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
+ARG AIRFLOW_IMAGE_NAME="2.3.3-python3.8"
 
 FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
 
