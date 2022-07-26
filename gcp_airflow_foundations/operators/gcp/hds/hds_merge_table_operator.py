@@ -7,8 +7,8 @@ from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCreateEmptyTableOperator,
 )
 
-#from airflow.utils.decorators import apply_defaults
-#from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+# from airflow.utils.decorators import apply_defaults
+# from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
@@ -56,7 +56,7 @@ class MergeBigQueryHDS(BigQueryInsertJobOperator):
 
     template_fields = ("stg_table_name", "data_table_name", "stg_dataset_name")
 
-    #@apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,
