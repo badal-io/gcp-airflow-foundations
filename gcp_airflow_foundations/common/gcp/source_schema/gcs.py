@@ -1,8 +1,8 @@
 import json
 import logging
 
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
-from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 
 from urllib.parse import urlparse
 
@@ -21,8 +21,8 @@ def read_schema_from_gcs(
     gcs_bucket = parsed_url.netloc
     gcs_object = parsed_url.path.lstrip("/")
 
-    gcs_hook = GoogleCloudStorageHook(
-        google_cloud_storage_conn_id=google_cloud_storage_conn_id, delegate_to=None
+    gcs_hook = GCSHook(
+        gcp_conn_id=google_cloud_storage_conn_id, delegate_to=None
     )
 
     schema_fields = json.loads(
