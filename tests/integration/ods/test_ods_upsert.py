@@ -1,7 +1,7 @@
 import pytz
 import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
@@ -63,7 +63,7 @@ class TestIncrementalUpsertODS(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id="dummy", dag=self.dag)
+        task = EmptyOperator(task_id="dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
@@ -74,7 +74,7 @@ class TestIncrementalUpsertODS(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_copy(
+        BigQueryHook().insert_job(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{PROJECT_ID}.{DATASET}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
@@ -133,7 +133,7 @@ class TestFullUpsertODS(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id="dummy", dag=self.dag)
+        task = EmptyOperator(task_id="dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
@@ -144,7 +144,7 @@ class TestFullUpsertODS(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_copy(
+        BigQueryHook().insert_job(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{PROJECT_ID}.{DATASET}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
