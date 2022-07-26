@@ -74,7 +74,7 @@ class TestIncrementalUpsertODS(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_copy(
+        BigQueryHook().insert_job(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{PROJECT_ID}.{DATASET}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
@@ -144,7 +144,7 @@ class TestFullUpsertODS(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_copy(
+        BigQueryHook().insert_job(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{PROJECT_ID}.{DATASET}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
