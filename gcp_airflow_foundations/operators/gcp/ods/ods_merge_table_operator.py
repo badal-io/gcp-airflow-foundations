@@ -2,13 +2,13 @@ from typing import Optional
 from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.contrib.operators.bigquery_operator import (
-    BigQueryOperator,
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryInsertJobOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
-from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+# from airflow.utils.decorators import apply_defaults
+# from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
@@ -21,7 +21,7 @@ from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
 
-class MergeBigQueryODS(BigQueryOperator):
+class MergeBigQueryODS(BigQueryInsertJobOperator):
     """
     Merges data into a BigQuery ODS table.
 
@@ -55,10 +55,11 @@ class MergeBigQueryODS(BigQueryOperator):
 
     template_fields = ("stg_table_name", "data_table_name", "stg_dataset_name")
 
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,
+        task_id: Optional[str] = None,
         project_id: str,
         stg_table_name: str,
         data_table_name: str,
@@ -78,6 +79,7 @@ class MergeBigQueryODS(BigQueryOperator):
         **kwargs,
     ) -> None:
         super(MergeBigQueryODS, self).__init__(
+            task_id=task_id,
             delegate_to=delegate_to,
             gcp_conn_id=gcp_conn_id,
             use_legacy_sql=False,
@@ -87,6 +89,7 @@ class MergeBigQueryODS(BigQueryOperator):
             sql="",
             **kwargs,
         )
+
         self.project_id = project_id
         self.stg_table_name = stg_table_name
         self.data_table_name = data_table_name

@@ -77,7 +77,7 @@ class TestUpsertSnapshotHDS(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_query(
+        BigQueryHook().insert_job(
             sql="""SELECT * EXCEPT(af_metadata_expired_at), TIMESTAMP_TRUNC('2017-07-31T00:00:00+00:00', DAY) AS partition_time FROM `airflow-framework.test_tables.ga_sessions_HDS`""",
             use_legacy_sql=False,
             destination_dataset_table=f"{DATASET}.{self.table_id}",

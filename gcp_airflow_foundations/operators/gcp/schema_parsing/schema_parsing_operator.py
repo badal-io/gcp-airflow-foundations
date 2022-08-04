@@ -6,8 +6,8 @@ from airflow.contrib.operators.bigquery_operator import (
     BigQueryCreateEmptyTableOperator,
 )
 
-from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+# from airflow.utils.decorators import apply_defaults
+# from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
@@ -23,7 +23,7 @@ from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 
 
 class ParseSchema(BaseOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,

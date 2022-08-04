@@ -34,7 +34,7 @@ steps:
     entrypoint: python
     args: ['-m', 'flake8', '.']
 
-timeout: 1200s
+timeout: 1600s
 images:
   - 'gcr.io/${PROJECT_ID}/${_BUILD_IMG_NAME}'
 options:
