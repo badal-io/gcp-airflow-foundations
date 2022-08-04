@@ -79,6 +79,7 @@ class MergeBigQueryODS(BigQueryInsertJobOperator):
         **kwargs,
     ) -> None:
         super(MergeBigQueryODS, self).__init__(
+            task_id=task_id,
             delegate_to=delegate_to,
             gcp_conn_id=gcp_conn_id,
             use_legacy_sql=False,
