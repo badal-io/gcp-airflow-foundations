@@ -79,7 +79,7 @@ services:
     deploy:
       resources:
         reservations:
-          cpus: 2
+          #cpus: 2
           memory: 512M
 
   airflow-helper:

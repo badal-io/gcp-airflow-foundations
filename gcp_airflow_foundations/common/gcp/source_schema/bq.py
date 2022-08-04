@@ -1,7 +1,7 @@
 import json
 import logging
 
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 
 def read_schema_from_bq(
