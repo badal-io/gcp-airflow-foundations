@@ -59,7 +59,7 @@ class MergeBigQueryODS(BigQueryInsertJobOperator):
     def __init__(
         self,
         *,
-        task_id: str,
+        task_id: Optional[str] = None,
         project_id: str,
         stg_table_name: str,
         data_table_name: str,
@@ -89,7 +89,7 @@ class MergeBigQueryODS(BigQueryInsertJobOperator):
             sql="",
             **kwargs,
         )
-        self.task_id = task_id
+
         self.project_id = project_id
         self.stg_table_name = stg_table_name
         self.data_table_name = data_table_name
