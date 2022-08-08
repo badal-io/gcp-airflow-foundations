@@ -70,16 +70,16 @@ class TestGcs(unittest.TestCase):
                 assert file_sensor.bucket == "public-gcp-airflow-foundation-samples"
                 assert file_sensor.objects == "{{ ti.xcom_pull(key='file_list', task_ids='users.ftp_taskgroup.get_file_list') }}"
 
-    def test_gcs_list_files_good(self):
-        gcs_dag_builder = gcs_source.GCSFileIngestionDagBuilder(
-            default_task_args=self.args, config=self.config
-        )
+    # def test_gcs_list_files_good(self):
+    #     gcs_dag_builder = gcs_source.GCSFileIngestionDagBuilder(
+    #        default_task_args=self.args, config=self.config
+    #    )
 
-        for table_config in self.config.tables:
-            with DAG(
-                TEST_DAG_ID, default_args=self.args, schedule_interval="@once"
-            ) as dag:
-                task_group = TaskGroup("test", dag=dag)
+    #    for table_config in self.config.tables:
+    #        with DAG(
+    #            TEST_DAG_ID, default_args=self.args, schedule_interval="@once"
+    #        ) as dag:
+    #            task_group = TaskGroup("test", dag=dag)
                 # file_sensor = gcs_dag_builder.file_sensor(table_config, task_group)
                 # task_instance = TaskInstance(file_sensor, execution_date=datetime.now())
                 # task_instance.xcom_push(key='file_list', value='1')
