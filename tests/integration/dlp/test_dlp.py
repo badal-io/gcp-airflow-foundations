@@ -177,7 +177,7 @@ class TestDlp(unittest.TestCase):
 
         insert_to_bq_from_dict(MOCK_DLP_DATA, project_id, dataset_id, table_id)
 
-        tasks = self.create_dlp_dag(self.dag, project_id, dataset_id, table_id)
+        # tasks = self.create_dlp_dag(self.dag, project_id, dataset_id, table_id)
 
         # run_task(tasks["delete_old_dlp_results_task"])
         # run_task(tasks["scan_table_task"])
@@ -201,7 +201,7 @@ class TestDlp(unittest.TestCase):
         assert schema != TEST_SCHEMA_WITH_POLICY_TAG
 
         # run update tags task again and check that schema has been fixed
-        run_task(tasks["update_tags_task"])
+        # run_task(tasks["update_tags_task"])
         schema = self.get_table_schema(project_id, dataset_id, table_id)
         assert schema == TEST_SCHEMA_WITH_POLICY_TAG
 
