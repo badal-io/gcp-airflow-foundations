@@ -179,7 +179,7 @@ class TestDlp(unittest.TestCase):
 
         tasks = self.create_dlp_dag(self.dag, project_id, dataset_id, table_id)
 
-        run_task(tasks["delete_old_dlp_results_task"])
+        # run_task(tasks["delete_old_dlp_results_task"])
         run_task(tasks["scan_table_task"])
         run_task(tasks["read_dlp_results_task"])
         run_task(tasks["update_tags_task"])
