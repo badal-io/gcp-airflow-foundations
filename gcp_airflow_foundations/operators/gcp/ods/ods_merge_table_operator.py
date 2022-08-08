@@ -8,7 +8,7 @@ from airflow.contrib.operators.bigquery_operator import (
 )
 
 from airflow.utils.decorators import apply_defaults
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
