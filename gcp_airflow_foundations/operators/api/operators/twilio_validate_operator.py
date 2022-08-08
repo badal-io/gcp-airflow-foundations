@@ -54,7 +54,7 @@ class BigQueryToCsv(BaseOperator):
 
 
 class CsvToTwilioToCsv(BaseOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self, *, twilio_conn: str, source_file: str, target_file: str, **kwargs
     ):
