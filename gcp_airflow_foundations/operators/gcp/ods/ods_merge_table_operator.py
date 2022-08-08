@@ -2,8 +2,8 @@ from typing import Optional
 from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.contrib.operators.bigquery_operator import (
-    BigQueryOperator,
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryExecuteQueryOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
@@ -21,7 +21,7 @@ from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
 
-class MergeBigQueryODS(BigQueryOperator):
+class MergeBigQueryODS(BigQueryExecuteQueryOperator):
     """
     Merges data into a BigQuery ODS table.
 

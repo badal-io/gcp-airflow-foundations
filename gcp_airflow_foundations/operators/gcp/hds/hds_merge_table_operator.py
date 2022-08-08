@@ -2,8 +2,8 @@ from typing import Optional
 from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.providers.google.cloud.hooks.bigquery import (
-    BigQueryOperator,
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryExecuteQueryOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
@@ -22,7 +22,7 @@ from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
 
-class MergeBigQueryHDS(BigQueryOperator):
+class MergeBigQueryHDS(BigQueryExecuteQueryOperator):
     """
     Merges data into a BigQuery HDS table.
 

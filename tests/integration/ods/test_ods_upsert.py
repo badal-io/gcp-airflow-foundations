@@ -3,6 +3,7 @@ import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.providers.google.cloud.transfers.bigquery_to_bigquery import BigQueryToBigQueryOperator
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
 from datetime import datetime
@@ -74,7 +75,7 @@ class TestIncrementalUpsertODS(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_copy(
+        BigQueryToBigQueryOperator(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{PROJECT_ID}.{DATASET}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
@@ -144,7 +145,7 @@ class TestFullUpsertODS(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_copy(
+        BigQueryToBigQueryOperator(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{PROJECT_ID}.{DATASET}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",

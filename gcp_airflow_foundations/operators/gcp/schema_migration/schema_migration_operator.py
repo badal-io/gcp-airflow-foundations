@@ -1,8 +1,8 @@
 from typing import Optional
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.contrib.operators.bigquery_operator import (
-    BigQueryOperator,
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryExecuteQueryOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
@@ -18,7 +18,7 @@ from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_aud
 )
 
 
-class MigrateSchema(BaseOperator):
+class MigrateSchema(BigQueryExecuteQueryOperator):
     """
     Detects any changes in the source table's schema and updates the target table's schema.
 

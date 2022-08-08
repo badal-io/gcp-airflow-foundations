@@ -5,6 +5,7 @@ import unittest
 from airflow.exceptions import AirflowException
 from airflow.models import TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.providers.google.cloud.transfers.bigquery_to_bigquery import BigQueryToBigQueryOperator
 from airflow.utils.session import create_session, provide_session
 from datetime import datetime
 
@@ -109,7 +110,7 @@ class TestMigrateSchemaColumnAddition(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_copy(
+        BigQueryToBigQueryOperator(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
@@ -155,7 +156,7 @@ class TestMigrateSchemaDataTypeChangeValid(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_copy(
+        BigQueryToBigQueryOperator(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
@@ -201,7 +202,7 @@ class TestMigrateSchemaDataTypeChangeInvalid(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryHook().run_copy(
+        BigQueryToBigQueryOperator(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
