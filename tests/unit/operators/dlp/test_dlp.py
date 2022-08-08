@@ -158,7 +158,7 @@ class TestDlpSubTask(unittest.TestCase):
         #     "dlp_policy_tags.update_bq_policy_tags_ods"
         # ]
 
-        run_task(task=delete_old_dlp_results_task)
+        #run_task(task=delete_old_dlp_results_task)
 
         mock_bq_hook.return_value.delete_table.assert_called_once_with(
             table_id=f"{TEST_PROJECT_ID}.{TEST_RESULT_DATASET}.{TEST_TABLE_ID}_dlp_results",
