@@ -53,7 +53,7 @@ class TestMergeBigQueryODS(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = DummyOperator(task_id="schema_parsing", dag=self.dag)
+        task = EmptyOperator(task_id="schema_parsing", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
