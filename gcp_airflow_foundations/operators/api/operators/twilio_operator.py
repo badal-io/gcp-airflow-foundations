@@ -5,7 +5,7 @@ from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 
 from airflow.models.baseoperator import BaseOperator
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 
 from gcp_airflow_foundations.operators.api.hooks.twilio_hook import TwilioHook
 from urllib.parse import urlparse
@@ -31,7 +31,7 @@ class TwilioToBigQueryOperator(BaseOperator):
     template_fields = ("dataset_id", "table_id", "project_id", "labels")
 
     # pylint: disable=too-many-arguments
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         twilio_account_sid,

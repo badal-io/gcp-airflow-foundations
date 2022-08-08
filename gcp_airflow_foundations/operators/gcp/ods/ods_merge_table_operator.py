@@ -55,7 +55,7 @@ class MergeBigQueryODS(BigQueryOperator):
 
     template_fields = ("stg_table_name", "data_table_name", "stg_dataset_name")
 
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,

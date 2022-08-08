@@ -16,7 +16,7 @@ from test_utils import cleanup_xcom, clear_db_dags, setup_test_dag
 from tests.unit.conftest import run_task
 from gcp_airflow_foundations.base_class.dlp_source_config import PolicyTagConfig
 from airflow.utils.task_group import TaskGroup
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.utils.trigger_rule import TriggerRule
 
 
@@ -122,7 +122,7 @@ class TestDlpSubTask(unittest.TestCase):
         dlp_table_config = DlpTableConfig()
         dlp_table_config.set_source_config(dlp_source_config)
 
-        done = DummyOperator(
+        done = EmptyOperator(
             task_id="done",
             trigger_rule=TriggerRule.ALL_DONE,
             start_date=timezone.utcnow(),

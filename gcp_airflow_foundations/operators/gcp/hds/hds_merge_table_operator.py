@@ -2,12 +2,12 @@ from typing import Optional
 from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.contrib.operators.bigquery_operator import (
+from airflow.providers.google.cloud.hooks.bigquery import (
     BigQueryOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from airflow.exceptions import AirflowException
@@ -56,7 +56,7 @@ class MergeBigQueryHDS(BigQueryOperator):
 
     template_fields = ("stg_table_name", "data_table_name", "stg_dataset_name")
 
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,

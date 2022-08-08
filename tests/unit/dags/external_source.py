@@ -1,7 +1,7 @@
 import logging
 
 from airflow.models.dag import DAG
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 
 from gcp_airflow_foundations.source_class.source import DagBuilder
 
@@ -15,7 +15,7 @@ class CustomDagBuilder(DagBuilder):
 
     def get_bq_ingestion_task(self, dag, table_config):
 
-        return DummyOperator(task_id="dummy", dag=dag)
+        return EmptyOperator(task_id="dummy", dag=dag)
 
     def validate_extra_options(self):
         pass

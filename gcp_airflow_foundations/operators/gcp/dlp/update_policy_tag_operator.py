@@ -1,4 +1,4 @@
-from airflow.contrib.operators.bigquery_operator import (
+from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryUpdateTableSchemaOperator,
 )
 from operators.gcp.dlp.dlp_helpers import fields_to_policy_tags

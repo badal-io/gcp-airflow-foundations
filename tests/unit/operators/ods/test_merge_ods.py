@@ -2,7 +2,7 @@ import pytz
 import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.models.xcom import XCOM_RETURN_KEY
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
 from datetime import datetime

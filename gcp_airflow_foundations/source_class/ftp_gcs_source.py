@@ -11,8 +11,8 @@ from datetime import datetime
 
 from airflow.models.dag import DAG
 from airflow.utils.task_group import TaskGroup
-from airflow.operators.python_operator import PythonOperator
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.python import PythonOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import (
     GCSToBigQueryOperator,
 )
@@ -73,7 +73,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
                 task_group=taskgroup,
             )
         else:
-            return DummyOperator(
+            return EmptyOperator(
                 task_id="dummy_metadata_file_ingestion", task_group=taskgroup
             )
 
@@ -81,7 +81,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
         """
         No ingestion is needed - data is already in GCS, so return a dummy operator.
         """
-        return DummyOperator(
+        return EmptyOperator(
             task_id="dummy_file_ingestion_operator", task_group=taskgroup
         )
 
@@ -105,7 +105,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
                 task_group=taskgroup,
             )
         else:
-            return DummyOperator(
+            return EmptyOperator(
                 task_id="dummy_schema_file_ingestion_operator", task_group=taskgroup
             )
 
