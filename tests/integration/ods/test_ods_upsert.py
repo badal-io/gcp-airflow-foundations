@@ -1,7 +1,7 @@
 import pytz
 import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
-from airflow.operators.empty import EmptyOperator
+from airflow.operators.dummy import DummyOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.providers.google.cloud.transfers.bigquery_to_bigquery import BigQueryToBigQueryOperator
 from airflow.utils.session import create_session, provide_session
@@ -64,7 +64,7 @@ class TestIncrementalUpsertODS(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = EmptyOperator(task_id="dummy", dag=self.dag)
+        task = DummyOperator(task_id="dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
@@ -134,7 +134,7 @@ class TestFullUpsertODS(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = EmptyOperator(task_id="dummy", dag=self.dag)
+        task = DummyOperator(task_id="dummy", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()

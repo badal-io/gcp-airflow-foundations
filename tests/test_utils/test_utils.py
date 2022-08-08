@@ -4,7 +4,7 @@ from airflow.models import DAG, TaskInstance, XCom, DagBag, DagRun, DagTag, DagM
 import pytz
 from airflow.utils.state import State
 from datetime import datetime
-from airflow.operators.empty import EmptyOperator
+from airflow.operators.dummy import DummyOperator
 
 import logging
 
@@ -49,7 +49,7 @@ def setup_test_dag(self):
         state=State.SUCCESS,
     )
 
-    task = EmptyOperator(task_id="dummy_task_id", dag=self.dag)
+    task = DummyOperator(task_id="dummy_task_id", dag=self.dag)
     self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
     self.template_context = self.ti.get_template_context()

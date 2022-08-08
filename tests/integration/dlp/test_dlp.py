@@ -22,7 +22,7 @@ from gcp_airflow_foundations.operators.gcp.dlp.dlp_to_datacatalog_taskgroup impo
 )
 from tests.integration.conftest import run_task
 from airflow.utils.task_group import TaskGroup
-from airflow.operators.empty import EmptyOperator
+from airflow.operators.dummy import DummyOperator
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils import timezone
 
@@ -121,7 +121,7 @@ class TestDlp(unittest.TestCase):
         template_name = config["dlp"]["template"]
 
         dlp_taskgroup = TaskGroup(dlp_policy_tag_taskgroup_name(), dag=dag)
-        done = EmptyOperator(
+        done = DummyOperator(
             task_id="done",
             trigger_rule=TriggerRule.ALL_DONE,
             start_date=timezone.utcnow(),

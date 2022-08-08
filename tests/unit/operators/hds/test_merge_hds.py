@@ -2,7 +2,7 @@ import pytz
 import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.models.xcom import XCOM_RETURN_KEY
-from airflow.operators.empty import EmptyOperator
+from airflow.operators.dummy import DummyOperator
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
 from datetime import datetime
@@ -55,7 +55,7 @@ class TestMergeBigQuerySnapshotHDS(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = EmptyOperator(task_id="schema_parsing", dag=self.dag)
+        task = DummyOperator(task_id="schema_parsing", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
@@ -138,7 +138,7 @@ class TestMergeBigQuerySCD2HDS(unittest.TestCase):
             state=State.SUCCESS,
         )
 
-        task = EmptyOperator(task_id="schema_parsing", dag=self.dag)
+        task = DummyOperator(task_id="schema_parsing", dag=self.dag)
         self.ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
         self.template_context = self.ti.get_template_context()
