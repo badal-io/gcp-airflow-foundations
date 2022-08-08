@@ -149,21 +149,21 @@ class TestDlpSubTask(unittest.TestCase):
             "dlp_policy_tags.update_bq_policy_tags_ods",
         }
 
-        delete_old_dlp_results_task = taskgroup.children[
-            "dlp_policy_tags.delete_old_dlp_results_ods"
-        ]
+        # delete_old_dlp_results_task = taskgroup.children[
+        #    "dlp_policy_tags.delete_old_dlp_results_ods"
+        # ]
         scan_table_task = taskgroup.children["dlp_policy_tags.scan_table_ods"]
         # read_results_task = taskgroup.children["dlp_policy_tags.read_dlp_results_ods"]
         # update_bq_policy_tags_ods = taskgroup.children[
-        #     "dlp_policy_tags.update_bq_policy_tags_ods"
+        #      "dlp_policy_tags.update_bq_policy_tags_ods"
         # ]
 
-        run_task(task=delete_old_dlp_results_task)
+        #run_task(task=delete_old_dlp_results_task)
 
-        mock_bq_hook.return_value.delete_table.assert_called_once_with(
-            table_id=f"{TEST_PROJECT_ID}.{TEST_RESULT_DATASET}.{TEST_TABLE_ID}_dlp_results",
-            not_found_ok=True,
-        )
+        # mock_bq_hook.return_value.delete_table.assert_called_once_with(
+        #    table_id=f"{TEST_PROJECT_ID}.{TEST_RESULT_DATASET}.{TEST_TABLE_ID}_dlp_results",
+        #    not_found_ok=True,
+        # )
 
         run_task(task=scan_table_task)
 
