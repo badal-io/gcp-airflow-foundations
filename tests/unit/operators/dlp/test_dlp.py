@@ -152,7 +152,7 @@ class TestDlpSubTask(unittest.TestCase):
         # delete_old_dlp_results_task = taskgroup.children[
         #    "dlp_policy_tags.delete_old_dlp_results_ods"
         # ]
-        scan_table_task = taskgroup.children["dlp_policy_tags.scan_table_ods"]
+        # scan_table_task = taskgroup.children["dlp_policy_tags.scan_table_ods"]
         # read_results_task = taskgroup.children["dlp_policy_tags.read_dlp_results_ods"]
         # update_bq_policy_tags_ods = taskgroup.children[
         #      "dlp_policy_tags.update_bq_policy_tags_ods"
@@ -165,7 +165,7 @@ class TestDlpSubTask(unittest.TestCase):
         #    not_found_ok=True,
         # )
 
-        run_task(task=scan_table_task)
+        # run_task(task=scan_table_task)
 
         mock_dlp_hook.return_value.create_dlp_job.assert_called_once_with(
             project_id=TEST_PROJECT_ID,
