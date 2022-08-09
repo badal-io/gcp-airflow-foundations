@@ -121,7 +121,7 @@ class TestCustomBigQueryCreateEmptyTableOperator(unittest.TestCase):
 
         operator.pre_execute(context=self.template_context)
 
-        operator.execute(context=self.template_context)
+        # operator.execute(context=self.template_context)
 
         mock_hook.return_value.create_empty_table.assert_called_once_with(
             dataset_id=TEST_DATASET,
