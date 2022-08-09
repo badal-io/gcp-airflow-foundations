@@ -110,7 +110,7 @@ class TestMigrateSchemaColumnAddition(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryToBigQueryOperator(
+        BigQueryHook().run_copy(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
@@ -156,7 +156,7 @@ class TestMigrateSchemaDataTypeChangeValid(unittest.TestCase):
         cleanup_xcom()
         clear_db_dags()
 
-        BigQueryToBigQueryOperator(
+        BigQueryHook().run_copy(
             source_project_dataset_tables="airflow-framework.test_tables.ga_sessions_ODS",
             destination_project_dataset_table=f"{self.source_config.gcp_project}.{self.source_config.dataset_data_name}.{self.table_id}",
             write_disposition="WRITE_TRUNCATE",
