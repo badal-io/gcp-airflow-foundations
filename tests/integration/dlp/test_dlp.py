@@ -177,19 +177,19 @@ class TestDlp(unittest.TestCase):
 
         insert_to_bq_from_dict(MOCK_DLP_DATA, project_id, dataset_id, table_id)
 
-        # tasks = self.create_dlp_dag(self.dag, project_id, dataset_id, table_id)
+        tasks = self.create_dlp_dag(self.dag, project_id, dataset_id, table_id)
 
-        # run_task(tasks["delete_old_dlp_results_task"])
-        # run_task(tasks["scan_table_task"])
-        # run_task(tasks["read_dlp_results_task"])
-        # run_task(tasks["update_tags_task"])
+        run_task(tasks["delete_old_dlp_results_task"])
+        run_task(tasks["scan_table_task"])
+        run_task(tasks["read_dlp_results_task"])
+        run_task(tasks["update_tags_task"])
 
-        # xcom_pull_res = ti.xcom_pull(task_ids='dlp_scan_table.read_dlp_results')
+        xcom_pull_res = ti.xcom_pull(task_ids='dlp_scan_table.read_dlp_results')
 
-        # schema = self.get_table_schema(project_id, dataset_id, table_id)
-        # assert schema == TEST_SCHEMA_WITH_POLICY_TAG
+        schema = self.get_table_schema(project_id, dataset_id, table_id)
+        assert schema == TEST_SCHEMA_WITH_POLICY_TAG
 
-        # logging.info(f"TEST_SCHEMA_WITH_POLICY_TAG_2 {TEST_SCHEMA_WITH_POLICY_TAG_2}")
+        logging.info(f"TEST_SCHEMA_WITH_POLICY_TAG_2 {TEST_SCHEMA_WITH_POLICY_TAG_2}")
 
         # change table schema
         self.update_table_schema(
@@ -201,18 +201,18 @@ class TestDlp(unittest.TestCase):
         assert schema != TEST_SCHEMA_WITH_POLICY_TAG
 
         # run update tags task again and check that schema has been fixed
-        # run_task(tasks["update_tags_task"])
+        run_task(tasks["update_tags_task"])
         schema = self.get_table_schema(project_id, dataset_id, table_id)
-        # assert schema == TEST_SCHEMA_WITH_POLICY_TAG
+        assert schema == TEST_SCHEMA_WITH_POLICY_TAG
 
         # TODO: Fix this. Right now clearing tags doesn't work
         # # fake empty DLP result
-        # ti_dlp_results.xcom_push(key=XCOM_RETURN_KEY, value=[])
-        # run_task(tasks['update_tags_task'])
+        ti_dlp_results.xcom_push(key=XCOM_RETURN_KEY, value=[])
+        run_task(tasks['update_tags_task'])
         #
         # # All policy tags should have been removed
-        # schema = self.get_table_schema(project_id, dataset_id, table_id)
-        # assert schema == TEST_SCHEMA
+        schema = self.get_table_schema(project_id, dataset_id, table_id)
+        assert schema == TEST_SCHEMA
 
         self.doCleanups()
 
