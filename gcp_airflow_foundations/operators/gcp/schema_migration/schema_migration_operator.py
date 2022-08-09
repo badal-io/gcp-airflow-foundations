@@ -18,7 +18,7 @@ from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_aud
 )
 
 
-class MigrateSchema(BigQueryExecuteQueryOperator):
+class MigrateSchema(BaseOperator):
     """
     Detects any changes in the source table's schema and updates the target table's schema.
 
