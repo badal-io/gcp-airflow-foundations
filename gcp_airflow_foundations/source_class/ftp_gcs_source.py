@@ -11,7 +11,7 @@ from datetime import datetime
 
 from airflow.models.dag import DAG
 from airflow.utils.task_group import TaskGroup
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.operators.dummy import DummyOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import (
     GCSToBigQueryOperator,

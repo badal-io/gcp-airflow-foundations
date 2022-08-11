@@ -1,6 +1,6 @@
 from airflow.models.baseoperator import BaseOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 from airflow.exceptions import AirflowException
 
 from gcp_airflow_foundations.operators.api.hooks.mailgun_hook_test import MailgunHook
@@ -21,7 +21,7 @@ def get_bigquery_hook(bq_conn: str):
 
 
 class BigQueryToCsv(BaseOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(self, *, bq_conn: str, query: str, file: str, **kwargs):
         super().__init__(**kwargs)
 
@@ -43,7 +43,7 @@ class BigQueryToCsv(BaseOperator):
 
 
 class CsvToMailgunToCsv(BaseOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(self, *, mailgun_conn: str, source_file: str, job_id: str, **kwargs):
         super().__init__(**kwargs)
         self.hook = MailgunHook(mailgun_conn_id=mailgun_conn)
@@ -56,7 +56,7 @@ class CsvToMailgunToCsv(BaseOperator):
 
 
 class DownloadCSV(BaseOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(self, *, mailgun_conn: str, job_id: str, target_file: str, **kwargs):
         super().__init__(**kwargs)
         self.hook = MailgunHook(mailgun_conn_id=mailgun_conn)

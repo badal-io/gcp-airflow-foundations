@@ -1,12 +1,12 @@
 from typing import Optional
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.contrib.operators.bigquery_operator import (
-    BigQueryOperator,
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryExecuteQueryOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 from airflow.exceptions import AirflowException
@@ -36,7 +36,7 @@ class MigrateSchema(BaseOperator):
     :type gcp_conn_id: str
     """
 
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,

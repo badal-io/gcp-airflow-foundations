@@ -6,7 +6,7 @@ from dacite import from_dict
 from os.path import join
 
 from airflow.models.dag import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 from airflow.utils.task_group import TaskGroup

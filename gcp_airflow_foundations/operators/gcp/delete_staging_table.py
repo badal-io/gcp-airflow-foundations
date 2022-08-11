@@ -4,7 +4,7 @@ from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryDeleteTableOperator,
 )
 
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 
 from airflow.exceptions import AirflowException
 
@@ -12,7 +12,7 @@ import logging
 
 
 class BigQueryDeleteStagingTableOperator(BigQueryDeleteTableOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,

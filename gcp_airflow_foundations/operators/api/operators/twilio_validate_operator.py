@@ -2,7 +2,7 @@ from airflow.models.baseoperator import BaseOperator
 from airflow.hooks.base import BaseHook
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 from airflow.exceptions import AirflowException
 
 from twilio.rest import Client
@@ -32,7 +32,7 @@ def get_bigquery_hook(bq_conn):
 
 
 class BigQueryToCsv(BaseOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(self, *, bq_conn: str, query: str, file: str, **kwargs):
         super().__init__(**kwargs)
 
@@ -54,7 +54,7 @@ class BigQueryToCsv(BaseOperator):
 
 
 class CsvToTwilioToCsv(BaseOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self, *, twilio_conn: str, source_file: str, target_file: str, **kwargs
     ):

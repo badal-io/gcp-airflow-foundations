@@ -1,6 +1,6 @@
 from airflow.models.baseoperator import BaseOperator
 from gcp_airflow_foundations.operators.api.hooks.dataform_hook import DataformHook
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 from typing import Any, Optional
 from airflow.exceptions import AirflowException
 import time
@@ -42,7 +42,7 @@ class DataformOperator(BaseOperator):
     ** Note: Schedules must be on the master branch. In Dataform, you'll have to create a branch first and then merge changes into master.
     '''
 
-    @apply_defaults
+    # @apply_defaults
     def __init__(
             self,
             *,

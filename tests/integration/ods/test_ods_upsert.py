@@ -2,6 +2,7 @@ import pytz
 import unittest
 from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.operators.dummy import DummyOperator
+# from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State

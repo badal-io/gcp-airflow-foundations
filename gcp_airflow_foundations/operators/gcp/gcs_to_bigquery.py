@@ -2,7 +2,7 @@ from airflow.providers.google.cloud.transfers.gcs_to_bigquery import (
     GCSToBigQueryOperator,
 )
 
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 
 from gcp_airflow_foundations.source_class.schema_source_config import SchemaSourceConfig
 from gcp_airflow_foundations.base_class.source_table_config import SourceTableConfig
@@ -12,7 +12,7 @@ import logging
 
 
 class CustomGCSToBigQueryOperator(GCSToBigQueryOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,

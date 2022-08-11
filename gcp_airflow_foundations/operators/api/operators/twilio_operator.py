@@ -1,15 +1,15 @@
 import json
 import logging
 
-from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
 
 from airflow.models.baseoperator import BaseOperator
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 
 from gcp_airflow_foundations.operators.api.hooks.twilio_hook import TwilioHook
 from urllib.parse import urlparse
-from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 
 
 class TwilioToBigQueryOperator(BaseOperator):
@@ -31,7 +31,7 @@ class TwilioToBigQueryOperator(BaseOperator):
     template_fields = ("dataset_id", "table_id", "project_id", "labels")
 
     # pylint: disable=too-many-arguments
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         twilio_account_sid,
@@ -69,8 +69,8 @@ class TwilioToBigQueryOperator(BaseOperator):
         twilio_hook = TwilioHook(twilio_conn_id=self.twilio_conn_id)
 
         bq_hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id)
-        conn = bq_hook.get_conn()
-        cursor = conn.cursor()
+        # conn = bq_hook.get_conn()
+        # cursor = conn.cursor()
 
         if not bq_hook.table_exists(
             project_id=self.project_id,
@@ -84,8 +84,8 @@ class TwilioToBigQueryOperator(BaseOperator):
                 gcs_bucket = parsed_url.netloc
                 gcs_object = parsed_url.path.lstrip("/")
 
-                gcs_hook = GoogleCloudStorageHook(
-                    google_cloud_storage_conn_id=self.google_cloud_storage_conn_id,
+                gcs_hook = GCSHook(
+                    gcp_conn_id=self.google_cloud_storage_conn_id,
                     delegate_to=self.delegate_to,
                 )
                 schema_fields = json.loads(
@@ -94,7 +94,8 @@ class TwilioToBigQueryOperator(BaseOperator):
             else:
                 schema_fields = self.schema_fields
 
-            cursor.create_empty_table(
+            # cursor.create_empty_table(
+            bq_hook.create_empty_table(
                 project_id=self.project_id,
                 dataset_id=self.dataset_id,
                 table_id=self.table_id,

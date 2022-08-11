@@ -9,7 +9,7 @@ import shutil
 import os
 import glob
 
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.operators.dummy import DummyOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.sensors.python import PythonSensor

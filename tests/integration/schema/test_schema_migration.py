@@ -5,6 +5,7 @@ import unittest
 from airflow.exceptions import AirflowException
 from airflow.models import TaskInstance, XCom, DagRun, DagTag, DagModel
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.providers.google.cloud.transfers.bigquery_to_bigquery import BigQueryToBigQueryOperator
 from airflow.utils.session import create_session, provide_session
 from datetime import datetime
 

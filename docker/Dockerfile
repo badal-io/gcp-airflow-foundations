@@ -1,4 +1,4 @@
-ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
+ARG AIRFLOW_IMAGE_NAME="2.2.5-python3.8"
 
 FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
 

@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 
 from airflow.exceptions import AirflowException
 
@@ -12,7 +12,7 @@ from airflow.providers.google.cloud.operators.bigquery import (
 
 
 class CustomBigQueryCreateEmptyTableOperator(BigQueryCreateEmptyTableOperator):
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,

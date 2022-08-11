@@ -9,7 +9,8 @@ x-airflow-common:
     &airflow-common-env
     # uncomment to allow using user IAM for access
     #AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://user:password@host/schema?extra__google_cloud_platform__scope=${GCP_AUTH_SCOPE}&extra__google_cloud_platform__project=${GCP_PROJECT_ID}'
-    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow1!@postgres/airflow
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 90.0
   env_file:
     - ./variables/docker-env-vars
     - ./variables/docker-env-secrets # added to gitignore
@@ -34,7 +35,7 @@ services:
     image: postgres:13
     environment:
       POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow1!
+      POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
@@ -79,7 +80,7 @@ services:
     deploy:
       resources:
         reservations:
-          cpus: 2
+          cpus: '2'
           memory: 512M
 
   airflow-helper:

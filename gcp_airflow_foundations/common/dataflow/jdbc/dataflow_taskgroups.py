@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.exceptions import AirflowException
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 from airflow.sensors.external_task import ExternalTaskSensor
 

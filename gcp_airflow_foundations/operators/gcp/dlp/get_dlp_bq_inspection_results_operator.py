@@ -1,7 +1,7 @@
 import logging
 from airflow.models import BaseOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
-from airflow.utils.decorators import apply_defaults
+# from airflow.utils.decorators import apply_defaults
 
 from gcp_airflow_foundations.operators.gcp.dlp.dlp_helpers import get_dlp_results_sql
 
@@ -20,7 +20,7 @@ class DlpBQInspectionResultsOperator(BaseOperator):
     :type min_match_count: int
     """
 
-    @apply_defaults
+    # @apply_defaults
     def __init__(
         self,
         *,
