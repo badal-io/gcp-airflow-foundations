@@ -64,8 +64,8 @@ class MigrateSchema(BaseOperator):
         self.hook = BigQueryHook(
             gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to
         )
-        #conn = self.hook.get_conn()
-        #self.cursor = conn.cursor()
+        # conn = self.hook.get_conn()
+        # self.cursor = conn.cursor()
 
     def execute(self, context):
         if not self.new_schema_fields:
