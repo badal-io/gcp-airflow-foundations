@@ -45,8 +45,8 @@ class DlpBQInspectionResultsOperator(BaseOperator):
             use_legacy_sql=False,
             impersonation_chain=impersonation_chain,
         )
-        conn = self.hook.get_conn()
-        self.cursor = conn.cursor()
+        #conn = self.hook.get_conn()
+        #self.cursor = conn.cursor()
 
     def execute(self, context):
         sql = get_dlp_results_sql(
