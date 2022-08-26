@@ -18,28 +18,6 @@ from typing import Any, Dict, Tuple
 from airflow.triggers.base import BaseTrigger, TriggerEvent
 from airflow.utils import timezone
 
-class DataflowJobSensorAsync(BaseSensorOperator):
-    """
-    Waits until the specified time of the day, freeing up a worker slot while
-    it is waiting.
-    :param target_time: time after which the job succeeds
-    """
-
-    def __init__(self, job_id, **kwargs):
-        super().__init__(**kwargs)
-        self.job_id = job_id, 
-        self.dataflow_hook = DataflowAsyncHook()
-
-    def execute(self, context: Context):
-        self.defer(
-            trigger=DataflowJobStatusTrigger(job_id=self.job_id),
-            method_name="execute_complete", 
-        )
-
-    def execute_complete(self, context, event=None):
-        """Callback for when the trigger fires - returns immediately."""
-        return None
-
 class DataflowJobStatusTrigger(BaseTrigger):
     """
     A trigger that fires exactly once, at the given datetime, give or take
