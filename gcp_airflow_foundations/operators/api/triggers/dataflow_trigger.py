@@ -19,11 +19,6 @@ from airflow.triggers.base import BaseTrigger, TriggerEvent
 from airflow.utils import timezone
 
 class DataflowJobStatusTrigger(BaseTrigger):
-    """
-    A trigger that fires exactly once, at the given datetime, give or take
-    a few seconds.
-    The provided datetime MUST be in UTC.
-    """
 
     def __init__(self, job_id: str, polling_period_seconds: int = 30):
         super().__init__()
