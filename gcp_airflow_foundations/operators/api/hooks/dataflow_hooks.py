@@ -288,7 +288,7 @@ class _DataflowJobsControllerAsync(LoggingMixin):
         else:
             self.log.info("Google Cloud DataFlow job not available yet..")
 
-    async def _check_dataflow_job_state(self, job) -> bool:
+    def _check_dataflow_job_state(self, job) -> bool:
         """
         Helper method to check the state of one job in dataflow for this task
         if job failed raise exception
@@ -322,7 +322,7 @@ class _DataflowJobsControllerAsync(LoggingMixin):
         """Helper method to wait for result of submitted job."""
         self.log.info("Start waiting for done.")
         await self._refresh_jobs()
-        while self._jobs and not all(await self._check_dataflow_job_state(job) for job in self._jobs):
+        while self._jobs and not all(self._check_dataflow_job_state(job) for job in self._jobs):
             self.log.info("Waiting for done. Sleep %s s", self._poll_sleep)
             time.sleep(self._poll_sleep)
             await self._refresh_jobs()
