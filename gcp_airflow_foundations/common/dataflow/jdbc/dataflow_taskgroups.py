@@ -3,6 +3,7 @@ from airflow.exceptions import AirflowException
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.task_group import TaskGroup
 from airflow.sensors.external_task import ExternalTaskSensor
+from gcp_airflow_foundations.operators.api.operators.dataflow_operator import DataflowTemplatedJobStartOperatorAsync
 
 
 def dataflow_taskgroup_builder(
@@ -44,16 +45,27 @@ def dataflow_taskgroup_builder(
         task_group=taskgroup,
     )
 
-    trigger_dataflow_job = PythonOperator(
-        task_id="run_dataflow_job_to_bq",
-        op_kwargs={"template_path": dataflow_job_params["template_path"],
-                   "system_name": system_name,
-                   "table_name": table_name,
-                   "query_schema": query_schema},
-        python_callable=run_dataflow_job,
-        task_group=taskgroup,
-        pool=dataflow_job_params["connection_pool"]
-    )
+    use_deferrable_operator = True
+    if use_deferrable_operator:
+        xcom_task_id = f"{table_name}.dataflow_taskgroup.create_job_parameters"
+        trigger_dataflow_job = DataflowTemplatedJobStartOperatorAsync(
+            task_id="run_dataflow_job_to_bq",
+            dataflow_default_options="{{ ti.xcom_pull(key='dataflow_default_options', task_ids=f'{xcom_task_id}') }}",
+            parameters="{{ ti.xcom_pull(key='parameters', task_ids=f'{xcom_task_id}') }}",
+            job_name=f"{system_name.lower()}-upload-{table_name.lower()}-to-bq".replace("_", "-"),
+            template=dataflow_job_params["template_path"]
+        )
+    else:
+        trigger_dataflow_job = PythonOperator(
+            task_id="run_dataflow_job_to_bq",
+            op_kwargs={"template_path": dataflow_job_params["template_path"],
+                    "system_name": system_name,
+                    "table_name": table_name,
+                    "query_schema": query_schema},
+            python_callable=run_dataflow_job,
+            task_group=taskgroup,
+            pool=dataflow_job_params["connection_pool"]
+        )
 
     if not query_schema:
 

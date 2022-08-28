@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod, abstractproperty
+import datetime
 
 from airflow.models.dag import DAG
 from airflow.utils.task_group import TaskGroup
@@ -155,6 +156,7 @@ class DagBuilder(ABC):
             default_args=table_default_task_args,
             catchup=data_source.catchup,
             render_template_as_native_obj=True,
+            dagrun_timeout = datetime.timedelta(hours=23),
             **kwargs,
         ) as dag:
 
@@ -179,6 +181,7 @@ class DagBuilder(ABC):
             default_args=table_default_task_args,
             catchup=data_source.catchup,
             render_template_as_native_obj=True,
+            dagrun_timeout = datetime.timedelta(hours=23),
             **kwargs,
         ) as dag:
 

@@ -61,13 +61,13 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
             logging.info(casted_columns)
 
             #    c. get query
-            if ingestion_type == "FULL":
-                query = oracle_helpers.get_query_for_oracle_load_full(
-                    table_name, casted_columns, owner
-                )
-            else:
+            if ingestion_type == "INCREMENTAL":
                 query = oracle_helpers.get_query_for_oracle_load_incremental(
                     table_name, casted_columns, table_params["date_column"], owner, kwargs["ds"], table_params["num_backtrack_days"]
+                )
+            else:
+                query = oracle_helpers.get_query_for_oracle_load_full(
+                    table_name, casted_columns, owner
                 )
             logging.info(query)
 
@@ -112,6 +112,9 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
             "query": query,
         }
         logging.info(parameters)
+
+        if isinstance(parameters["query"], list):
+            parameters["query"] = parameters["query"][0]
 
         kwargs["ti"].xcom_push(
             key="dataflow_default_options", value=dataflow_default_options
