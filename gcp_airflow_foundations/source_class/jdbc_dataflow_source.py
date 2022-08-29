@@ -126,9 +126,14 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             job_name=job_name,
             template=template_path,
             dataflow_default_options=dataflow_default_options,
-            parameters=parameters
+            parameters=parameters,
+            wait_until_finished=False
         )
         trigger_job.execute(context=kwargs)
+        logging.info(trigger_job)
+        job_id = ""
+
+        kwargs['ti'].xcom_push(key='job_id', value=job_id)
 
     def create_table(self, destination_table, schema_table, source_table, table_type_casts, **kwargs):
         ds = kwargs["ds"]
