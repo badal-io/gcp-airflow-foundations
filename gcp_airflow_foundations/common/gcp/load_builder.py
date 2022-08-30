@@ -57,6 +57,7 @@ def load_builder(
 
     dag_table_id = table_config.table_name
     ods_table_id = f"{landing_zone_table_name_override}{ods_suffix}"
+    hds_table_id = ""
     if hds_table_config:
         hds_table_id = f"{landing_zone_table_name_override}{hds_suffix}"
 
@@ -64,6 +65,7 @@ def load_builder(
         task_id="schema_parsing",
         schema_config=schema_config,
         ods_table_id=ods_table_id,
+        hds_table_id=hds_table_id,
         column_mapping=column_mapping,
         column_casting=column_casting,
         new_column_udfs=new_column_udfs,
