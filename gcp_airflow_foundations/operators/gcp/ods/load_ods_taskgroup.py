@@ -1,6 +1,7 @@
 from airflow import DAG
 
 from airflow.utils.task_group import TaskGroup
+from airflow.operators.python import PythonOperator
 
 from typing import List, Optional
 
@@ -66,6 +67,56 @@ def ods_builder(
     else:
         time_partitioning = None
 
+    ods_task = PythonOperator(
+        task_id="run_ods_tasks",
+        op_kwargs={
+            "project_id": project_id,
+            "dataset_id": dataset_id,
+            "location": location,
+            "taskgroup": taskgroup,
+            "table_id": table_id,
+            "dag_table_id": dag_table_id,
+            "cluster_fields": cluster_fields,
+            "time_partitioning": time_partitioning,
+            "dag": dag,
+            "landing_zone_dataset": landing_zone_dataset,
+            "landing_zone_table_name_override": landing_zone_table_name_override,
+            "surrogate_keys": surrogate_keys,
+            "column_mapping": column_mapping,
+            "column_casting": column_casting,
+            "new_column_udfs": new_column_udfs,
+            "ingestion_type": ingestion_type,
+            "ods_table_config": ods_table_config
+        },
+        python_callable=ods_task_operator,
+        task_group=taskgroup,
+        dag=dag
+    ) 
+
+    ods_task
+
+    return taskgroup
+
+def ods_task_operator(
+    project_id,
+    dataset_id,
+    location,
+    taskgroup,
+    table_id,
+    dag_table_id,
+    cluster_fields,
+    time_partitioning,
+    landing_zone_dataset,
+    landing_zone_table_name_override,
+    surrogate_keys,
+    column_mapping,
+    column_casting,
+    new_column_udfs,
+    ingestion_type,
+    ods_table_config,
+    **kwargs
+):
+
     create_dataset = CustomBigQueryCreateEmptyDatasetOperator(
         task_id="create_ods_dataset",
         project_id=project_id,
@@ -73,8 +124,8 @@ def ods_builder(
         location=location,
         exists_ok=True,
         task_group=taskgroup,
-        dag=dag
     )
+    create_dataset.execute(context=kwargs)
 
     # 1 Check if ODS table exists and if not create an empty table
     create_table = CustomBigQueryCreateEmptyTableOperator(
@@ -86,8 +137,8 @@ def ods_builder(
         cluster_fields=cluster_fields,
         time_partitioning=time_partitioning,
         task_group=taskgroup,
-        dag=dag
     )
+    create_table.execute(context=kwargs)
 
     # 2 Migrate schema
     migrate_schema = MigrateSchema(
@@ -97,8 +148,8 @@ def ods_builder(
         dag_table_id=dag_table_id,
         dataset_id=dataset_id,
         task_group=taskgroup,
-        dag=dag
     )
+    migrate_schema.execute(context=kwargs)
 
     # 3 Merge or truncate tables based on the ingestion type defined in the config file and insert metadata columns
     insert = MergeBigQueryODS(
@@ -117,9 +168,5 @@ def ods_builder(
         ods_table_config=ods_table_config,
         location=location,
         task_group=taskgroup,
-        dag=dag
     )
-
-    create_dataset >> create_table >> migrate_schema >> insert
-
-    return taskgroup
+    insert.execute(context=kwargs)

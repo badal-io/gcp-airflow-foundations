@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.exceptions import AirflowException
+from airflow.operators.python import PythonOperator
 
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 
@@ -65,15 +66,64 @@ def hds_builder(
             "Invalid HDS table type", hds_table_config.hds_table_type
         )
 
+    hds_task = PythonOperator(
+        task_id="run_ods_tasks",
+        op_kwargs={
+            "project_id": project_id,
+            "dataset_id": dataset_id,
+            "location": location,
+            "taskgroup": taskgroup,
+            "table_id": table_id,
+            "dag_table_id": dag_table_id,
+            "cluster_fields": cluster_fields,
+            "time_partitioning": time_partitioning,
+            "dag": dag,
+            "landing_zone_dataset": landing_zone_dataset,
+            "landing_zone_table_name_override": landing_zone_table_name_override,
+            "surrogate_keys": surrogate_keys,
+            "column_mapping": column_mapping,
+            "column_casting": column_casting,
+            "new_column_udfs": new_column_udfs,
+            "ingestion_type": ingestion_type,
+            "hds_table_config": hds_table_config
+        },
+        python_callable=hds_task_operator,
+        task_group=taskgroup,
+        dag=dag
+    ) 
+
+    hds_task
+
+    return taskgroup
+
+def hds_task_operator(
+    project_id,
+    dataset_id,
+    location,
+    taskgroup,
+    table_id,
+    dag_table_id,
+    cluster_fields,
+    time_partitioning,
+    landing_zone_dataset,
+    landing_zone_table_name_override,
+    surrogate_keys,
+    column_mapping,
+    column_casting,
+    new_column_udfs,
+    ingestion_type,
+    hds_table_config,
+    **kwargs
+):
     create_dataset = CustomBigQueryCreateEmptyDatasetOperator(
         task_id="create_hds_dataset",
         project_id=project_id,
         dataset_id=dataset_id,
         location=location,
         exists_ok=True,
-        task_group=taskgroup,
-        dag=dag
+        task_group=taskgroup
     )
+    create_dataset.execute(context=kwargs)
 
     # 1 Check if HDS table exists and if not create an empty table
     create_table = CustomBigQueryCreateEmptyTableOperator(
@@ -84,9 +134,9 @@ def hds_builder(
         dag_table_id=dag_table_id,
         cluster_fields=cluster_fields,
         time_partitioning=time_partitioning,
-        task_group=taskgroup,
-        dag=dag
+        task_group=taskgroup
     )
+    create_table.execute(context=kwargs)
 
     # 2 Migrate schema
     migrate_schema = MigrateSchema(
@@ -95,9 +145,9 @@ def hds_builder(
         table_id=table_id,
         dag_table_id=dag_table_id,
         dataset_id=dataset_id,
-        task_group=taskgroup,
-        dag=dag
+        task_group=taskgroup
     )
+    migrate_schema.execute(context=kwargs)
 
     # 3 Load staging table to HDS table
     insert = MergeBigQueryHDS(
@@ -115,10 +165,6 @@ def hds_builder(
         ingestion_type=ingestion_type,
         hds_table_config=hds_table_config,
         location=location,
-        task_group=taskgroup,
-        dag=dag
+        task_group=taskgroup
     )
-
-    create_dataset >> create_table >> migrate_schema >> insert
-
-    return taskgroup
+    insert.execute(context=kwargs)
