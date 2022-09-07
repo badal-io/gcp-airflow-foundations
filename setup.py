@@ -9,8 +9,18 @@ from pathlib import Path
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 
-with open(os.path.join(here, "requirements.txt"), "r") as f:
-    requirements = f.read().strip().split("\n")
+# with open(os.path.join(here, "requirements.txt"), "r") as f:
+#     requirements = f.read().strip().split("\n")
+requirements = ['SQLAlchemy==1.3.23',
+                'apache-airflow-providers-apache-beam==4.0.0',
+                'apache-airflow-providers-common-sql==1.0.0',
+                'apache-airflow-providers-facebook==3.0.1',
+                'apache-airflow-providers-salesforce==5.0.0',
+                'dacite==1.5.1',
+                'pydantic==1.8.2',
+                'regex==2022.7.25'
+                ]
+
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
