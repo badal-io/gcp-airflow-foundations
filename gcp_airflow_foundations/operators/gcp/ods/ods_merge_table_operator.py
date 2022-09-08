@@ -2,13 +2,13 @@ from typing import Optional
 from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.providers.google.cloud.operators.bigquery import (
-    BigQueryExecuteQueryOperator,
+from airflow.contrib.operators.bigquery_operator import (
+    BigQueryOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
-# from airflow.utils.decorators import apply_defaults
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.utils.decorators import apply_defaults
+from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
@@ -21,7 +21,7 @@ from gcp_airflow_foundations.base_class.ods_table_config import OdsTableConfig
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
 
-class MergeBigQueryODS(BigQueryExecuteQueryOperator):
+class MergeBigQueryODS(BigQueryOperator):
     """
     Merges data into a BigQuery ODS table.
 
@@ -55,7 +55,7 @@ class MergeBigQueryODS(BigQueryExecuteQueryOperator):
 
     template_fields = ("stg_table_name", "data_table_name", "stg_dataset_name")
 
-    # @apply_defaults
+    @apply_defaults
     def __init__(
         self,
         *,
@@ -110,6 +110,7 @@ class MergeBigQueryODS(BigQueryExecuteQueryOperator):
             staging_columns = self.xcom_pull(
                 context=context, task_ids=f"{self.dag_table_id}.schema_parsing"
             )["source_table_columns"]
+            logging.info(staging_columns)
         else:
             staging_columns = self.columns
 
@@ -182,3 +183,4 @@ class MergeBigQueryODS(BigQueryExecuteQueryOperator):
         )
 
         self.sql = sql
+        logging.info(sql)

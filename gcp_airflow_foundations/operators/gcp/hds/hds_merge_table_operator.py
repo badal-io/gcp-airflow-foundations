@@ -2,13 +2,13 @@ from typing import Optional
 from datetime import datetime
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.providers.google.cloud.operators.bigquery import (
-    BigQueryExecuteQueryOperator,
+from airflow.contrib.operators.bigquery_operator import (
+    BigQueryOperator,
     BigQueryCreateEmptyTableOperator,
 )
 
-# from airflow.utils.decorators import apply_defaults
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.utils.decorators import apply_defaults
+from airflow.contrib.hooks.bigquery_hook import BigQueryHook
 
 from airflow.exceptions import AirflowException
 
@@ -22,7 +22,7 @@ from gcp_airflow_foundations.base_class.hds_table_config import HdsTableConfig
 from gcp_airflow_foundations.enums.ingestion_type import IngestionType
 
 
-class MergeBigQueryHDS(BigQueryExecuteQueryOperator):
+class MergeBigQueryHDS(BigQueryOperator):
     """
     Merges data into a BigQuery HDS table.
 
@@ -56,7 +56,7 @@ class MergeBigQueryHDS(BigQueryExecuteQueryOperator):
 
     template_fields = ("stg_table_name", "data_table_name", "stg_dataset_name")
 
-    # @apply_defaults
+    @apply_defaults
     def __init__(
         self,
         *,
@@ -155,7 +155,7 @@ class MergeBigQueryHDS(BigQueryExecuteQueryOperator):
             sql_helper.time_partitioning = partitioning_dimension
 
             ts = context["ts"]
-            now = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S%z")
+            now = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%f%z")
             if partitioning_dimension == "HOUR":
                 partition_id = now.strftime("%Y%m%d%H")
             elif partitioning_dimension == "DAY":
