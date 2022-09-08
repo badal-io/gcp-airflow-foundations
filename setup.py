@@ -9,8 +9,6 @@ from pathlib import Path
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 
-# with open(os.path.join(here, "requirements.txt"), "r") as f:
-#     requirements = f.read().strip().split("\n")
 requirements = ['SQLAlchemy==1.3.23',
                 'apache-airflow-providers-apache-beam==4.0.0',
                 'apache-airflow-providers-common-sql==1.0.0',
