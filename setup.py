@@ -10,7 +10,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 
 with open(os.path.join(here, "install_requires.txt"), "r") as f:
-     requirements = f.read().strip().split("\n")
+    requirements = f.read().strip().split("\n")
 
 
 this_directory = Path(__file__).parent
