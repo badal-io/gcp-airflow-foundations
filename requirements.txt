@@ -50,4 +50,4 @@ apache-airflow-providers-facebook>=2.2.0
 apache-airflow-providers-apache-beam>=3.0.0
 apache-airflow-providers-salesforce>=5.0.0
 apache-airflow-providers-google==8.2.0
-facebook_business>=11.0.0
+facebook-business>=11.0.0
