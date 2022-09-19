@@ -10,6 +10,7 @@ from gcp_airflow_foundations.base_class.schema_options_config import SchemaOptio
 from gcp_airflow_foundations.base_class.facebook_config import FacebookConfig
 from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
 from gcp_airflow_foundations.base_class.source_ingestion_config import FullIngestionConfig
+from gcp_airflow_foundations.base_class.dagrun_timeout_config import DagRunTimeoutConfig
 
 partition_limit = 4000
 ms_day = 86400000
@@ -72,6 +73,7 @@ class SourceConfig:
     dag_args: Optional[dict]
     location: str
     start_date: str
+    dagrun_timeout: int
     schema_options: SchemaOptionsConfig = SchemaOptionsConfig()
     facebook_options: Optional[FacebookConfig] = None  # TODO: Move into extra_configs
     full_ingestion_options: FullIngestionConfig = FullIngestionConfig()
