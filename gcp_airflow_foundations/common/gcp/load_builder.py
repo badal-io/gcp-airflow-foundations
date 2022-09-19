@@ -2,7 +2,6 @@ from airflow.models import BaseOperator
 from airflow.models.dag import DAG
 from airflow.operators.dummy import DummyOperator
 from airflow.utils.trigger_rule import TriggerRule
-import logging
 
 from gcp_airflow_foundations.base_class.dlp_table_config import DlpTableConfig
 from gcp_airflow_foundations.base_class.source_config import SourceConfig

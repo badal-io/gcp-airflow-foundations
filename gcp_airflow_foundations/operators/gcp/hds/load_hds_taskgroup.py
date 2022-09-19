@@ -1,15 +1,9 @@
-from airflow import DAG
 from airflow.exceptions import AirflowException
 from airflow.operators.python import PythonOperator
 
 from gcp_airflow_foundations.enums.hds_table_type import HdsTableType
 
 from airflow.utils.task_group import TaskGroup
-
-from airflow.providers.google.cloud.operators.bigquery import (
-    BigQueryCreateEmptyTableOperator,
-    BigQueryExecuteQueryOperator
-)
 
 from gcp_airflow_foundations.operators.gcp.hds.hds_merge_table_operator import (
     MergeBigQueryHDS,
