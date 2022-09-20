@@ -1,4 +1,3 @@
-from airflow.utils.decorators import apply_defaults
 from airflow.models import BaseOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
@@ -14,7 +13,6 @@ from gcp_airflow_foundations.operators.gcp.schema_migration.schema_migration_aud
 class MigrateSchema(BaseOperator):
     """
     Detects any changes in the source table's schema and updates the target table's schema.
-
     :param project_id: GCP project ID
     :type project_id: str
     :param table_id: Target table name
@@ -29,7 +27,6 @@ class MigrateSchema(BaseOperator):
     :type gcp_conn_id: str
     """
 
-    @apply_defaults
     def __init__(
         self,
         *,
@@ -54,13 +51,12 @@ class MigrateSchema(BaseOperator):
         self.delegate_to = delegate_to
         self.encryption_configuration = encryption_configuration
 
-        self.hook = BigQueryHook(
-            gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to
-        )
-        conn = self.hook.get_conn()
-        self.cursor = conn.cursor()
 
     def execute(self, context):
+        hook = BigQueryHook(
+            gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to
+        )
+
         if not self.new_schema_fields:
             self.new_schema_fields = self.xcom_pull(
                 context=context, task_ids=f"{self.dag_table_id}.schema_parsing"
@@ -77,7 +73,7 @@ class MigrateSchema(BaseOperator):
             logging.info("Migrating new schema to target table")
 
             if sql_columns:
-                self.hook.run_query(
+                hook.run_query(
                     sql=query,
                     use_legacy_sql=False,
                     destination_dataset_table=f"{self.project_id}.{self.dataset_id}.{self.table_id}",
@@ -85,7 +81,7 @@ class MigrateSchema(BaseOperator):
                 )
 
             if schema_fields_updates:
-                self.hook.update_table_schema(
+                hook.update_table_schema(
                     project_id=self.project_id,
                     dataset_id=self.dataset_id,
                     table_id=self.table_id,
@@ -106,7 +102,6 @@ class MigrateSchema(BaseOperator):
         1) Column type
         2) New column
         3) Deleted column
-
         :returns: list of
                     string of the SQL query that will be executed in BigQuery to modify the table's schema,
                     list of the columns whose mode will be relaxed to nullable after being deleted in the source table. The list is used in the update_table_schema method of the BigQuery hook,
@@ -114,8 +109,11 @@ class MigrateSchema(BaseOperator):
                     list of rows of changes that is inserted in the schema migration audit table
         :rtype: list
         """
+        hook = BigQueryHook(
+            gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to
+        )
 
-        self.current_schema_fields = self.hook.get_schema(
+        self.current_schema_fields = hook.get_schema(
             project_id=self.project_id, dataset_id=self.dataset_id, table_id=self.table_id
         ).get("fields", None)
 
