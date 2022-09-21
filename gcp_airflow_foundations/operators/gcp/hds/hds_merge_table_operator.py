@@ -153,7 +153,7 @@ class MergeBigQueryHDS(BigQueryExecuteQueryOperator):
             now = None
             try:
                 now = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%f%z")
-            except:
+            except Exception:
                 now = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S%z")
 
             if partitioning_dimension == "HOUR":
