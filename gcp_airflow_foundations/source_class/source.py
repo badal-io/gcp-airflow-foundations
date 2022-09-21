@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod, abstractproperty
 from airflow.models.dag import DAG
 from airflow.utils.task_group import TaskGroup
 
+from datetime import timedelta
+
 from gcp_airflow_foundations.base_class.data_source_table_config import (
     DataSourceTablesConfig,
 )
@@ -155,6 +157,7 @@ class DagBuilder(ABC):
             default_args=table_default_task_args,
             catchup=data_source.catchup,
             render_template_as_native_obj=True,
+            dagrun_timeout=timedelta(minutes=data_source.dagrun_timeout_mins),
             **kwargs,
         ) as dag:
 
@@ -179,6 +182,7 @@ class DagBuilder(ABC):
             default_args=table_default_task_args,
             catchup=data_source.catchup,
             render_template_as_native_obj=True,
+            dagrun_timeout=timedelta(minutes=data_source.dagrun_timeout_mins),
             **kwargs,
         ) as dag:
 

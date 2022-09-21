@@ -79,6 +79,7 @@ class SourceConfig:
     start_date_tz: str = "EST"
     ods_suffix: str = ""
     hds_suffix: str = ""
+    dagrun_timeout_mins: int = 1440
     version: int = 1
     sla_mins: int = 900
     dlp_config: DlpSourceConfig = None
