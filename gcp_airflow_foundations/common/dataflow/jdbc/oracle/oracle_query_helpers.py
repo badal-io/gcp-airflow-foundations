@@ -114,6 +114,8 @@ def oracle_mappings():
         "DATE": "DATE",
         # TIMESTAMP
         "TIMESTAMP": "TIMESTAMP",
+        "TIMESTAMP(3)": "TIMESTAMP",
+        "TIMESTAMP(6)": "TIMESTAMP",
         "TIMESTAMP()": "TIMESTAMP",
         "TIMESTAMP WITH TIMEZONE": "TIMESTAMP",
         "TIMESTAMP WITH LOCAL TIME ZONE": "TIMESTAMP",
