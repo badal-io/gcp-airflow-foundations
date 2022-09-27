@@ -4,7 +4,7 @@ from dacite import from_dict
 
 from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.base_class.dataflow_job_config import DataflowJobConfig
-from gcp_airflow_foundations.common.dataflow.jdbc.dataflow_taskgroups import dataflow_taskgroup_builder
+from gcp_airflow_foundations.common.dataflow.dataflow_taskgroups import dataflow_taskgroup_builder
 
 from airflow.models.dag import DAG
 from airflow.providers.google.cloud.operators.dataflow import DataflowTemplatedJobStartOperator
