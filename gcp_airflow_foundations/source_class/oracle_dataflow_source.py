@@ -55,8 +55,8 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
                     table_name, casted_columns, owner
                 )
             else:
-                query = oracle_helpers.get_query_for_oracle_load_incremental(
-                    table_name, casted_columns, table_params["date_column"], owner, kwargs["ds"], table_params["num_backtrack_days"]
+                query = oracle_helpers.get_query_for_oracle_load_full(
+                    table_name, casted_columns, owner
                 )
             logging.info(query)
 
