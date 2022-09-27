@@ -2,12 +2,6 @@ from dataclasses import fields
 from urllib.parse import urlparse
 import logging
 
-from airflow.models.dag import DAG
-from airflow.operators.python_operator import PythonOperator
-from airflow.providers.google.cloud.transfers.gcs_to_bigquery import (
-    GCSToBigQueryOperator,
-)
-from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.providers.google.cloud.hooks.kms import CloudKMSHook
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.models import Variable
@@ -15,11 +9,6 @@ from airflow.models import Variable
 from gcp_airflow_foundations.source_class.jdbc_dataflow_source import (
     JdbcToBQDataflowDagBuilder,
 )
-from gcp_airflow_foundations.base_class.data_source_table_config import (
-    DataSourceTablesConfig,
-)
-from gcp_airflow_foundations.source_class.source import DagBuilder
-from gcp_airflow_foundations.common.gcp.load_builder import load_builder
 import gcp_airflow_foundations.common.dataflow.jdbc.oracle.oracle_query_helpers as oracle_helpers
 
 
@@ -66,9 +55,12 @@ class OracleToBQDataflowDagBuilder(JdbcToBQDataflowDagBuilder):
                     table_name, casted_columns, owner
                 )
             else:
-                query = oracle_helpers.get_query_for_oracle_load_incremental(
-                    table_name, casted_columns, table_params["date_column"], owner, kwargs["ds"], table_params["num_backtrack_days"]
+                query = oracle_helpers.get_query_for_oracle_load_full(
+                    table_name, casted_columns, owner
                 )
+                #query = oracle_helpers.get_query_for_oracle_load_incremental(
+                #    table_name, casted_columns, table_params["date_column"], owner, kwargs["ds"], table_params["num_backtrack_days"]
+                #)
             logging.info(query)
 
         else:

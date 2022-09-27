@@ -91,12 +91,11 @@ def ods_builder(
         python_callable=ods_task_operator,
         task_group=taskgroup,
         dag=dag
-    )
+    ) 
 
     ods_task
 
     return taskgroup
-
 
 def ods_task_operator(
     project_id,
