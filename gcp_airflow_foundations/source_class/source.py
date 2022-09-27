@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 from airflow.models.dag import DAG
 from airflow.utils.task_group import TaskGroup
