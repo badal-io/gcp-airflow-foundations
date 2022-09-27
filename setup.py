@@ -9,7 +9,7 @@ from pathlib import Path
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 
-with open(os.path.join(here, "requirements-bis_dev.txt"), "r") as f:
+with open(os.path.join(here, "requirements.txt"), "r") as f:
     requirements = f.read().strip().split("\n")
 with open(os.path.join(here, "requirements-providers.txt"), "r") as f:
     requirements_providers = f.read().strip().split("\n")
