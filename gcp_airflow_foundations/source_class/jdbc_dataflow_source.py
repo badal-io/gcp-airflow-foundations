@@ -4,7 +4,7 @@ from dacite import from_dict
 
 from gcp_airflow_foundations.source_class.source import DagBuilder
 from gcp_airflow_foundations.base_class.dataflow_job_config import DataflowJobConfig
-from gcp_airflow_foundations.common.dataflow.jdbc.dataflow_taskgroups import dataflow_taskgroup_builder
+from gcp_airflow_foundations.common.dataflow.dataflow_taskgroups import dataflow_taskgroup_builder
 
 from airflow.models.dag import DAG
 from airflow.providers.google.cloud.operators.dataflow import DataflowTemplatedJobStartOperator
@@ -42,6 +42,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         table_name = table_config.landing_zone_table_name_override
         destination_table = f"{gcp_project}:{landing_dataset}.{table_name}"
         destination_schema_table = f"{gcp_project}.{landing_dataset}.{schema_table}"
+        max_retry_delay = dataflow_job_params["max_retry_delay"]
 
         ingestion_type = table_config.ingestion_type
 
@@ -49,6 +50,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
 
         taskgroup = dataflow_taskgroup_builder(
             query_schema=False,
+            max_retry_delay=max_retry_delay,
             dataflow_job_params=dataflow_job_params,
             dataflow_table_params=dataflow_table_params,
             destination_table=destination_table,
@@ -78,6 +80,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         schema_table_name = dataflow_job_params["bq_schema_table"]
         destination_table = f"{gcp_project}:{landing_dataset}.{schema_table_name}"
         system_name = dataflow_job_params["system_name"]
+        max_retry_delay = dataflow_job_params["max_retry_delay"]
 
         if ingest_metadata:
             with DAG(
@@ -91,6 +94,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
 
                 taskgroup = dataflow_taskgroup_builder(
                     query_schema=True,
+                    max_retry_delay=max_retry_delay,
                     dataflow_job_params=dataflow_job_params,
                     destination_table=destination_table,
                     destination_schema_table=f"{gcp_project}.{landing_dataset}.{schema_table_name}",
@@ -109,7 +113,7 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
         else:
             return
 
-    def run_dataflow_job(self, template_path, system_name, table_name, query_schema, **kwargs):
+    def run_dataflow_job(self, template_path, system_name, table_name, **kwargs):
         ti = kwargs['ti']
         xcom_task_pickup = f"{table_name}.dataflow_taskgroup.create_job_parameters"
 
@@ -169,8 +173,8 @@ class JdbcToBQDataflowDagBuilder(DagBuilder):
             dictionary corresponding to a DataflowJobConfig
         destination_table:
             Bigquery table in form {gcp_project}.{bq_dataset}.{table_name}
-        query_schema:
-            boolean - whether to query the schema or not
+        max_retry_delay:
+            max_retry_delay
 
         When implemented, this method should create the following dictionaries, fill them
         with the required parameters, and XCom push them

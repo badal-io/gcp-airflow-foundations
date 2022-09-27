@@ -1,5 +1,4 @@
-from airflow import DAG
-from airflow.exceptions import AirflowException
+from datetime import timedelta
 from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 from airflow.sensors.external_task import ExternalTaskSensor
@@ -18,7 +17,8 @@ def dataflow_taskgroup_builder(
     create_table,
     ingest_metadata,
     table_type_casts,
-    ingestion_type
+    ingestion_type,
+    max_retry_delay
 ) -> TaskGroup:
 
     """
@@ -49,10 +49,11 @@ def dataflow_taskgroup_builder(
         op_kwargs={"template_path": dataflow_job_params["template_path"],
                    "system_name": system_name,
                    "table_name": table_name,
-                   "query_schema": query_schema},
+                   },
         python_callable=run_dataflow_job,
         task_group=taskgroup,
-        pool=dataflow_job_params["connection_pool"]
+        pool=dataflow_job_params["connection_pool"],
+        max_retry_delay=timedelta(minutes=max_retry_delay)
     )
 
     if not query_schema:

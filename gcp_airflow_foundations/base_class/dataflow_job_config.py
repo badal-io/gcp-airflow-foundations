@@ -41,3 +41,4 @@ class DataflowJobConfig:
     bq_schema_table: str
     database_owner: str
     connection_pool: str
+    max_retry_delay: int = 60
