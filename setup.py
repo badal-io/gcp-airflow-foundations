@@ -13,7 +13,7 @@ with open(os.path.join(here, "requirements.txt"), "r") as f:
     requirements = f.read().strip().split("\n")
 with open(os.path.join(here, "requirements-providers.txt"), "r") as f:
     requirements_providers = f.read().strip().split("\n")
-with open(os.path.join(here, "docker/requirements-ci.txt"), "r") as f:
+with open(os.path.join(here, "requirements-ci.txt"), "r") as f:
     requirements_test = f.read().strip().split("\n")
 
 this_directory = Path(__file__).parent
