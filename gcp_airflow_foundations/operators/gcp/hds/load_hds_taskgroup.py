@@ -84,11 +84,12 @@ def hds_builder(
         python_callable=hds_task_operator,
         task_group=taskgroup,
         dag=dag
-    ) 
+    )
 
     hds_task
 
     return taskgroup
+
 
 def hds_task_operator(
     project_id,
