@@ -1,0 +1,5 @@
+pytest==5.3.5
+pytest-testconfig==0.2.0
+pytest-airflow>=0.0.3
+pytest-cov==3.0.0
+flake8==4.0.1
