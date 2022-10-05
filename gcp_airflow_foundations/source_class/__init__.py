@@ -7,7 +7,7 @@ from gcp_airflow_foundations.source_class.salesforce_source import (
 from gcp_airflow_foundations.source_class.oracle_dataflow_source import (
     OracleToBQDataflowDagBuilder,
 )
-from gcp_airflow_foundations.source_class.facebook import FacebooktoBQDagBuilder
+
 
 from gcp_airflow_foundations.base_class.data_source_table_config import (
     DataSourceTablesConfig,
@@ -30,6 +30,7 @@ def get_dag_builder(
         logging.info("Selecting Oracle builder")
         return OracleToBQDataflowDagBuilder(default_task_args, config)
     elif source == SourceType.FACEBOOK:
+        from gcp_airflow_foundations_facebook.source_class.facebook import FacebooktoBQDagBuilder
         logging.info("Selecting Facebook builder")
         return FacebooktoBQDagBuilder(default_task_args, config)
     else:

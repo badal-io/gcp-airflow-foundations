@@ -15,7 +15,7 @@ ENV PATH $PATH:/home/airflow/google-cloud-sdk/bin
 RUN mkdir /opt/airflow/gcp_airflow_foundations
 
 # Copying only files essential for installing gcp_airflow_foundations
-COPY setup.py setup.cfg README.md MANIFEST.in requirements.txt requirements-providers.txt requirements-ci.txt /opt/airflow/
+COPY setup.py setup.cfg README.md MANIFEST.in requirements.txt requirements-providers.txt requirements-facebook.txt docker/gcp_airflow_foundations_facebook-0.0.1-py2.py3-none-any.whl requirements-ci.txt /opt/airflow/
 #COPY tests /opt/airflow/tests
 COPY gcp_airflow_foundations/__init__.py /opt/airflow/gcp_airflow_foundations/__init__.py
 COPY gcp_airflow_foundations/version.py /opt/airflow/gcp_airflow_foundations/version.py
@@ -27,6 +27,7 @@ RUN pip install  --upgrade pip
 
 # - Install dependencies
 RUN pip install  -e .[providers,test]
+RUN pip install  gcp_airflow_foundations_facebook-0.0.1-py2.py3-none-any.whl
 
 # USER airflow
 

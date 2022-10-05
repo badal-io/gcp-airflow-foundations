@@ -15,6 +15,8 @@ with open(os.path.join(here, "requirements-providers.txt"), "r") as f:
     requirements_providers = f.read().strip().split("\n")
 with open(os.path.join(here, "requirements-ci.txt"), "r") as f:
     requirements_test = f.read().strip().split("\n")
+with open(os.path.join(here, "requirements-facebook.txt"), "r") as f:
+    requirements_facebook = f.read().strip().split("\n")
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
@@ -44,7 +46,7 @@ def main():
         license="Apache 2.0",
         packages=packages,
         install_requires=requirements,
-        extras_require={'providers': requirements_providers, 'test': requirements_test},
+        extras_require={"providers": requirements_providers, "test": requirements_test, "facebook":requirements_facebook},
         classifiers=[
             "Development Status :: 4 - Beta",
             "Intended Audience :: Developers",
