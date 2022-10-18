@@ -85,7 +85,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
             ds = kwargs["ds"]
         else:
             ds = kwargs["prev_ds"]
-        ds = datetime.strptime(ds, "%Y-%m-%d").strftime(self.config.source.extra_options["file_source_config"]["date_format"])
+        ds = datetime.strptime(str(ds), "%Y-%m-%d").strftime(self.config.source.extra_options["file_source_config"]["date_format"])
         # XCom push the list of files
         # overwrite if in table_config
         dir_prefix = table_config.extra_options.get("file_table_config")["directory_prefix"]
@@ -271,7 +271,7 @@ class SFTPFileIngestionDagBuilder(GenericFileIngestionDagBuilder):
 
         destination_path_prefix = gcs_bucket_prefix + table_name + "/" + ds
         if "gcs_bucket_path_format_mode" in self.config.source.extra_options["file_source_config"]:
-            date = datetime.strptime(ds, '%Y-%m-%d').strftime('%Y/%m/%d')
+            date = datetime.strptime(str(ds), '%Y-%m-%d').strftime('%Y/%m/%d')
             destination_path_prefix = gcs_bucket_prefix + table_name + "/" + date
 
         gcs_hook = GCSHook()
