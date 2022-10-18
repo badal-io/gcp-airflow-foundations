@@ -253,7 +253,7 @@ class GCSFiletoBQDagBuilder(FTPtoBQDagBuilder):
 
         # support replacing files with current dates
         ds = kwargs["ds"]
-        ds = datetime.strptime(ds, "%Y-%m-%d").strftime(
+        ds = datetime.strptime(str(ds), "%Y-%m-%d").strftime(
             self.config.source.extra_options["gcs_source_config"]["date_format"]
         )
         file_list[:] = [
