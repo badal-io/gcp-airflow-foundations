@@ -29,7 +29,6 @@ RUN pip install  --upgrade pip
 
 # - Install dependencies
 RUN pip install  -e .[providers,test]
-RUN pip install -r requirements-ci.txt
 
 RUN airflow db init
 
