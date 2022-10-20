@@ -33,6 +33,7 @@ def main() -> dict:
     else:
         return None
 
+
 def _process_metadata(plug) -> dict:
     packages = [
         package
@@ -43,11 +44,11 @@ def _process_metadata(plug) -> dict:
     for x in plug['extras']:
         with open(os.path.join(here, f"requirements-{x}.txt"), "r") as f:
             extra = f.read().strip().split("\n")
-        extras.update({x:extra})
+        extras.update({x: extra})
     metadata = dict(
-        name = plug['name'],
-        version = plug['versions'][0],
-        description = plug['description'],
+        name=plug['name'],
+        version=plug['versions'][0],
+        description=plug['description'],
         long_description=plug['long-description'],
         packages=packages,
         install_requires=plug['dependencies'],
@@ -71,7 +72,6 @@ def _process_metadata(plug) -> dict:
     )
     metadata.update(base_metadata)
     return metadata
-
 
 
 if __name__ == "__main__":
