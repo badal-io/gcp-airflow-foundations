@@ -27,7 +27,7 @@ RUN pip install  --upgrade pip
 
 # - Install dependencies
 RUN pip install  -e .[providers,test]
-RUN pip install SQLAlchemy==1.3.23
+
 # USER airflow
 
 
