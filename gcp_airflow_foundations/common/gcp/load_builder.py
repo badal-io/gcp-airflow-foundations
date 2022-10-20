@@ -126,7 +126,7 @@ def load_builder(
     else:
         preceding_task >> parse_schema >> ods_task_group >> delete_staging_table
 
-    done = DummyOperator(task_id="done", trigger_rule=TriggerRule.ALL_DONE)
+    done = DummyOperator(task_id="done", trigger_rule=TriggerRule.ALL_SUCCESS)
 
     if dlp_table_config.get_is_on():
 
