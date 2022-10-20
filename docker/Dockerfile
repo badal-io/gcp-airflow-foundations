@@ -24,7 +24,7 @@ WORKDIR /opt/airflow
 
 # USER root
 RUN pip install  --upgrade pip
-
+RUN pip install  requirements-ci.txt
 # - Install dependencies
 RUN pip install  -e .[providers,test]
 
