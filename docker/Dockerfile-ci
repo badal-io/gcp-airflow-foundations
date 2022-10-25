@@ -1,5 +1,5 @@
 # TODO: use multi-stage builds. This file is exactly the same as Dockerfile except the last line
-ARG AIRFLOW_IMAGE_NAME="2.1.1-python3.8"
+ARG AIRFLOW_IMAGE_NAME="2.2.5-python3.8"
 
 FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
 
@@ -17,7 +17,7 @@ ENV PKG_NAME gcp_airflow_foundations
 RUN mkdir /opt/airflow/gcp_airflow_foundations
 
 # Copying only files essential for installing gcp_airflow_foundations
-COPY setup.py setup.cfg README.md MANIFEST.in requirements.txt requirements-providers.txt requirements-ci.txt /opt/airflow/
+COPY setup.py setup.cfg README.md MANIFEST.in requirements.txt requirements-providers.txt requirements-test.txt /opt/airflow/
 COPY gcp_airflow_foundations/__init__.py /opt/airflow/gcp_airflow_foundations/__init__.py
 COPY gcp_airflow_foundations/version.py /opt/airflow/gcp_airflow_foundations/version.py
 COPY gcp_airflow_foundations_config/framework.yaml /opt/airflow/gcp_airflow_foundations_config/framework.yaml
@@ -25,10 +25,10 @@ COPY gcp_airflow_foundations_config/framework.yaml /opt/airflow/gcp_airflow_foun
 WORKDIR /opt/airflow
 
 RUN pip install  --upgrade pip
-RUN pip install -r requirements-ci.txt
+RUN pip install -r requirements-test.txt
 
 # - Install dependencies
 RUN pip install  -e .[providers,test]
 
-RUN airflow db init
+#RUN airflow db init
 

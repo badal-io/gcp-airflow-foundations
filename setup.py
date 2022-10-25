@@ -10,7 +10,7 @@ about = {}
 # Load extra dependencies from txt
 with open(os.path.join(here, "requirements-providers.txt"), "r") as f:
     requirements_providers = f.read().strip().split("\n")
-with open(os.path.join(here, "requirements-ci.txt"), "r") as f:
+with open(os.path.join(here, "requirements-test.txt"), "r") as f:
     requirements_test = f.read().strip().split("\n")
 
 
@@ -35,42 +35,47 @@ def main() -> dict:
 
 
 def _process_metadata(plug) -> dict:
-    packages = [
-        package
-        for package in setuptools.PEP420PackageFinder.find()
-        if package.startswith(str(plug['package-startwith']))
-    ]
-    extras = {}
-    for x in plug['extras']:
-        with open(os.path.join(here, f"requirements-{x}.txt"), "r") as f:
-            extra = f.read().strip().split("\n")
-        extras.update({x: extra})
-    metadata = dict(
-        name=plug['name'],
-        version=plug['versions'][0],
-        description=plug['description'],
-        long_description=plug['long-description'],
-        packages=packages,
-        install_requires=plug['dependencies'],
-        extras_require=extras,
-    )
-    base_metadata = dict(
-        long_description_content_type="text/markdown",
-        author="Badal.io",
-        author_email="info@badal.io",
-        license="Apache 2.0",
-        classifiers=[
-            "Development Status :: 4 - Beta",
-            "Intended Audience :: Developers",
-            "Topic :: Software Development :: Libraries",
-            "License :: OSI Approved :: Apache Software License",
-            "Programming Language :: Python :: 3.6",
-            "Programming Language :: Python :: 3.7",
-            "Programming Language :: Python :: 3.8",
-            "Programming Language :: Python :: 3.9",
-        ],
-    )
-    metadata.update(base_metadata)
+    try:
+        packages = [
+            package
+            for package in setuptools.PEP420PackageFinder.find()
+            if package.startswith(str(plug['package-startwith']))
+        ]
+        extras = {}
+        for x in plug['extras']:
+            with open(os.path.join(here, f"requirements-{x}.txt"), "r") as f:
+                extra = f.read().strip().split("\n")
+            extras.update({x: extra})
+        metadata = dict(
+            name=plug['name'],
+            version=plug['versions'][0],
+            description=plug['description'],
+            long_description=plug['long-description'],
+            packages=packages,
+            install_requires=plug['dependencies'],
+            extras_require=extras,
+        )
+        base_metadata = dict(
+            long_description_content_type="text/markdown",
+            author="Badal.io",
+            author_email="info@badal.io",
+            license="Apache 2.0",
+            classifiers=[
+                "Development Status :: 4 - Beta",
+                "Intended Audience :: Developers",
+                "Topic :: Software Development :: Libraries",
+                "License :: OSI Approved :: Apache Software License",
+                "Programming Language :: Python :: 3.6",
+                "Programming Language :: Python :: 3.7",
+                "Programming Language :: Python :: 3.8",
+                "Programming Language :: Python :: 3.9",
+            ],
+        )
+        metadata.update(base_metadata)
+    except Exception as e:
+        print(e)
+        metadata=dict(name="no_package")
+        print(metadata)
     return metadata
 
 

@@ -1,7 +1,8 @@
 import pytz
 import unittest
-from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
-from airflow.models.xcom import XCOM_RETURN_KEY
+from airflow.models import TaskInstance,  DagRun
+from airflow.models.dag import DAG, DagTag, DagModel
+from airflow.models.xcom import XCOM_RETURN_KEY, BaseXCom
 from airflow.operators.dummy import DummyOperator
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
@@ -37,7 +38,7 @@ TEST_TABLE_RESOURCES = {
 
 @provide_session
 def cleanup_xcom(session=None):
-    session.query(XCom).delete()
+    session.query(BaseXCom).delete()
 
 
 def clear_db_dags():

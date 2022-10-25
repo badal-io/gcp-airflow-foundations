@@ -16,6 +16,7 @@ x-airflow-common:
     - ./variables/docker-env-secrets # added to gitignore
   volumes:
     - ./dags:/opt/airflow/dags
+    - ./gcp_airflow_foundations_config:/opt/airflow/gcp_airflow_foundations_config
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ./variables:/opt/airflow/variables

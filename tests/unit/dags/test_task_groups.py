@@ -11,7 +11,8 @@ from airflow.models.dag import DAG
 from airflow.utils.session import create_session
 from airflow.utils.timezone import datetime
 
-from airflow.models import DagBag, DagRun, DagTag, TaskInstance, DagModel
+from airflow.models import DagRun, TaskInstance
+from airflow.models.dag import DAG, DagTag, DagModel
 
 DEFAULT_DATE = datetime(2015, 1, 1)
 TEST_DAG_ID = "unit_test_dag"

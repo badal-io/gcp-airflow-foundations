@@ -41,4 +41,4 @@ dependencies:
 
 extras:
   - providers
-  - ci
+  - test

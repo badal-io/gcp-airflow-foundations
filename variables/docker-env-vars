@@ -5,7 +5,7 @@
 # -- Airflow Configuration:
 AIRFLOW__API__AUTH_BACKEND=airflow.api.auth.backend.basic_auth
 AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=false
-AIRFLOW__CORE__LOAD_EXAMPLES=false
+AIRFLOW__CORE__LOAD_EXAMPLES=true
 AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=false
 AIRFLOW__WEBSERVER__RELOAD_ON_PLUGIN_CHANGE=true
 AIRFLOW__EMAIL__EMAIL_BACKEND=airflow.providers.sendgrid.utils.emailer.send_email
