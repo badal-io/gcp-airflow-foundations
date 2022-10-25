@@ -1,6 +1,6 @@
 import pytz
 import unittest
-from airflow.models import TaskInstance,  DagRun
+from airflow.models import TaskInstance, DagRun
 from airflow.models.dag import DAG, DagTag, DagModel
 from airflow.models.xcom import XCOM_RETURN_KEY, BaseXCom
 from airflow.operators.dummy import DummyOperator

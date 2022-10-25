@@ -35,7 +35,7 @@ def clear_db_dags():
 
 class TestFacebook(unittest.TestCase):
     def setUp(self):
-        #clear_db_dags()
+        clear_db_dags()
 
         here = os.path.abspath(os.path.dirname(__file__))
         self.conf_location = here

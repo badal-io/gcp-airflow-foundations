@@ -22,7 +22,7 @@ DEV_NULL = "/dev/null"
 
 def clear_db_dags():
     with create_session() as session:
-        #session.query(DagTag).delete()
+        session.query(DagTag).delete()
         session.query(DagModel).delete()
         session.query(DagRun).delete()
         session.query(TaskInstance).delete()
@@ -30,7 +30,7 @@ def clear_db_dags():
 
 class TestGcs(unittest.TestCase):
     def setUp(self):
-        #clear_db_dags()
+        clear_db_dags()
 
         here = os.path.abspath(os.path.dirname(__file__))
         self.conf_location = here
