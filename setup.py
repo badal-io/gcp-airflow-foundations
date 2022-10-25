@@ -74,8 +74,7 @@ def _process_metadata(plug) -> dict:
         metadata.update(base_metadata)
     except Exception as e:
         print(e)
-        metadata=dict(name="no_package")
-        print(metadata)
+        metadata = dict(name="no_package")
     return metadata
 
 
