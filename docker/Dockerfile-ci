@@ -30,6 +30,6 @@ RUN pip install -r requirements-test.txt
 # - Install dependencies
 RUN pip install  -e .[providers,test]
 
-# init db
+# init db airflow
 RUN airflow db init
 
