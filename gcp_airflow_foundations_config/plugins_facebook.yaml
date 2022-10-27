@@ -1,0 +1,20 @@
+package-name: gcp_airflow_foundations_facebook
+
+package-startwith: gcp_airflow_foundations_facebook
+
+name: gcp-airflow-foundations-facebook
+
+description: |
+    `A Facebook plug-in for gcp-airflow-foundations`
+
+long-description: |
+    Please upload README from this metadata, with range dependencies and versions available
+
+versions:
+  - "0.0.1"
+
+dependencies:
+  - pydantic==1.8.2
+  - facebook-business>=6.0.2
+
+extras: {}

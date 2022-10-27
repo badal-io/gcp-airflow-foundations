@@ -1,0 +1,44 @@
+package-name: gcp_airflow_foundations
+
+package-startwith: gcp_airflow_foundations.
+
+name: gcp-airflow-foundations
+
+description: |
+    `gcp-airflow-foundations`
+
+long-description: |
+    Please upload README from this metadata, with range dependencies and versions available
+
+versions:
+  - "0.3.5"
+  - "0.3.3"
+  - "0.3.2"
+  - "0.3.1"
+  - "0.3.0"
+  - "0.2.11"
+  - "0.2.10"
+  - "0.2.9"
+  - "0.2.8"
+  - "0.2.7"
+  - "0.2.6"
+  - "0.2.5"
+  - "0.2.4"
+  - "0.2.3"
+  - "0.2.2"
+  - "0.2.1"
+  - "0.2.0"
+
+
+dependencies:
+  - pydantic==1.8.2
+  - facebook_business>=10.0.0
+  - dacite>=1.5.0
+  - regex>=2021.11.1
+  - twilio
+  - pandas>=0.17.1
+  - pyarrow>=3.0.0
+
+extras:
+  - providers
+  - test

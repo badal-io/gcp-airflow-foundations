@@ -1,7 +1,8 @@
 import os
 import pytz
 import unittest
-from airflow.models import DAG, TaskInstance, XCom, DagRun, DagTag, DagModel
+from airflow.models import TaskInstance, XCom, DagRun
+from airflow.models.dag import DAG, DagTag, DagModel
 from airflow.operators.dummy import DummyOperator
 from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State

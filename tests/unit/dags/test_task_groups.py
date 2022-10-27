@@ -6,12 +6,11 @@ from gcp_airflow_foundations.operators.gcp.hds.load_hds_taskgroup import hds_bui
 from gcp_airflow_foundations.operators.gcp.ods.load_ods_taskgroup import ods_builder
 from gcp_airflow_foundations.base_class.utils import load_tables_config_from_dir
 
-from airflow.models.dag import DAG
-
 from airflow.utils.session import create_session
 from airflow.utils.timezone import datetime
 
-from airflow.models import DagBag, DagRun, DagTag, TaskInstance, DagModel
+from airflow.models import DagRun, TaskInstance
+from airflow.models.dag import DAG, DagTag, DagModel
 
 DEFAULT_DATE = datetime(2015, 1, 1)
 TEST_DAG_ID = "unit_test_dag"

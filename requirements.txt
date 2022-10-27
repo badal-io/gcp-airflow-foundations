@@ -5,3 +5,5 @@ regex>=2021.11.1
 twilio
 pandas>=0.17.1
 pyarrow>=3.0.0
+setuptools
+pyyaml

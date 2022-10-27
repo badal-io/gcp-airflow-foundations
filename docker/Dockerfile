@@ -5,7 +5,7 @@ FROM "apache/airflow:${AIRFLOW_IMAGE_NAME}"
 # - Install GCP util
 RUN curl -sSL https://sdk.cloud.google.com | bash
 ENV PATH $PATH:/home/airflow/google-cloud-sdk/bin
-
+ENV PKG_NAME gcp_airflow_foundations
 # - Copy a custom airflow config file
 #COPY airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
@@ -15,16 +15,16 @@ ENV PATH $PATH:/home/airflow/google-cloud-sdk/bin
 RUN mkdir /opt/airflow/gcp_airflow_foundations
 
 # Copying only files essential for installing gcp_airflow_foundations
-COPY setup.py setup.cfg README.md MANIFEST.in requirements.txt requirements-providers.txt requirements-ci.txt /opt/airflow/
+COPY setup.py setup.cfg README.md MANIFEST.in requirements.txt requirements-providers.txt requirements-test.txt /opt/airflow/
 #COPY tests /opt/airflow/tests
 COPY gcp_airflow_foundations/__init__.py /opt/airflow/gcp_airflow_foundations/__init__.py
 COPY gcp_airflow_foundations/version.py /opt/airflow/gcp_airflow_foundations/version.py
-
+COPY gcp_airflow_foundations_config/framework.yaml /opt/airflow/gcp_airflow_foundations_config/framework.yaml
 WORKDIR /opt/airflow
 
 # USER root
 RUN pip install  --upgrade pip
-
+RUN pip install pyyaml
 # - Install dependencies
 RUN pip install  -e .[providers,test]
 

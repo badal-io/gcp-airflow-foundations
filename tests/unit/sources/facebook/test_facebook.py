@@ -16,8 +16,8 @@ from gcp_airflow_foundations.source_class import (
     facebook,
 )
 
-from airflow.models.dag import DAG
-from airflow.models import DagBag, DagRun, DagTag, TaskInstance, DagModel
+from airflow.models import DagRun, TaskInstance
+from airflow.models.dag import DAG, DagTag, DagModel
 from airflow.utils.session import create_session
 
 DEFAULT_DATE = datetime.datetime(2015, 1, 1)

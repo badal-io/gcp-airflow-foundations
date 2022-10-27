@@ -9,8 +9,9 @@ from datetime import datetime
 from gcp_airflow_foundations.base_class.file_source_config import FileSourceConfig
 from gcp_airflow_foundations.base_class.file_table_config import FileTableConfig
 from dacite import from_dict
-from airflow.models.dag import DAG
-from airflow.models import DagRun, DagTag, TaskInstance, DagModel
+
+from airflow.models import DagRun, TaskInstance
+from airflow.models.dag import DAG, DagTag, DagModel
 from airflow.utils.session import create_session
 from airflow.utils.task_group import TaskGroup
 

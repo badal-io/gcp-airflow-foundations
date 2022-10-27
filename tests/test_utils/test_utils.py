@@ -1,6 +1,7 @@
 from airflow.utils.session import create_session, provide_session
 
-from airflow.models import DAG, TaskInstance, XCom, DagBag, DagRun, DagTag, DagModel
+from airflow.models import TaskInstance, XCom, DagRun
+from airflow.models.dag import DAG, DagTag, DagModel
 import pytz
 from airflow.utils.state import State
 from datetime import datetime

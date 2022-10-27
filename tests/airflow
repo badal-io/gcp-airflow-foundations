@@ -1,4 +1,4 @@
 #
 # Run commands in a temporary ops container
 #
-exec docker-compose run --rm -e CONNECTION_CHECK_MAX_COUNT=0 airflow-ops bash -c "${@}"
+exec docker-compose run --rm -e CONNECTION_CHECK_MAX_COUNT=0 airflow-init bash -c "${@}"

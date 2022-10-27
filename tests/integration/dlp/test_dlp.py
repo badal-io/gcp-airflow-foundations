@@ -1,7 +1,7 @@
 import logging
 import pytz
 import unittest
-from airflow.models import DAG
+from airflow.models.dag import DAG
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.utils.state import State
 from airflow.utils.types import DagRunType

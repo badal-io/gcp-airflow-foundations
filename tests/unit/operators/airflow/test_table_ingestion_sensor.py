@@ -4,8 +4,8 @@ import pytest
 
 from airflow.exceptions import AirflowException
 
-from airflow.models import DagBag, DagRun, DagTag, TaskInstance, DagModel
-from airflow.models.dag import DAG
+from airflow.models import DagBag, DagRun, TaskInstance
+from airflow.models.dag import DAG, DagTag, DagModel
 
 from airflow.utils.state import State
 from airflow.utils.timezone import datetime
@@ -412,7 +412,7 @@ class TestTableIngestionSensor(unittest.TestCase):
 
         with pytest.raises(AirflowException) as ctx:
             op.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
-            execute_task(task=op, execution_date=DEFAULT_DATE)
+            execute_task(task=op)
         assert str(ctx.value) == "No active dags found."
 
     def test_catch_no_dags_for_source_error(self):

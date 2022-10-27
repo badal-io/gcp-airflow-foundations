@@ -1,7 +1,8 @@
 import datetime
 import unittest
 
-from airflow.models import DAG, DagRun, TaskInstance as TI
+from airflow.models import DagRun, TaskInstance as TI
+from airflow.models.dag import DAG
 from airflow.operators.dummy import DummyOperator
 from airflow.utils import timezone
 from airflow.utils.session import create_session
