@@ -7,7 +7,7 @@ from pydantic.dataclasses import dataclass
 from gcp_airflow_foundations.enums.source_type import SourceType
 from gcp_airflow_foundations.base_class.landing_zone_config import LandingZoneConfig
 from gcp_airflow_foundations.base_class.schema_options_config import SchemaOptionsConfig
-from gcp_airflow_foundations.base_class.facebook_config import FacebookConfig
+from gcp_airflow_foundations_facebook.base_class.facebook_config import FacebookConfig
 from gcp_airflow_foundations.base_class.dlp_source_config import DlpSourceConfig
 from gcp_airflow_foundations.base_class.source_ingestion_config import FullIngestionConfig
 
