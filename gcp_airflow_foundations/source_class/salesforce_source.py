@@ -99,6 +99,8 @@ class SalesforcetoBQDagBuilder(DagBuilder):
             destination_project_dataset_table=destination_table + f"_{ds}",
             write_disposition="WRITE_TRUNCATE",
             create_disposition="CREATE_IF_NEEDED",
+            allow_jagged_rows=True,
+            allow_quoted_newlines=True,
             skip_leading_rows=1,
         )
         load_to_bq.execute(context=kwargs)
